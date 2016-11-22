@@ -1,0 +1,124 @@
+Resenarer
+
+            fornamn VARCHAR(60)
+            efternamn VARCHAR(60)
+            prisjustering INT
+            onskemal VARCHAR(360),
+            adress VARCHAR(60),
+            postnr INT,
+            postort VARCHAR(60),
+            telefon VARCHAR(60),
+            email VARCHAR(60),
+            resaid INT,
+            avresa VARCHAR(60),
+            avresatid TIME,
+            bokningid INT
+
+      
+
+
+$sql = "CREATE TABLE Bokningar (
+            bokningid INT IDENTITY(1,1) PRIMARY KEY NOT NULL, 
+            resaid INT,
+            gruppbokn VARCHAR(6),
+            pris INT,
+            boendealt VARCHAR(60),
+            boendealtkod INT,
+            antalresande INT,
+            avbskyddpris VARCHAR(60),
+            anmavgpris INT,
+            betalningsdatum2 DATE,
+            betalningsdatum1 DATE,
+            persperrum INT,
+            anmavg BIT,
+            makulerad BIT,
+            resenar1 INT
+            resenar2 INT
+            resenar3 INT
+            resenar4 INT
+            resenar5 INT
+            resenar6 INT
+          )"; 
+          
+          $sql = "CREATE TABLE Resor (
+            resaid INT IDENTITY(1,1) PRIMARY KEY NOT NULL, 
+            resa VARCHAR(60),
+            date DATE NOT NULL,
+            kategori VARCHAR(60),
+            aktiv BIT
+            boendealt1 VARCHAR(30),
+            boendealt2 VARCHAR(30),
+            boendealt3 VARCHAR(30),
+            boendealt4 VARCHAR(30),
+            boendealt5 VARCHAR(30),
+            boendealt1antal INT,
+            boendealt2antal INT,
+            boendealt3antal INT,
+            boendealt4antal INT,
+            boendealt5antal INT,
+            persperrum1 INT,
+            persperrum2 INT,
+            persperrum3 INT,
+            persperrum4 INT,
+            persperrum5 INT,
+            reserverade1 INT,
+            reserverade2 INT,
+            reserverade3 INT,
+            reserverade4 INT,
+            reserverade5 INT,
+            pris1 INT,
+            pris2 INT,
+            pris3 INT,
+            pris4 INT,
+            pris5 INT;
+          )"; 
+          
+          $sql = "CREATE TABLE Betalningar (
+            betalningid INT IDENTITY(1,1) PRIMARY KEY NOT NULL, 
+            datum DATE,
+            summa INT,
+            avbskyddbet BIT,
+            summavb INT,
+            bokning INT,
+            referens VARCHAR(60),
+            metod VARCHAR(25)   
+          )"; 
+          
+          $sql = "CREATE TABLE Programbestallningar (
+            id INT IDENTITY(1,1) PRIMARY KEY NOT NULL, 
+            fornamn VARCHAR(60),
+            efternamn VARCHAR(60),
+            adress VARCHAR(60),
+            postnr INT,
+            postort VARCHAR(60),
+            telefon INT,
+            email VARCHAR(60),
+            notering VARCHAR(100),
+            datum DATE,
+            kategori VARCHAR(60)           
+          )"; 
+          
+          $sql = "CREATE TABLE Kategorier (
+            kategoriid INT IDENTITY(1,1) PRIMARY KEY NOT NULL, 
+            kategori VARCHAR(60),
+            aktiv BIT
+          )"; 
+          
+          $sql = "CREATE TABLE Hidden (
+            id INT IDENTITY(1,1) PRIMARY KEY NOT NULL, 
+            resenarid INT,
+            programbid INT,
+            betalid INT,
+            hidden BIT
+          )"; 
+          
+          TABLE Blockemail
+          id INT
+          email VARCHAR(60)
+          
+          TABLE Deadlines
+          id INT PRIMARY KEY
+          resaid INT
+          text VARCHAR(200)
+          date DATE
+          aktiv BIT
