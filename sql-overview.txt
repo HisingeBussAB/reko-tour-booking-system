@@ -14,11 +14,11 @@ Resenarer
             avresatid TIME,
             bokningid INT
 
-      
+
 
 
 $sql = "CREATE TABLE Bokningar (
-            bokningid INT IDENTITY(1,1) PRIMARY KEY NOT NULL, 
+            bokningid INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
             resaid INT,
             gruppbokn VARCHAR(6),
             pris INT,
@@ -38,10 +38,10 @@ $sql = "CREATE TABLE Bokningar (
             resenar4 INT
             resenar5 INT
             resenar6 INT
-          )"; 
-          
+          )";
+
           $sql = "CREATE TABLE Resor (
-            resaid INT IDENTITY(1,1) PRIMARY KEY NOT NULL, 
+            resaid INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
             resa VARCHAR(60),
             date DATE NOT NULL,
             kategori VARCHAR(60),
@@ -71,21 +71,21 @@ $sql = "CREATE TABLE Bokningar (
             pris3 INT,
             pris4 INT,
             pris5 INT;
-          )"; 
-          
+          )";
+
           $sql = "CREATE TABLE Betalningar (
-            betalningid INT IDENTITY(1,1) PRIMARY KEY NOT NULL, 
+            betalningid INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
             datum DATE,
             summa INT,
             avbskyddbet BIT,
             summavb INT,
             bokning INT,
             referens VARCHAR(60),
-            metod VARCHAR(25)   
-          )"; 
-          
+            metod VARCHAR(25)
+          )";
+
           $sql = "CREATE TABLE Programbestallningar (
-            id INT IDENTITY(1,1) PRIMARY KEY NOT NULL, 
+            id INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
             fornamn VARCHAR(60),
             efternamn VARCHAR(60),
             adress VARCHAR(60),
@@ -95,27 +95,27 @@ $sql = "CREATE TABLE Bokningar (
             email VARCHAR(60),
             notering VARCHAR(100),
             datum DATE,
-            kategori VARCHAR(60)           
-          )"; 
-          
+            kategori VARCHAR(60)
+          )";
+
           $sql = "CREATE TABLE Kategorier (
-            kategoriid INT IDENTITY(1,1) PRIMARY KEY NOT NULL, 
+            kategoriid INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
             kategori VARCHAR(60),
             aktiv BIT
-          )"; 
-          
+          )";
+
           $sql = "CREATE TABLE Hidden (
-            id INT IDENTITY(1,1) PRIMARY KEY NOT NULL, 
+            id INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
             resenarid INT,
             programbid INT,
             betalid INT,
             hidden BIT
-          )"; 
-          
+          )";
+
           TABLE Blockemail
           id INT
           email VARCHAR(60)
-          
+
           TABLE Deadlines
           id INT PRIMARY KEY
           resaid INT

@@ -16,44 +16,44 @@ and open the template in the editor.
 	<style>
  @media print {
     .page-break	{ display: block; page-break-before: always; }
-    
+
     .no-print, .no-print *
     {
         display: none !important;
     }
     .noborder	{ border-color:transparent; }
-    
-    
+
+
   }
   @page {
-    size:8.27in 11.69in; 
-    margin:25mm; 
-    mso-header-margin:0mm;  
-    mso-footer-margin:0mm; 
+    size:8.27in 11.69in;
+    margin:25mm;
+    mso-header-margin:0mm;
+    mso-footer-margin:0mm;
     mso-paper-source:1;
   }
-  
+
   .topcell {
   white-space: nowrap
   font-size:16px;
   font-weight:normal;
-  
-  
+
+
   }
-  
+
   .toph3 {
   font-size:22px;
   font-weight:bold;
-  
+
   }
-  
+
   table#top tr td {
   font-size:16px;
   }
-  
+
   td {white-space: nowrap}
-  
-  
+
+
   body {
       font-size:16px;
       }
@@ -64,12 +64,12 @@ and open the template in the editor.
             id = document.getElementById('bokningslage').value;
             window.location.assign("/bokningslage.php?resaid=" + id);
         }
-        
+
         function goResaallabokningar() {
             id = document.getElementById('allabokningar').value;
             window.location.assign("/allabokningar.php?resaid=" + id);
         }
-        
+
         function goSokbokning() {
             id = document.getElementById('visabokning').value;
             window.location.assign("/visabokning.php?bokningid=" + id);
@@ -90,34 +90,34 @@ and open the template in the editor.
 <td width="20%" align="center" class="no-print topcell">
 <input id="visabokning" placeholder="Sök bokningsnummer" type="text"><input type="button" value="SÖK" onclick="goSokbokning();">
 </td>
-        
+
 <td width="20%" align="center" class="no-print topcell"><select id="bokningslage" onchange="goResabokningslage();">
              <option value="1" SELECTED>--BOKNINGSLÄGE--</option>
              <?php
              $sql = "SELECT resaid, resa, date FROM Resor WHERE aktiv=1 ORDER BY date ASC";
              $result = sqlsrv_query($conn, $sql, array(), array( "Scrollable" => SQLSRV_CURSOR_KEYSET ));
-       
+
              if (sqlsrv_num_rows($result) > 0) {
-       
+
                while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC )) {
-               
+
                echo "<option value=" . $row["resaid"] . ">" . $row["resa"] . " " . $row["date"]->format('j/n') . "</option>";
-    
+
              }
              }
-              
-              
+
+
              ?>
-              
-              
+
+
         </select>
         </td>
 <td width="20%" align="center" class="no-print topcell">
 
 
 </td>
-        
-               
+
+
         <td width="20%" align="center" class="no-print topcell">
         <select onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
         <option value="" SELECTED>--SNABBGENVÄGAR--</option>
