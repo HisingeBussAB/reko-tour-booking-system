@@ -47,9 +47,6 @@ Temporary Items
 .apdisk
 .remote-sync.json
 copy.bat
-config/connect-mssql.php
-config/connect-mysql.php
-config/company-info.php
 img/favicon.png
 img/logo.jpg
 config/config.php
