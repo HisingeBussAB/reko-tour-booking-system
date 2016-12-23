@@ -4,6 +4,8 @@
         include ("config/config.php");
         include ("includes/db_connect.php");
         include 'top.php';
+
+        if (isset($_POST["savedeadline"])){
         if ($_POST["savedeadline"] == "yes") {
         $sql = "INSERT INTO Deadlines (resaid, text, date, aktiv)
 
@@ -14,6 +16,7 @@
           " . 1 . ");";
 
 
+
           if (!sqlsrv_query($conn, $sql)) {
           echo "<br>Kritiskt fel. Kunde inte spara. Gå tillbaka (tillbaka pil i webbläsaren) och kontrollera att det inte står bokstäver i sifferfält eller dylikt.<br>Error creating table: ";
           die( print_r( sqlsrv_errors(), true));
@@ -21,7 +24,9 @@
 
 
         }
+      }
 
+        
         if ($_POST["tabortdeadline"] == "yes") {
         $sql = "UPDATE Deadlines SET
           aktiv=0
@@ -47,6 +52,8 @@
         <h3>Sena betalningar</h3>
 
         <?php
+
+
 
         $today;
         $today = date('Y-m-d');
@@ -430,5 +437,5 @@
 </html>
 
 <?php
-	  sqlsrv_close($conn);
+	  sqlsrv_close( $conn );
 ?>

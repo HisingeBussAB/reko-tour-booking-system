@@ -94,6 +94,16 @@ and open the template in the editor.
 <td width="20%" align="center" class="no-print topcell"><select id="bokningslage" onchange="goResabokningslage();">
              <option value="1" SELECTED>--BOKNINGSLÄGE--</option>
              <?php
+
+             if( $conn ) {
+             echo "Connection established.<br />";
+             }else{
+             echo "Connection could not be established.<br />";
+             die( print_r( sqlsrv_errors(), true));
+             }
+
+
+
              $sql = "SELECT resaid, resa, date FROM Resor WHERE aktiv=1 ORDER BY date ASC";
              $result = sqlsrv_query($conn, $sql, array(), array( "Scrollable" => SQLSRV_CURSOR_KEYSET ));
 
