@@ -78,6 +78,14 @@ and open the template in the editor.
         </script>
 </head>
 <body>
+  <?php
+  if( $conn ) {
+  echo "Connection established.<br />";
+  }else{
+  echo "Connection could not be established.<br />";
+  die( print_r( sqlsrv_errors(), true));
+  }
+  ?>
 <table width="100%" class="no-print topcell" id="top">
 <tr>
 <td width="25%" align="center" class="topcell"><a href="/index.php"><img src="/img/logga.gif" width="130" alt="Huvudmeny" class="no-print"></a></td>
@@ -92,15 +100,14 @@ and open the template in the editor.
 </td>
 
 <td width="20%" align="center" class="no-print topcell"><select id="bokningslage" onchange="goResabokningslage();">
+
+
+
+
              <option value="1" SELECTED>--BOKNINGSLÄGE--</option>
              <?php
 
-             if( $conn ) {
-             echo "Connection established.<br />";
-             }else{
-             echo "Connection could not be established.<br />";
-             die( print_r( sqlsrv_errors(), true));
-             }
+
 
 
 
