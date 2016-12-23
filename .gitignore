@@ -52,3 +52,4 @@ config/connect-mysql.php
 config/company-info.php
 img/favicon.png
 img/logo.jpg
+config/config.php
