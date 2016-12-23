@@ -53,3 +53,5 @@ config/company-info.php
 img/favicon.png
 img/logo.jpg
 config/config.php
+css/main.css
+css/main.css.map
