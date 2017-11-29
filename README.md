@@ -1,3 +1,5 @@
+#This project is being reworked. Check releases for the old codebase. 
+
 #System for managing travel bookings and clients.
 
 ##Made summer 2016 for a small travel agency.
