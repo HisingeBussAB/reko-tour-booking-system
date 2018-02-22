@@ -14,8 +14,3 @@ This project was completed before I had any formal education in webdevelopment o
 This system has however fullfilled its purpose well and is being used daily.
 
 I hope find the time to get the code up to a more modern standard in the future.
-
-### Installation
-
-There are -example files in the folders config and img.
-Personalise the content of those files. Then remove the -example part of the name.
