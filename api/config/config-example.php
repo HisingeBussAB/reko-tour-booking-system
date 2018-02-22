@@ -29,4 +29,13 @@
   define('DEBUG_MODE',      true);
   define('LAN_LOCK',        true);
 
+  define('DOMAIN',               'www.example.com');
+
+  if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == "off") {
+    define('FULL_DOMAIN',         'http://' . DOMAIN);
+  } else {
+    define('FULL_DOMAIN',         'https://' . DOMAIN);
+  }
+?>
+
 ?>

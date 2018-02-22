@@ -47,7 +47,6 @@ Temporary Items
 .apdisk
 .remote-sync.json
 copy.bat
-config/config.php
 Sync.ffs_batch
 *.ffs_gui
 
