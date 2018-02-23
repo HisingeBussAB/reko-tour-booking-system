@@ -47,3 +47,15 @@ input[type=search] {
   .MainMenu select {
     width: 20%;
     min-width: 220px; }
+
+.custom-border-right {
+  border-right: 1px solid grey; }
+
+.MainView {
+  border-bottom: 1px solid grey; }
+  .MainView div {
+    min-height: 500px; }
+
+@media (max-width: 767px) {
+  .custom-border-right {
+    border: 0; } }

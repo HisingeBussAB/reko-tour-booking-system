@@ -9,6 +9,8 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+
+
 .btn-primary {
   background-color: $primary-color; 
   border-color: $primary-color; 
@@ -67,3 +69,20 @@ input[type=search] {
     min-width: 220px;
   }
 }
+
+.custom-border-right {
+  border-right: 1px solid grey;
+}
+
+.MainView {
+  border-bottom: 1px solid grey;
+  div {
+  min-height: 500px;
+  }
+}
+
+@media (max-width: 767px) { 
+  .custom-border-right {
+    border: 0;
+  }
+ }

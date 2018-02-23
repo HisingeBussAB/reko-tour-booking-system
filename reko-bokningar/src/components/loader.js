@@ -23,10 +23,11 @@ class Loader extends Component {
         transform: 'translateY(-50%)',
         textAlign: 'center',
         width: '100%',
+        zIndex: '20000',
       };
       const textstyle = {
         paddingTop: '12px',
-      }
+      };
       text = <p style={textstyle}>Laddar...</p>;
       size = '6x';
     } else {
@@ -35,9 +36,10 @@ class Loader extends Component {
         margin: '0 auto',
         textAlign: 'center',
         width: '100%',
+        paddingTop: '20px',
       };
       text = '';
-      size = '1x';
+      size = '2x';
     }
     
     return (
