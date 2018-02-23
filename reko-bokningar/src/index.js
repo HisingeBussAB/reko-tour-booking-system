@@ -9,7 +9,7 @@ import Loadable from 'react-loadable';
 import Loader from './components/loader';
 
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
-import './index.css';
+import './styles/index.css';
 
 const target = document.querySelector('#root');
 
