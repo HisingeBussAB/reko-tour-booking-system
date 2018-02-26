@@ -42,17 +42,21 @@ class Loader extends Component {
       size = '2x';
     }
     
-    return (
-      <div className="Loader" style={style}>
-        <FontAwesomeIcon icon="spinner" pulse size={size} />
-        {text}
-      </div>
-    );
+    if (this.props.error) {
+      return (<div className="Loader" style={style}>Fel! Kunde inte ladda komponent!</div>);
+    } else if (this.props.pastDelay) {
+      return (<div className="Loader" style={style}><FontAwesomeIcon icon="spinner" pulse size={size} />{text}</div>);
+    } else {
+      return (null);
+    }
+
   }
 }
 
 Loader.propTypes = {
   fullScreen: PropTypes.bool,
+  pastDelay: PropTypes.number,
+  error: PropTypes.bool,
 };
 
 export default (Loader);

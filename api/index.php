@@ -33,6 +33,10 @@ $router->map('GET','/', function() {
 	require __DIR__ . '/home.php';
 }, 'home');
 
+$router->map('GET','/auth', function() {
+	require __DIR__ . '/auth.php';
+}, 'auth');
+
 $match = $router->match();
 
 if( $match && is_callable( $match['target'] ) ) {

@@ -1,11 +1,10 @@
 <?php
 
-  /* MSSQL Database details */
+  /* Database details */
 
-  define( 'DB_NAME', 'database_name_here' );
-  define( 'DB_USER', 'username_here' );
-  define( 'DB_PASSWORD', 'password_here' );
-  define( 'DB_SERVERNAME', 'localhost' );
+  define( 'DB_CONNECTION', 'First part of DB PDO connection string goes here' );
+  define( 'DB_USER',         'app name' );
+  define( 'DB_PASSWORD',    'password' );
 
 
   /* Provide some detals about your company */

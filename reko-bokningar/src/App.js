@@ -5,30 +5,27 @@ import Loadable from 'react-loadable';
 import Loader from './components/loader';
 import { Route } from 'react-router-dom';
 
-
+/*eslint-disable react/display-name */
 const MainView = Loadable({
-  //eslint-disable-next-line
   loader: () => import('./components/main-view'),
   loading: () => <Loader fullScreen={false} />,
 });
 
 const TourView = Loadable({
-  //eslint-disable-next-line
   loader: () => import('./components/tour-view'),
   loading: () => <Loader fullScreen={false} />,
 });
 
 const BudgetView = Loadable({
-  //eslint-disable-next-line
   loader: () => import('./components/budget-view'),
   loading: () => <Loader fullScreen={false} />,
 });
 
 const ListView = Loadable({
-  //eslint-disable-next-line
   loader: () => import('./components/list-view'),
   loading: () => <Loader fullScreen={false} />,
 });
+/*eslint-enable react/display-name */
 
 
 
@@ -41,7 +38,7 @@ class App extends Component {
 
   componentDidCatch() {
     /* TODO */
-    alert('Ett fel har inträffat, ladda om sidan eller nåt')
+    alert('Ett fel har inträffat, ladda om sidan eller nåt');
   }
 
   render() {

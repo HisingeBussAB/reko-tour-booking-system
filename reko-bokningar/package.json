@@ -21,17 +21,19 @@
     "redux-thunk": "^2.2.0"
   },
   "scripts": {
-    "build-css": "node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/",
-    "watch-css": "npm run build-css && node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/ --watch --recursive",
+    "build-css": "node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/ --output-style compressed --source-map true",
+    "watch-css": "npm run build-css && node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/ --watch --recursive --output-style compressed --source-map true",
+    "build-css-prod": "node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/ --output-style compressed --source-map false -x",
     "start-js": "react-scripts start",
     "start": "npm-run-all -p watch-css start-js",
     "build-js": "react-scripts build",
-    "build": "npm-run-all build-css build-js",
+    "build": "npm-run-all build-css-prod build-js",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   },
   "devDependencies": {
-    "eslint": "^4.14.0",
+    "babel-eslint": "7",
+    "eslint": "3.x",
     "eslint-plugin-react": "^7.5.1",
     "node-sass-chokidar": "^0.0.3",
     "npm-run-all": "^4.1.2"
