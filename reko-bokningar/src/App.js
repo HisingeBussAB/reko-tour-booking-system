@@ -31,10 +31,18 @@ const ListView = Loadable({
 });
 
 
+
+
 class App extends Component {
 
+  componentWillMount() {
+    /* Auto authenticate user */
+  }
 
-
+  componentDidCatch() {
+    /* TODO */
+    alert('Ett fel har inträffat, ladda om sidan eller nåt')
+  }
 
   render() {
     return (
