@@ -1,28 +1,51 @@
 ﻿-- Exported from QuickDBD: https://www.quickdatatabasediagrams.com/
 -- Link to schema: https://app.quickdatabasediagrams.com/#/schema/w9zPqM6P8UOAWzy4IzSEkQ
 -- NOTE! If you have used non-SQL datatypes in your design, you will have to change these here.
-DROP TABLE Bokning;
-DROP TABLE Kategori_Resa;
-DROP TABLE Kategori;
-DROP TABLE Programbest;
-DROP TABLE Kategori_Programbest;
-DROP TABLE Deadline;
-DROP TABLE Kalkyl;
-DROP TABLE KalkylKostnad;
-DROP TABLE KalkylIntakt;
-DROP TABLE Kund;
-DROP TABLE Bokning_Kund;
-DROP TABLE Boende;
-DROP TABLE Betalning;
-DROP TABLE Resa;
+DROP TABLE Bokning
 DROP TABLE Reservation
+DROP TABLE Kund
+DROP TABLE Kategori_Resa
+DROP TABLE KalkylIntakt
+DROP TABLE KalkylKostnad
+DROP TABLE Auth
+DROP SEQUENCE dbo.Bokningnr
+DROP SEQUENCE dbo.Betalningnr
+DROP TABLE Resa
+DROP TABLE Kategori_Resa
+DROP TABLE Programbest
+DROP TABLE Kalkyl
+DROP TABLE Betalning
+DROP TABLE Boende
+DROP TABLE Kategori_Programbest
+DROP TABLE Deadline
+DROP TABLE Kund
+DROP TABLE Bokning_Kund
+DROP TABLE Kategori
+DROP TABLE Resa
+
+
+
+-- Exported from QuickDBD: https://www.quickdatatabasediagrams.com/
+-- Link to schema: https://app.quickdatabasediagrams.com/#/schema/w9zPqM6P8UOAWzy4IzSEkQ
+-- NOTE! If you have used non-SQL datatypes in your design, you will have to change these here.
+
 
 SET XACT_ABORT ON
 
 BEGIN TRANSACTION QUICKDBD
 
+CREATE TABLE [Auth] (
+    [AuthID] bigint IDENTITY(1,1) NOT NULL ,
+    [user] varchar(255)  NOT NULL ,
+    [pwd] varchar(255)  NOT NULL ,
+    CONSTRAINT [PK_Auth] PRIMARY KEY CLUSTERED (
+        [AuthID] ASC
+    )
+)
+
 CREATE TABLE [Bokning] (
-    [BokningID] bigint  NOT NULL ,
+    [BokningID] bigint IDENTITY(1,1) NOT NULL ,
+    [BokningNr] bigint  NOT NULL ,
     [ResaID] bigint  NOT NULL ,
     [GruppBokning] bit  NOT NULL ,
     [Makulerad] bit  NOT NULL ,
@@ -34,7 +57,7 @@ CREATE TABLE [Bokning] (
 )
 
 CREATE TABLE [Reservation] (
-    [ReservationID] bigint  NOT NULL ,
+    [ReservationID] bigint IDENTITY(1,1) NOT NULL ,
     [ResaID] bigint  NOT NULL ,
     [BoendeID] bigint  NOT NULL ,
     [Reservation] varchar(200)  NOT NULL ,
@@ -44,13 +67,13 @@ CREATE TABLE [Reservation] (
 )
 
 CREATE TABLE [Kund] (
-    [KundID] bigint  NOT NULL ,
+    [KundID] bigint IDENTITY(1,1) NOT NULL ,
     [Fornamn] varchar(100)  NOT NULL ,
     [Efternamn] varchar(100)  NOT NULL ,
     [Gatuadress] varchar(100)  NULL ,
     [Postnr] int  NULL ,
     [Postort] varchar(100)  NULL ,
-    [Telefon] varchar(60)  NULL ,
+    [Telefon] bigint  NULL ,
     [Email] varchar(60)  NULL ,
     [Personnr] varchar(10)  NULL ,
     [Datum] date  NOT NULL ,
@@ -61,7 +84,7 @@ CREATE TABLE [Kund] (
 )
 
 CREATE TABLE [Bokning_Kund] (
-    [id] bigint  NOT NULL ,
+    [id] bigint IDENTITY(1,1) NOT NULL ,
     [BokningID] bigint  NOT NULL ,
     [KundID] bigint  NOT NULL ,
     [BoendeID] bigint  NOT NULL ,
@@ -76,7 +99,7 @@ CREATE TABLE [Bokning_Kund] (
 )
 
 CREATE TABLE [Boende] (
-    [BoendeID] bigint  NOT NULL ,
+    [BoendeID] bigint IDENTITY(1,1) NOT NULL ,
     [ResaID] bigint  NOT NULL ,
     [BoendeNamn] varchar(100)  NOT NULL ,
     [Pris] bigint  NOT NULL ,
@@ -88,7 +111,7 @@ CREATE TABLE [Boende] (
 )
 
 CREATE TABLE [Resa] (
-    [ResaID] bigint  NOT NULL ,
+    [ResaID] bigint IDENTITY(1,1) NOT NULL ,
     [AvbskyddPris] bigint  NOT NULL ,
     [AnmavgPris] bigint  NOT NULL ,
     CONSTRAINT [PK_Resa] PRIMARY KEY CLUSTERED (
@@ -97,7 +120,7 @@ CREATE TABLE [Resa] (
 )
 
 CREATE TABLE [Kategori_Resa] (
-    [id] bigint  NOT NULL ,
+    [id] bigint IDENTITY(1,1) NOT NULL ,
     [ResaID] bigint  NOT NULL ,
     [KategoriID] bigint  NOT NULL ,
     CONSTRAINT [PK_Kategori_Resa] PRIMARY KEY CLUSTERED (
@@ -106,7 +129,7 @@ CREATE TABLE [Kategori_Resa] (
 )
 
 CREATE TABLE [Kategori] (
-    [KategoriID] bigint  NOT NULL ,
+    [KategoriID] bigint IDENTITY(1,1) NOT NULL ,
     [Kategori] varchar(60)  NOT NULL ,
     [Aktiv] bit  NOT NULL ,
     CONSTRAINT [PK_Kategori] PRIMARY KEY CLUSTERED (
@@ -115,7 +138,8 @@ CREATE TABLE [Kategori] (
 )
 
 CREATE TABLE [Betalning] (
-    [BetalningID] bigint  NOT NULL ,
+    [BetalningID] bigint IDENTITY(1,1) NOT NULL ,
+    [BetalningNr] bigint  NOT NULL ,
     [BokningID] bigint  NOT NULL ,
     [KundID] bigint  NOT NULL ,
     [Datum] date  NOT NULL ,
@@ -128,7 +152,7 @@ CREATE TABLE [Betalning] (
 )
 
 CREATE TABLE [Programbest] (
-    [ProgrambestID] bigint  NOT NULL ,
+    [ProgrambestID] bigint IDENTITY(1,1) NOT NULL ,
     [Fornamn] varchar(100)  NOT NULL ,
     [Efternamn] varchar(100)  NOT NULL ,
     [Gatuadress] varchar(100)  NULL ,
@@ -144,7 +168,7 @@ CREATE TABLE [Programbest] (
 )
 
 CREATE TABLE [Kategori_Programbest] (
-    [id] bigint  NOT NULL ,
+    [id] bigint IDENTITY(1,1) NOT NULL ,
     [ProgrambestID] bigint  NOT NULL ,
     [KategoriID] bigint  NOT NULL ,
     CONSTRAINT [PK_Kategori_Programbest] PRIMARY KEY CLUSTERED (
@@ -153,7 +177,7 @@ CREATE TABLE [Kategori_Programbest] (
 )
 
 CREATE TABLE [Deadline] (
-    [DeadlineID] bigint  NOT NULL ,
+    [DeadlineID] bigint IDENTITY(1,1) NOT NULL ,
     [ResaID] bigint  NOT NULL ,
     [DeadlineNote] varchar(200)  NULL ,
     [Forfallodatum] date  NULL ,
@@ -164,7 +188,7 @@ CREATE TABLE [Deadline] (
 )
 
 CREATE TABLE [Kalkyl] (
-    [KalkylID] bigint  NOT NULL ,
+    [KalkylID] bigint IDENTITY(1,1) NOT NULL ,
     [ResaID] bigint  NULL ,
     [ResaNamn] varchar(100)  NULL ,
     [Antal] int  NOT NULL ,
@@ -176,7 +200,7 @@ CREATE TABLE [Kalkyl] (
 )
 
 CREATE TABLE [KalkylKostnad] (
-    [KostnadID] bigint  NOT NULL ,
+    [KostnadID] bigint IDENTITY(1,1) NOT NULL ,
     [KalkylID] bigint  NOT NULL ,
     [Kostnad] varchar(100)  NOT NULL ,
     [Fixed] bit  NOT NULL ,
@@ -186,7 +210,7 @@ CREATE TABLE [KalkylKostnad] (
 )
 
 CREATE TABLE [KalkylIntakt] (
-    [IntaktID] bigint  NOT NULL ,
+    [IntaktID] bigint IDENTITY(1,1) NOT NULL ,
     [KalkylID] bigint  NOT NULL ,
     [Intakt] varchar(100)  NOT NULL ,
     [Fixed] bit  NOT NULL ,
@@ -281,3 +305,12 @@ REFERENCES [Kalkyl] ([KalkylID])
 ALTER TABLE [KalkylIntakt] CHECK CONSTRAINT [FK_KalkylIntakt_KalkylID]
 
 COMMIT TRANSACTION QUICKDBD
+
+
+CREATE SEQUENCE dbo.Bokningnr
+ START WITH     1
+ INCREMENT BY   1
+
+CREATE SEQUENCE dbo.Betalningnr
+ START WITH     1
+ INCREMENT BY   1
