@@ -36,7 +36,7 @@ BEGIN TRANSACTION QUICKDBD
 
 CREATE TABLE [Auth] (
     [AuthID] bigint IDENTITY(1,1) NOT NULL ,
-    [user] varchar(255)  NOT NULL ,
+    [username] varchar(255)  NOT NULL ,
     [pwd] varchar(255)  NOT NULL ,
     CONSTRAINT [PK_Auth] PRIMARY KEY CLUSTERED (
         [AuthID] ASC
@@ -306,11 +306,3 @@ ALTER TABLE [KalkylIntakt] CHECK CONSTRAINT [FK_KalkylIntakt_KalkylID]
 
 COMMIT TRANSACTION QUICKDBD
 
-
-CREATE SEQUENCE dbo.Bokningnr
- START WITH     1
- INCREMENT BY   1
-
-CREATE SEQUENCE dbo.Betalningnr
- START WITH     1
- INCREMENT BY   1
