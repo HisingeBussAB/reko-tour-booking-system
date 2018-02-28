@@ -7,6 +7,10 @@ import rootReducer from '../modules';
 export const history = createHistory();
 
 const initialState = {
+  errorPopup: {
+    visable: false,
+    message: ''
+  }
   
 };
 const enhancers = [];

@@ -21,7 +21,7 @@ class DBError
       echo "<p>Databasfel från " . $class . ": " . $e->getMessage();
       echo "\n<br>SQL:" . $sql . "</p>";
     } else {
-      echo "<p class='php-error'>Databasen svarar inte. Innehållet kan inte visas för tillfället. Kontakta <a href=\"mailto:webmaster@rekoresor.se\">webmaster@rekoresor.se</a></p>\n";
+      echo "<p class='php-error'>Databasen svarar inte. Innehållet kan inte visas för tillfället. Kontakta support om problemet kvarstår.\n";
     }
   }
 }

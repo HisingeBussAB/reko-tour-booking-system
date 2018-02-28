@@ -4,6 +4,9 @@ import { connect } from 'react-redux';
 import Loadable from 'react-loadable';
 import Loader from './components/loader';
 import { Route } from 'react-router-dom';
+import Config from './config/config';
+import axios from 'axios';
+import ErrorPopup from './components/error-popup';
 
 /*eslint-disable react/display-name */
 const MainView = Loadable({
@@ -29,22 +32,64 @@ const ListView = Loadable({
 
 
 
-
 class App extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      showError: false,
+      showErrorMessage: '',
+    };    
+  }
 
   componentWillMount() {
     /* Auto authenticate user */
+    axios.post( Config.ApiUrl + '/api/gettoken')
+      .then(response => {
+        console.log(response);
+        axios.post( Config.ApiUrl + '/api/auth', {
+          username: Config.AutoUser,
+          pwd: Config.AutoLoginPwd,
+          apitoken: Config.ApiToken,
+          token: response,
+        })
+          .then(response => {
+            console.log(response);
+          })
+          .catch(error => {
+            console.log(error.response.data.response);
+            this.setState({showError: true, showErrorMessage: error.response.data.response});
+          });
+      })
+      .catch(error => {
+        console.log(error.response.data.response);
+        this.setState({showError: true, showErrorMessage: error.response.data.response});
+      });
+
+
+    
   }
 
   componentDidCatch() {
     /* TODO */
-    alert('Ett fel har inträffat, ladda om sidan eller nåt');
+    //alert('Ett fel har inträffat, ladda om sidan eller nåt');
+  }
+
+  sendErrorClose = (val) => {
+    console.log(val);
+    if (val) {
+      this.setState({showError: false});
+    }
   }
 
   render() {
+
+   
+    
+
     return (
       <div className="App h-100">
         <MainMenu />
+        {this.state.showError ? <ErrorPopup sendClose={this.sendErrorClose} message={this.state.showErrorMessage}/> : null }
         <Route exact path="/" component={MainView} />
         <Route exact path="/bokningar" component={TourView} />
         <Route exact path="/kalkyler" component={BudgetView} />
