@@ -18,10 +18,19 @@ class DBError
    */
   public static function showError($e, $class, $sql='NO QUERY') {
     if (DEBUG_MODE) {
-      echo "<p>Databasfel från " . $class . ": " . $e->getMessage();
-      echo "\n<br>SQL:" . $sql . "</p>";
+      header( $_SERVER["SERVER_PROTOCOL"] . ' 500 Internal Server Error');
+      $headers = ob_get_clean();
+      echo $headers;
+      $a = array('response' => 'Databasfel från ' . $class . ': ' . $e->getMessage() . '. SQL: '. $sql);
+      echo json_encode($a);
+      die();
     } else {
-      echo "<p class='php-error'>Databasen svarar inte. Innehållet kan inte visas för tillfället. Kontakta support om problemet kvarstår.\n";
+      header( $_SERVER["SERVER_PROTOCOL"] . ' 500 Internal Server Error');
+      $headers = ob_get_clean();
+      echo $headers;
+      $a = array('response' => 'Databasfel. Kontakta administratör om felet kvarstår.');
+      echo json_encode($a);
+      die();
     }
   }
 }

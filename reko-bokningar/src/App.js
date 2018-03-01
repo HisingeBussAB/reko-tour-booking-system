@@ -43,17 +43,18 @@ class App extends Component {
 
   componentWillMount() {
     /* Auto authenticate user */
-    axios.post( Config.ApiUrl + '/api/gettoken')
+    axios.post( Config.ApiUrl + '/api/token/login', {
+      apitoken: Config.ApiToken,
+    })
       .then(response => {
-        console.log(response);
         axios.post( Config.ApiUrl + '/api/auth', {
-          username: Config.AutoUser,
+          user: Config.AutoUsername,
           pwd: Config.AutoLoginPwd,
           apitoken: Config.ApiToken,
-          token: response,
+          logintoken: response.data.logintoken,
         })
           .then(response => {
-            console.log(response);
+            console.log(response.data);
           })
           .catch(error => {
             console.log(error.response.data.response);
