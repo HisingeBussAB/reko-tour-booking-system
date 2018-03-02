@@ -7,9 +7,6 @@ DROP TABLE Kund
 DROP TABLE Kategori_Resa
 DROP TABLE KalkylIntakt
 DROP TABLE KalkylKostnad
-DROP TABLE Auth
-DROP SEQUENCE dbo.Bokningnr
-DROP SEQUENCE dbo.Betalningnr
 DROP TABLE Resa
 DROP TABLE Kategori_Resa
 DROP TABLE Programbest
@@ -22,7 +19,13 @@ DROP TABLE Kund
 DROP TABLE Bokning_Kund
 DROP TABLE Kategori
 DROP TABLE Resa
+DROP TABLE Tokens
 
+
+
+-- Exported from QuickDBD: https://www.quickdatatabasediagrams.com/
+-- Link to schema: https://app.quickdatabasediagrams.com/#/schema/w9zPqM6P8UOAWzy4IzSEkQ
+-- NOTE! If you have used non-SQL datatypes in your design, you will have to change these here.
 
 
 -- Exported from QuickDBD: https://www.quickdatatabasediagrams.com/
@@ -34,9 +37,16 @@ SET XACT_ABORT ON
 
 BEGIN TRANSACTION QUICKDBD
 
+CREATE TABLE [Tokens] (
+    [Token] varchar(255)  NOT NULL ,
+    [TokenType] varchar(255)  NOT NULL ,
+    [Created] bigint  NOT NULL ,
+    [User] varchar(255)  NULL ,
+)
+
 CREATE TABLE [Auth] (
     [AuthID] bigint IDENTITY(1,1) NOT NULL ,
-    [username] varchar(255)  NOT NULL ,
+    [user] varchar(255)  NOT NULL ,
     [pwd] varchar(255)  NOT NULL ,
     CONSTRAINT [PK_Auth] PRIMARY KEY CLUSTERED (
         [AuthID] ASC
@@ -305,4 +315,3 @@ REFERENCES [Kalkyl] ([KalkylID])
 ALTER TABLE [KalkylIntakt] CHECK CONSTRAINT [FK_KalkylIntakt_KalkylID]
 
 COMMIT TRANSACTION QUICKDBD
-

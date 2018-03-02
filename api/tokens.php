@@ -9,6 +9,7 @@ namespace RekoBooking;
 
 use RekoBooking\classes\DB;
 use RekoBooking\classes\DBError;
+use RekoBooking\classes\Tokens;
 
 
 $jsonData = json_decode(trim(file_get_contents('php://input')), true);
@@ -16,23 +17,15 @@ $jsonData = json_decode(trim(file_get_contents('php://input')), true);
 
 
 if ($jsonData['apitoken'] === API_TOKEN) {
-  $bytes     = openssl_random_pseudo_bytes(12);
-  $hex       = bin2hex($bytes);
-  $created   = time();
-  $newtoken  = hash('sha256', $hex . $created);
+  
+  if (!empty($jsonData['user'])) {
+    $user = $jsonData['user'];
+  } else {
+    $user = 'blindtoken';
+  }
 
   $pdo = DB::get();
-  try {
-    $sql = "INSERT INTO Tokens VALUES (:token, :tokentype, :created);";
-    $sth = $pdo->prepare($sql);
-    $sth->bindParam(':token', $newtoken, \PDO::PARAM_STR);
-    $sth->bindParam(':tokentype', $tokentype, \PDO::PARAM_STR);
-    $sth->bindParam(':created', $created, \PDO::PARAM_INT);
-    $sth->execute(); 
-  } catch(\PDOException $e) {
-    DBError::showError($e, __CLASS__, $sql);
-  }
-  $a = array($tokentype . 'token' => $newtoken);
+  $a = Tokens::createToken($tokentype, $user, $pdo);
   echo json_encode($a);
 
 } else {

@@ -43,19 +43,27 @@ if ($jsonData['apitoken'] === API_TOKEN) {
     wrongLogin();
   }
 
+  $now = time();
 
-
-  if (password_verify($jsonData['pwd'] . PWD_PEPPER, $result['pwd'])) {
+    if (password_verify($jsonData['pwd'] . PWD_PEPPER, $result['pwd'])) {
     $token = array(
-      "iss" => "example.org",
-      "aud" => "example.com",
-      "iat" => 1356999524,
-      "nbf" => 1357000000
-  );
-  $jwt = JWT::encode($token, JWT_KEY, 'HS512');
-  var_dump($jwt);
-  $decoded = JWT::decode($jwt, JWT_KEY, array('HS512'));
-  var_dump($decoded);
+      "iss"   => DOMAIN,
+      "aud"   => DOMAIN,
+      "sub"   => $user,
+      "iat"   => $now,
+      "nbf"   => $now - 120,
+      "exp"   => $now + 600000,
+      "jti"   => array(
+        "mark"  => JWT_WATERMARK,
+        "agent" => $_SERVER['HTTP_USER_AGENT'],
+        "ip"    => $_SERVER['REMOTE_ADDR'],
+        "ent"   => bin2hex(openssl_random_pseudo_bytes(6))
+      ),
+    );
+    $jwtSecret = Tokens::createJWTToken('jwt', $user, $pdo);
+    $jwt = JWT::encode($token, $jwtSecret, 'HS512');
+    $a = array('jwt' => $jwt, 'login' => true, 'user' => $user, 'expires' => $now + 600000);
+    echo json_encode($a);
   } else {
     wrongLogin();
   }
@@ -91,9 +99,9 @@ if ($jsonData['apitoken'] === API_TOKEN) {
 
 function wrongLogin() {
   header( $_SERVER["SERVER_PROTOCOL"] . ' 401 Unauthorized');
-    $headers = ob_get_clean();
-    echo $headers;
-    $a = array('response' => 'Fel användare eller lösenord.');
-    echo json_encode($a);
-    die();
+  $headers = ob_get_clean();
+  echo $headers;
+  $a = array('response' => 'Fel användare eller lösenord.');
+  echo json_encode($a);
+  die();
 }

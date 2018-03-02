@@ -8,9 +8,17 @@ export const history = createHistory();
 
 const initialState = {
   errorPopup: {
-    visable: false,
-    message: ''
-  }
+    visible: false,
+    message: '',
+  },
+  login: {
+    'login': false,
+  },
+  styles: {
+    mainmenu: {
+      compressed: false,
+    }
+  },
   
 };
 const enhancers = [];

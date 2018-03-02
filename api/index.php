@@ -78,6 +78,6 @@ namespace RekoBooking;
       echo json_encode($a);
       die();
   }
-
+  header( $_SERVER["SERVER_PROTOCOL"] . ' 200 OK');
   $website = ob_get_clean();
   echo $website;
