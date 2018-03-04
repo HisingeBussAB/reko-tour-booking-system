@@ -13,12 +13,10 @@ const initialState = {
   },
   login: {
     'login': false,
+    'user': 'anonymous',
+    'jwt': '',
   },
-  styles: {
-    mainmenu: {
-      compressed: false,
-    }
-  },
+
   
 };
 const enhancers = [];

@@ -5,8 +5,8 @@
  */
 namespace RekoBooking\classes;
 
-use RekoBooking\classes\DB;
 use RekoBooking\classes\DBError;
+use \Firebase\JWT\JWT;
 
 class Tokens
 {

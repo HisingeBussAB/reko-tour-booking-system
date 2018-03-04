@@ -16,10 +16,10 @@ $jsonData = json_decode(trim(file_get_contents('php://input')), true);
 
 
 
-if ($jsonData['apitoken'] === API_TOKEN) {
+if (!empty($jsonData['apitoken']) && $jsonData['apitoken'] === API_TOKEN) {
   
   if (!empty($jsonData['user'])) {
-    $user = $jsonData['user'];
+    $user = trim(filter_var($jsonData['user'], FILTER_SANITIZE_STRING));
   } else {
     $user = 'blindtoken';
   }

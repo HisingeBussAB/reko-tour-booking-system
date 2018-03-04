@@ -2,6 +2,8 @@
 
 namespace RekoBooking;
 
+use RekoBooking\classes\LoginCheck;
+
   require __DIR__ . '/config/config.php';
 
  
@@ -60,8 +62,9 @@ namespace RekoBooking;
 
 
   $router->addRoutes(array(
-    array('POST', '/auth',                    function()           { require __DIR__ . '/auth.php';    }),
-    array('POST', '/token/[a:tokentype]',     function($tokentype) { require __DIR__ . '/tokens.php';  }),
+    array('POST', '/auth',                    function()           {                            require __DIR__ . '/auth.php';    }),
+    array('POST', '/token/[a:tokentype]',     function($tokentype) {                            require __DIR__ . '/tokens.php';  }),
+    array('POST', '/tours/savetour',          function()           { LoginCheck::isLoggedin();  require __DIR__ . '/tours/savetour.php';    }),
   ));
 
 
@@ -81,3 +84,5 @@ namespace RekoBooking;
   header( $_SERVER["SERVER_PROTOCOL"] . ' 200 OK');
   $website = ob_get_clean();
   echo $website;
+
+

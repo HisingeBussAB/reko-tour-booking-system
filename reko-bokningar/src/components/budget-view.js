@@ -2,9 +2,11 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 
+
 class BudgetView extends Component {
+
   
-  
+
 
   render() {
 
@@ -25,5 +27,7 @@ class BudgetView extends Component {
     );
   }
 }
+
+
 
 export default connect(null, null)(BudgetView);

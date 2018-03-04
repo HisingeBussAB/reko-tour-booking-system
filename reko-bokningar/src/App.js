@@ -77,7 +77,6 @@ App.propTypes = {
   loggedin:           PropTypes.bool,
   showError:          PropTypes.bool,
   showErrorMessage:   PropTypes.string,
-  compressMenu:       PropTypes.bool,
 };
 
 const mapStateToProps = state => ({

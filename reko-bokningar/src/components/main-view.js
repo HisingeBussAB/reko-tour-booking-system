@@ -6,7 +6,6 @@ import LatePayments from './late-payments';
 
 class MainView extends Component {
   
-  
 
   render() {
 

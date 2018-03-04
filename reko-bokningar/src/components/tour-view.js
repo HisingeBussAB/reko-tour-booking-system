@@ -8,9 +8,6 @@ import { Route } from 'react-router-dom';
 
 class TourView extends Component {
   
-  componentDidMount() {
-    
-  }
 
 
   render() {
@@ -24,5 +21,6 @@ class TourView extends Component {
     );
   }
 }
+
 
 export default connect(null, null)(TourView);

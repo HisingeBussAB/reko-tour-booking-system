@@ -9,6 +9,7 @@ import Loadable from 'react-loadable';
 import Loader from './components/loader';
 
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
+import '../node_modules/react-datepicker/dist/react-datepicker.css';
 import './styles/index.css';
 
 const target = document.querySelector('#root');

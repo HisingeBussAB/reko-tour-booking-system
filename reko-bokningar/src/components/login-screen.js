@@ -31,7 +31,7 @@ class LoginScreen extends Component {
   }
   
   runLogin = (userConfig) => {
-   axios.post( userConfig.ApiUrl + '/api/token/login', {
+    axios.post( userConfig.ApiUrl + '/api/token/login', {
       apitoken: userConfig.ApiToken,
     })
       .then(response => {
@@ -117,9 +117,9 @@ class LoginScreen extends Component {
             <FontAwesomeIcon className="my-4" icon="spinner" pulse size="4x" />
           </div> :
           <div>
-            {this.state.autoAttempt ? <h5 className="my-3" style={{color: 'red'}}>Automatisk inlogging misslyckades!</h5> : null}         
-            <h5 className="my-3" style={{color: 'red'}}>{this.state.showErrorMessage}</h5>
-            <h4 className="mt-5 mb-3">Logga in</h4>
+            {this.state.autoAttempt ? <h5 className="w-50 mx-auto my-3" style={{color: 'red'}}>Automatisk inlogging misslyckades!</h5> : null}         
+            <h5 className="w-50 mx-auto my-3" style={{color: 'red'}}>{this.state.showErrorMessage}</h5>
+            <h4 className="w-50 mx-auto mt-5 mb-3">Logga in</h4>
             <form onSubmit={this.handleSubmit}>
               <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Användarnamn:</label><input className="w-100 rounded" type='text' placeholder='Användarnamn' value={this.state.user} onFocus={this.clearUser} onChange={this.handleUserChange}/></div>
               <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Lösenord:</label><input className="w-100 rounded" type='password' placeholder='Lösenord' value={this.state.pwd} onFocus={this.clearPwd} onChange={this.handlePwdChange}/></div>
