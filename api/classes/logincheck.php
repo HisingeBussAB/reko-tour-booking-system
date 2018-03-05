@@ -18,11 +18,13 @@ class LoginCheck {
     if (DEBUG_MODE) {
       $a = array(
         'response' => 'JWT decryption error: ' . $error,
-        'login' => false);
+        'login' => false,
+        'saved' => false);
     } else {
       $a = array(
         'response' => 'Du verkar inte vara inloggad. ' . $message,
-        'login' => false);
+        'login' => false,
+        'saved' => false);
     }
     echo json_encode($a);
     die();
@@ -44,7 +46,8 @@ class LoginCheck {
           echo $headers;
           $a = array(
             'response' => 'Du verkar inte vara inloggad eller så har systemet varit inaktivt för länge.',
-            'login' => false);
+            'login' => false,
+            'saved' => false);
           echo json_encode($a);
           die();
         }
@@ -63,6 +66,7 @@ class LoginCheck {
         } catch(\PDOException $e) {
           $JWTpassed = false;
           DBError::showError($e, __CLASS__, $sql);
+          die();
         }
 
         if (!$result) {
@@ -139,10 +143,13 @@ class LoginCheck {
         echo $headers;
         $a = array(
           'response' => $message,
-          'login' => false);
+          'login' => false,
+          'saved' => false);
         echo json_encode($a);
         die();
       } else {
+        $a = array('login' => true); 
+        echo json_encode($a);
         return true;
       }
     

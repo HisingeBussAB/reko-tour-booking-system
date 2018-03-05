@@ -26,6 +26,7 @@ class Tokens
       $sth->execute(); 
     } catch(\PDOException $e) {
       DBError::showError($e, __CLASS__, $sql);
+      die();
     }
     return array($tokentype . 'token' => $newtoken);
   }
@@ -48,6 +49,7 @@ class Tokens
       
     } catch(\PDOException $e) {
       DBError::showError($e, __CLASS__, $sql);
+      die();
     }
     
 
@@ -115,6 +117,7 @@ class Tokens
       $sth->execute(); 
     } catch(\PDOException $e) {
       DBError::showError($e, __CLASS__, $sql);
+      die();
     }
     return $newtoken;
   }

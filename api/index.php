@@ -3,10 +3,12 @@
 namespace RekoBooking;
 
 use RekoBooking\classes\LoginCheck;
+use RekoBooking\classes\Responder;
+use \Moment\Moment;
+
 
   require __DIR__ . '/config/config.php';
 
- 
 
   if (DEBUG_MODE) {
     ini_set('display_errors', 1);
@@ -59,12 +61,15 @@ use RekoBooking\classes\LoginCheck;
 
   $router = new \AltoRouter();
   $router->setBasePath('/api');
+  Moment::setDefaultTimezone('CET');
+  Moment::setLocale('se_SV');
 
 
   $router->addRoutes(array(
-    array('POST', '/auth',                    function()           {                            require __DIR__ . '/auth.php';    }),
-    array('POST', '/token/[a:tokentype]',     function($tokentype) {                            require __DIR__ . '/tokens.php';  }),
-    array('POST', '/tours/savetour',          function()           { LoginCheck::isLoggedin();  require __DIR__ . '/tours/savetour.php';    }),
+    array('POST', '/auth',                                  function()             {                                  require __DIR__ . '/auth.php';                    }),
+    array('POST', '/token/[a:tokentype]',                   function($tokentype)   {                                  require __DIR__ . '/tokens.php';                  }),
+    array('POST', '/tours/savetour/[a:operation]',          function($operation)   { if (LoginCheck::isLoggedin()) {  require __DIR__ . '/tours/savetour.php'; }        }),
+    array('POST', '/tours/savecategory/[a:operation]',      function($operation)   { if (LoginCheck::isLoggedin()) {  require __DIR__ . '/tours/savecategory.php'; }    }),
   ));
 
 

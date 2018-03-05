@@ -9,6 +9,22 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+.primary-color {
+  color: $primary-color;
+}
+
+.primary-background {
+  background-color: $primary-color; 
+}
+
+.danger-color {
+  color: $danger-color;
+}
+
+.danger-background {
+  background-color: $danger-color; 
+}
+
 .btn-danger {
   background-color: $danger-color; 
   border-color: $danger-color; 

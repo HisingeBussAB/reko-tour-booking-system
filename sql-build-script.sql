@@ -28,11 +28,6 @@ DROP TABLE Tokens
 -- NOTE! If you have used non-SQL datatypes in your design, you will have to change these here.
 
 
--- Exported from QuickDBD: https://www.quickdatatabasediagrams.com/
--- Link to schema: https://app.quickdatabasediagrams.com/#/schema/w9zPqM6P8UOAWzy4IzSEkQ
--- NOTE! If you have used non-SQL datatypes in your design, you will have to change these here.
-
-
 SET XACT_ABORT ON
 
 BEGIN TRANSACTION QUICKDBD
@@ -41,7 +36,7 @@ CREATE TABLE [Tokens] (
     [Token] varchar(255)  NOT NULL ,
     [TokenType] varchar(255)  NOT NULL ,
     [Created] bigint  NOT NULL ,
-    [User] varchar(255)  NULL ,
+    [username] varchar(255)  NULL 
 )
 
 CREATE TABLE [Auth] (
@@ -87,6 +82,7 @@ CREATE TABLE [Kund] (
     [Email] varchar(60)  NULL ,
     [Personnr] varchar(10)  NULL ,
     [Datum] date  NOT NULL ,
+    [Kategori] varchar(60)  NULL ,
     [Compare] nvarchar(300)  NOT NULL ,
     CONSTRAINT [PK_Kund] PRIMARY KEY CLUSTERED (
         [KundID] ASC
@@ -122,6 +118,7 @@ CREATE TABLE [Boende] (
 
 CREATE TABLE [Resa] (
     [ResaID] bigint IDENTITY(1,1) NOT NULL ,
+    [Resa] varchar(100)  NOT NULL ,
     [AvbskyddPris] bigint  NOT NULL ,
     [AnmavgPris] bigint  NOT NULL ,
     CONSTRAINT [PK_Resa] PRIMARY KEY CLUSTERED (

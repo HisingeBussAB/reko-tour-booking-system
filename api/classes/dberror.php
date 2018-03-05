@@ -5,6 +5,8 @@
  */
 namespace RekoBooking\classes;
 
+use RekoBooking\classes\Responder;
+
 class DBError
 {
 
@@ -16,21 +18,28 @@ class DBError
    * @param string $class __CLASS__ of origin
    * @param string $sql SQL query that triggered the error if any
    */
-  public static function showError($e, $class, $sql='NO QUERY') {
+  public static function showError($e, $class, $sql='NO QUERY', $response = false) {
+    $print = false;
+    if (!$response) {
+      $response = new Responder;
+      $print = true;
+    }
     if (DEBUG_MODE) {
       header( $_SERVER["SERVER_PROTOCOL"] . ' 500 Internal Server Error');
       $headers = ob_get_clean();
       echo $headers;
-      $a = array('response' => 'Databasfel från ' . $class . ': ' . $e->getMessage() . '. SQL: '. $sql);
-      echo json_encode($a);
-      die();
+      $response->AddResponse('response', ('Databasfel från ' . $class . ': ' . $e->getMessage() . '. SQL: '. $sql));
+      if ($print) {
+        echo $response->GetResponse();
+      }
     } else {
       header( $_SERVER["SERVER_PROTOCOL"] . ' 500 Internal Server Error');
       $headers = ob_get_clean();
       echo $headers;
-      $a = array('response' => 'Databasfel. Kontakta administratör om felet kvarstår.');
-      echo json_encode($a);
-      die();
+      $response->AddResponse('response', 'Databasfel. Kontakta administratör om felet kvarstår.');
+      if ($print) {
+        echo $response->GetResponse();
+      }
     }
   }
 }
