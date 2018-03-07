@@ -22,6 +22,7 @@ class DBError
     $print = false;
     if (!$response) {
       $response = new Responder;
+      $response->AddResponse('saved', false);
       $print = true;
     }
     if (DEBUG_MODE) {

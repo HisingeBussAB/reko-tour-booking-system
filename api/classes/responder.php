@@ -18,6 +18,13 @@ class Responder {
     return true;
   }
 
+  public function AddResponseArray($a) {
+    foreach ($a as $key => $value) {
+      $this->output[$key] = $value;
+    }
+    return true;
+  }
+
   public function GetResponse() {
     return json_encode($this->output);
   }

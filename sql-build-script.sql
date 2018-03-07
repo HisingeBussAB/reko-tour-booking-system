@@ -1,27 +1,20 @@
-﻿-- Exported from QuickDBD: https://www.quickdatatabasediagrams.com/
--- Link to schema: https://app.quickdatabasediagrams.com/#/schema/w9zPqM6P8UOAWzy4IzSEkQ
--- NOTE! If you have used non-SQL datatypes in your design, you will have to change these here.
+﻿DROP TABLE Tokens
+DROP TABLE HammerGuard
+DROP TABLE Kund
+DROP TABLE Resa
+DROP TABLE Kategori
+DROP TABLE Deadline
+DROP TABLE Programbest
+DROP TABLE Betalning
+DROP TABLE Kategori_Programbest
+DROP TABLE Boende
 DROP TABLE Bokning
 DROP TABLE Reservation
-DROP TABLE Kund
-DROP TABLE Kategori_Resa
 DROP TABLE KalkylIntakt
 DROP TABLE KalkylKostnad
-DROP TABLE Resa
-DROP TABLE Kategori_Resa
-DROP TABLE Programbest
 DROP TABLE Kalkyl
-DROP TABLE Betalning
-DROP TABLE Boende
-DROP TABLE Kategori_Programbest
-DROP TABLE Deadline
-DROP TABLE Kund
+DROP TABLE Kategori_Resa
 DROP TABLE Bokning_Kund
-DROP TABLE Kategori
-DROP TABLE Resa
-DROP TABLE Tokens
-
-
 
 -- Exported from QuickDBD: https://www.quickdatatabasediagrams.com/
 -- Link to schema: https://app.quickdatabasediagrams.com/#/schema/w9zPqM6P8UOAWzy4IzSEkQ

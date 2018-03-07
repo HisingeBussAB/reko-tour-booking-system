@@ -11,10 +11,8 @@ use \Firebase\JWT\JWT;
 use RekoBooking\classes\DB;
 use RekoBooking\classes\DBError;
 use RekoBooking\classes\Tokens;
-use RekoBooking\classes\Responder;
 
 $jsonData = json_decode(trim(file_get_contents('php://input')), true);
-$response = new Responder;
 
 if (!empty($jsonData['user'])) {
   $user = trim(filter_var($jsonData['user'], FILTER_SANITIZE_STRING));

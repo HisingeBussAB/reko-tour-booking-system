@@ -25,14 +25,16 @@ if (!empty($jsonData['apitoken']) && $jsonData['apitoken'] === API_TOKEN) {
   }
 
   $pdo = DB::get();
-  $a = Tokens::createToken($tokentype, $user, $pdo);
-  echo json_encode($a);
+  $response->AddResponse('saved', false);
+  $response->AddResponseArray(Tokens::createToken($tokentype, $pdo, $user));
+  echo $response->GetResponse();
 
 } else {
   header( $_SERVER["SERVER_PROTOCOL"] . ' 401 Unauthorized');
   $headers = ob_get_clean();
   echo $headers;
-  $a = array('response' => 'Fel APItoken sänd med begäran. Inte tillåten.');
-  echo json_encode($a);
+  $response->AddResponse('saved', false);
+  $response->AddResponse('response', 'Fel APItoken sänd med begäran. Inte tillåten.');
+  echo $response->GetResponse();
   die();
 }

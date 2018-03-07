@@ -18,20 +18,29 @@ class Categories extends Component {
   constructor (props) {
     super(props);
     this.state = {
-      showError: false,
-      showErrorMessage: '',
+      showStatus: false,
+      showStatusMessage: '',
       isSubmitting: false,
-      categories: [
+      categoriesSaved: [
         {id: '', category: 'Skidresa',  active: true},
         {id: '', category: 'Dagsresa',  active: false},
+      ],
+      categoriesUnsaved: [
+        {id: '', category: 'Skidresa',  active: true},
+        {id: '', category: 'Dagsresa',  active: false},
+        {id: '', category: 'Smt else',  active: false},
       ]
     };
+  }
+
+  componentWillMount() {
+
   }
 
 
   addRow = () => {
     const newRow = [{id: '', category: '',  active: true}];
-    this.setState({categories: update(this.state.categories, {$push: newRow})});
+    this.setState({categoriesUnsaved: update(this.state.categoriesUnsaved, {$push: newRow})});
   }
 
   handleChange = (key, val) => {
@@ -39,59 +48,81 @@ class Categories extends Component {
   }
 
   handleRoomChange = (i, key, val) => {
-    this.setState({categories: update(this.state.roomTypes, {[i]: {[key]: {$set: val}}})});
+    this.setState({categoriesUnsaved: update(this.state.roomTypes, {[i]: {[key]: {$set: val}}})});
   }
 
   roomOptions = (action, e) => {
     e.preventDefault();
     if (action === 'add') {
       const newRoomOpt = [{type: '', price: '', reserved: ''}];
-      this.setState({categories: update(this.state.roomTypes, {$push: newRoomOpt})});
+      this.setState({categoriesUnsaved: update(this.state.roomTypes, {$push: newRoomOpt})});
     }
     if (action === 'remove') {
       const index = (this.state.roomTypes.length-1);
-      this.setState({categories: update(this.state.roomTypes, {$splice: [[index, 1]]})});
+      this.setState({categoriesUnsaved: update(this.state.roomTypes, {$splice: [[index, 1]]})});
     }
   }
 
-  handleSubmit = (e) => {
+  handleSubmit = (e, i, operation) => {
     e.preventDefault();
+
+    if (operation === 'save') {
+      if (this.state.categoriesUnsaved[i].id === '' || this.state.categoriesUnsaved[i].id === null) {
+        operation = 'new';
+      }
+    }
+
+
     this.setState({isSubmitting: true});
-    axios.post( Config.ApiUrl + '/api/tours/savetour', {
+    axios.post( Config.ApiUrl + '/api/token/submit', {
       apitoken: Config.ApiToken,
       user: this.props.login.user,
-      jwt: this.props.login.jwt,
-      startDate: this.state.startDate,
-      tourName: this.state.tourName,
-      reservationFee: this.state.reservationFee,
-      insuranceFee: this.state.insuranceFee,
-      roomTypes: this.state.roomTypes,
     })
       .then(response => {
         console.log(response);
-        this.setState({isSubmitting: false});
+        axios.post( Config.ApiUrl + '/api/tours/savecategory/' + operation, {
+          submittoken: response.data.submittoken,
+          apitoken: Config.ApiToken,
+          user: this.props.login.user,
+          jwt: this.props.login.jwt,
+          categoryid: this.state.categoriesUnsaved[i].id,
+          category: this.state.categoriesUnsaved[i].category,
+          active: this.state.categoriesUnsaved[i].active,
+        })
+          .then(response => {
+            console.log(response);
+            this.setState({isSubmitting: false});
+            this.setState({showStatus: true, showStatusMessage: response.data.response});
+          })
+          .catch(error => {
+            console.log(error.response.data.response);
+            console.log(error.response.data.login);
+            this.setState({showStatus: true, showStatusMessage: error.response.data.response});
+            this.setState({isSubmitting: false});
+          });
       })
       .catch(error => {
-        console.log(error.response.data.response);
-        console.log(error.response.data.login);
-        this.setState({showError: true, showErrorMessage: error.response.data.response});
-        this.setState({isSubmitting: false});
+        let message = 'Något har gått fel, får inget svar från API.';
+        if (error.response !== undefined) {
+          message = error.response.data.response;
+        }
+        this.setState({showStatus: true, showStatusMessage: message});
       });
-    
+  };
 
-  }
-
+  
 
   render() {
 
-    const categoryRows = this.state.categories.map((category, i) => 
+    const categoryRows = this.state.categoriesUnsaved.map((category, i) => 
       
       <tr key={i}>
         <td className="align-middle pr-3 py-2 w-50">
           <input value={category.category} placeholder='Kategorinamn' type='text' className="rounded w-100" maxLength="35" style={{minWidth: '200px'}} />
         </td>
         <td className="align-middle px-3 py-2 text-center">
-          <span title="Spara ändring i namnet på kategorin"><FontAwesomeIcon icon={faSave} size="2x" className="primary-color custom-scale"/></span>
+          {((this.state.categoriesSaved[i] === undefined) || (this.state.categoriesSaved[i] !== undefined && category.category !== this.state.categoriesSaved[i].category)) && 
+            <span title="Spara ändring i kategorin"><FontAwesomeIcon icon={faSave} size="2x" className="primary-color custom-scale" onClick={(e) => this.handleSubmit(e, i, 'save')}/></span>}          
         </td>   
         <td className="align-middle px-3 py-2 text-center">
           {category.active ? 
@@ -134,7 +165,7 @@ class Categories extends Component {
             </div>
           </fieldset>
         </form>
-        <div>{this.state.showErrorMessage}</div>
+        {this.state.showStatus ? <div>{this.state.showStatusMessage}</div> : null}
       </div>
     );
   }

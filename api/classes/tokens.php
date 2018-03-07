@@ -11,7 +11,7 @@ use \Firebase\JWT\JWT;
 class Tokens
 {
 
-  public static function createToken($tokentype, $user='blindtoken', $pdo) {
+  public static function createToken($tokentype, $pdo, $user='blindtoken') {
     $bytes     = openssl_random_pseudo_bytes(24);
     $hex       = bin2hex($bytes);
     $created   = time();
@@ -36,8 +36,9 @@ class Tokens
     
     $expire = 25200; //sets the defult expiration for tokens in seconds
     
-    if ($tokentype = 'login') {$expire = 1000;}
-    if ($tokentype = 'jwt')   {$expire = 604800;}
+    if ($tokentype = 'login')     {$expire = 1000;}
+    if ($tokentype = 'jwt')       {$expire = 604800;}
+    if ($tokentype = 'submit')    {$expire = 1600;}
 
 
     try {
@@ -58,6 +59,10 @@ class Tokens
   public static function validateToken($token, $tokentype, $pdo, $user='blindtoken') {
   
     self::flushTokens($tokentype, $pdo);
+
+    if (($tokentype == 'jwt' || $tokentype == 'submit') && $user == 'blindtoken') {
+      return false;
+    }
   
     try {
       $sql = "SELECT Token FROM Tokens WHERE TokenType = :tokentype AND Token = :token AND username = :user;";
@@ -80,6 +85,16 @@ class Tokens
 
   }
 
+  public static function validationFailedDie($response) {
+    header( $_SERVER["SERVER_PROTOCOL"] . ' 401 Unauthorized');
+    $headers = ob_get_clean();
+    echo $headers;
+    $response->AddResponse('saved', false);
+    $response->AddResponse('response', 'En tillfällig token som behövs för den här operationen har troligen gått ut. Prova ladda om sidan (F5).');
+    echo $response->GetResponse();
+    die();
+  }
+
   public static function flushUsersJWTTokens($user, $pdo) {
     
     $tokentype = 'jwt';
@@ -88,7 +103,7 @@ class Tokens
       $sql = "DELETE FROM Tokens WHERE TokenType = :tokentype AND username = :user;";
       $sth = $pdo->prepare($sql);
       $sth->bindParam(':tokentype', $tokentype, \PDO::PARAM_STR);
-      $sth->bindParam(':user', $tokentype, \PDO::PARAM_STR);
+      $sth->bindParam(':user', $user, \PDO::PARAM_STR);
       $sth->execute(); 
       
     } catch(\PDOException $e) {

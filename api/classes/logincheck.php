@@ -30,7 +30,8 @@ class LoginCheck {
     die();
   }
 
-  public static function isLoggedin() {
+  public static function isLoggedin($response) {
+
     $jsonData = json_decode(trim(file_get_contents('php://input')), true);
     if ($jsonData['apitoken'] === API_TOKEN) {
 
@@ -44,11 +45,10 @@ class LoginCheck {
           header( $_SERVER["SERVER_PROTOCOL"] . ' 401 Unauthorized');
           $headers = ob_get_clean();
           echo $headers;
-          $a = array(
-            'response' => 'Du verkar inte vara inloggad eller så har systemet varit inaktivt för länge.',
-            'login' => false,
-            'saved' => false);
-          echo json_encode($a);
+          $response->AddResponse('login', false);
+          $response->AddResponse('saved', false);
+          $response->AddResponse('response', 'Du verkar inte vara inloggad eller så har systemet varit inaktivt för länge.');
+          echo $response->GetResponse();
           die();
         }
 
@@ -148,8 +148,7 @@ class LoginCheck {
         echo json_encode($a);
         die();
       } else {
-        $a = array('login' => true); 
-        echo json_encode($a);
+        $response->AddResponse('login', true);
         return true;
       }
     

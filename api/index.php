@@ -60,16 +60,24 @@ use \Moment\Moment;
 
 
   $router = new \AltoRouter();
+
+
   $router->setBasePath('/api');
   Moment::setDefaultTimezone('CET');
   Moment::setLocale('se_SV');
 
+  
+
 
   $router->addRoutes(array(
-    array('POST', '/auth',                                  function()             {                                  require __DIR__ . '/auth.php';                    }),
-    array('POST', '/token/[a:tokentype]',                   function($tokentype)   {                                  require __DIR__ . '/tokens.php';                  }),
-    array('POST', '/tours/savetour/[a:operation]',          function($operation)   { if (LoginCheck::isLoggedin()) {  require __DIR__ . '/tours/savetour.php'; }        }),
-    array('POST', '/tours/savecategory/[a:operation]',      function($operation)   { if (LoginCheck::isLoggedin()) {  require __DIR__ . '/tours/savecategory.php'; }    }),
+    array('POST', '/auth',                                  
+      function()           {$response = new Responder;                                          require __DIR__ . '/auth.php';                    }),
+    array('POST', '/token/[a:tokentype]',                   
+      function($tokentype) {$response = new Responder;                                          require __DIR__ . '/tokens.php';                  }),
+    array('POST', '/tours/savetour/[a:operation]',          
+      function($operation) {$response = new Responder; if (LoginCheck::isLoggedin($response)) { require __DIR__ . '/tours/savetour.php'; }        }),
+    array('POST', '/tours/savecategory/[a:operation]',      
+      function($operation) {$response = new Responder; if (LoginCheck::isLoggedin($response)) { require __DIR__ . '/tours/category.php'; }        }),
   ));
 
 
