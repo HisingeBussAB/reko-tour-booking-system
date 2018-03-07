@@ -18,6 +18,14 @@ class Responder {
     return true;
   }
 
+  public function AddResponsePush($key, $array) {
+    if (empty($this->output[$key]) || !is_array($this->output[$key])) {
+      $this->output[$key] = array();
+    }
+    array_push($this->output[$key], $array);
+    return true;
+  }
+
   public function AddResponseArray($a) {
     foreach ($a as $key => $value) {
       $this->output[$key] = $value;

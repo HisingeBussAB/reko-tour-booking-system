@@ -20,10 +20,12 @@ $newData = true;
 $operation = trim($operation);
 if ($operation == 'new' || $operation == 'edit') {
   $jsonData = json_decode(trim(file_get_contents('php://input')), true);
+  $newData = array();
   $newData = Category::VerifyCategoryInput($jsonData, $response);
 } 
 
 if ($operation == 'get' || $operation == 'delete') {
+  $newData = array();
   if (!empty($jsonData['categoryid']) && trim($jsonData['categoryid']) != 'all') {
     $temp = filter_var(trim($jsonData['categoryid']), FILTER_SANITIZE_NUMBER_INT);
     $temp = filter_var($temp, FILTER_VALIDATE_INT);

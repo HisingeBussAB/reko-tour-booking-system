@@ -37,7 +37,9 @@ use \Moment\Moment;
         $_SERVER["REMOTE_ADDR"] != "::1") {
       header( $_SERVER["SERVER_PROTOCOL"] . ' 401 Unauthorized');
       
-      $a = array('response' => 'Du har ett externt IP-nummer och får inte komma åt denna resurs.');
+      $a = array(
+        'saved' => false,
+        'response' => 'Du har ett externt IP-nummer och får inte komma åt denna resurs.');
       $headers = ob_get_clean();
       echo $headers;
       echo json_encode($a);
@@ -66,29 +68,33 @@ use \Moment\Moment;
   Moment::setDefaultTimezone('CET');
   Moment::setLocale('se_SV');
 
-  
+  $response = new Responder;
 
+  //response can't be passed as route param, reserved!
 
   $router->addRoutes(array(
     array('POST', '/auth',                                  
-      function()           {$response = new Responder;                                          require __DIR__ . '/auth.php';                    }),
+      function($response)             {                                          require __DIR__ . '/auth.php';                    }),
     array('POST', '/token/[a:tokentype]',                   
-      function($tokentype) {$response = new Responder;                                          require __DIR__ . '/tokens.php';                  }),
+      function($tokentype, $response) {                                          require __DIR__ . '/tokens.php';                  }),
     array('POST', '/tours/savetour/[a:operation]',          
-      function($operation) {$response = new Responder; if (LoginCheck::isLoggedin($response)) { require __DIR__ . '/tours/savetour.php'; }        }),
-    array('POST', '/tours/savecategory/[a:operation]',      
-      function($operation) {$response = new Responder; if (LoginCheck::isLoggedin($response)) { require __DIR__ . '/tours/category.php'; }        }),
+      function($operation, $response) { if (LoginCheck::isLoggedin($response)) { require __DIR__ . '/tours/savetour.php'; }        }),
+    array('POST', '/tours/category/[a:operation]',      
+      function($operation, $response) { if (LoginCheck::isLoggedin($response)) { require __DIR__ . '/tours/category.php'; }        }),
   ));
 
 
   $match = $router->match();
+  $match['params']['response'] = $response; //Pass responder object into the router
 
   if( $match && is_callable( $match['target'] ) ) {
     call_user_func_array( $match['target'], $match['params'] ); 
   } else {
     // no route was matched
       header( $_SERVER["SERVER_PROTOCOL"] . ' 404 Not Found');
-      $a = array('response' => 'Felaktig URL det finns inget innehåll på denna länk.');
+      $a = array(
+        'saved' => false,
+        'response' => 'Felaktig URL det finns inget innehåll på denna länk.');
       $headers = ob_get_clean();
       echo $headers;
       echo json_encode($a);

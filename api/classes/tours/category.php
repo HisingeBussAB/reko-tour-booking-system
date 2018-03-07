@@ -12,6 +12,36 @@ use RekoBooking\classes\Tokens;
 
 class Category {
 
+  public static function Get($jsonData, $response, $pdo) {
+    try {
+      
+
+      if ($jsonData['categoryid'] == 'all') {
+        $sql = "SELECT * FROM Kategori ORDER BY Kategori";
+        $sth = $pdo->prepare($sql);
+      } else {
+        $sql = "SELECT * FROM Kategori WHERE KategoriID =  :categoryid ORDER BY Kategori";
+        $sth = $pdo->prepare($sql);
+        $sth->bindParam(':categoryid', $jsonData['categoryid'], \PDO::PARAM_INT);
+      }
+      $sth->execute(); 
+      $result = $sth->fetchAll(\PDO::FETCH_ASSOC);
+    } catch(\PDOException $e) {
+      DBError::showError($e, __CLASS__, $sql, $response);
+      return false;
+    }
+
+    if (count($result) > 0) {
+      foreach ($result as $category) {
+        $active = $category['aktiv'] ? true : false;
+        $response->AddResponsePush('category', 
+          array('id' => (int)$category['kategoriid'], 'category' => $category['kategori'], 'active' => $active));
+      }
+
+    }
+
+  }
+
   public static function Save($jsonData, $response, $pdo) {
     $newData = self::VerifyCategoryInput($jsonData, $response);
     if (!$newData) {

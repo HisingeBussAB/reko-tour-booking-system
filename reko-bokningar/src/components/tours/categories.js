@@ -20,57 +20,77 @@ class Categories extends Component {
     this.state = {
       showStatus: false,
       showStatusMessage: '',
-      isSubmitting: false,
-      categoriesSaved: [
-        {id: '', category: 'Skidresa',  active: true},
-        {id: '', category: 'Dagsresa',  active: false},
-      ],
-      categoriesUnsaved: [
-        {id: '', category: 'Skidresa',  active: true},
-        {id: '', category: 'Dagsresa',  active: false},
-        {id: '', category: 'Smt else',  active: false},
-      ]
+      isSubmitting: true,
+      categoriesSaved: [],
+      categoriesUnsaved: [],
     };
   }
 
   componentWillMount() {
-
+    this.getCategory('all');
   }
 
+  getCategory = (id) => {
+    axios.post( Config.ApiUrl + '/api/tours/category/get', {
+      apitoken: Config.ApiToken,
+      user: this.props.login.user,
+      jwt: this.props.login.jwt,
+      categoryid: id,
+    })
+      .then(response => {
+        if (response.data.category !== undefined && response.data.category.length > 1) {
+          this.setState({categoriesSaved: response.data.category, categoriesUnsaved: response.data.category});
+        }
+        if (response.data.response !== undefined) {
+          this.setState({showStatus: true, showStatusMessage: response.data.response});
+        }
+        this.setState({isSubmitting: false});
+      })
+      .catch(error => {
+        this.setState({showStatus: true, showStatusMessage: error.response.data.response});
+        this.setState({isSubmitting: false});
+      });
+
+  }
 
   addRow = () => {
     const newRow = [{id: '', category: '',  active: true}];
     this.setState({categoriesUnsaved: update(this.state.categoriesUnsaved, {$push: newRow})});
   }
 
-  handleChange = (key, val) => {
-    this.setState({[key]: val});
+  
+  handleCategoryChange = (i, key, val) => {
+    this.setState({categoriesUnsaved: update(this.state.categoriesUnsaved, {[i]: {[key]: {$set: val}}})});
   }
 
-  handleRoomChange = (i, key, val) => {
-    this.setState({categoriesUnsaved: update(this.state.roomTypes, {[i]: {[key]: {$set: val}}})});
-  }
 
-  roomOptions = (action, e) => {
+  handleSend = (e, i, operationin) => {
     e.preventDefault();
-    if (action === 'add') {
-      const newRoomOpt = [{type: '', price: '', reserved: ''}];
-      this.setState({categoriesUnsaved: update(this.state.roomTypes, {$push: newRoomOpt})});
-    }
-    if (action === 'remove') {
-      const index = (this.state.roomTypes.length-1);
-      this.setState({categoriesUnsaved: update(this.state.roomTypes, {$splice: [[index, 1]]})});
-    }
-  }
-
-  handleSubmit = (e, i, operation) => {
-    e.preventDefault();
-
-    if (operation === 'save') {
+    let operation = operationin;
+    if (operationin === 'save') {
       if (this.state.categoriesUnsaved[i].id === '' || this.state.categoriesUnsaved[i].id === null) {
         operation = 'new';
+      } else {
+        operation = 'save';
       }
     }
+
+    if (operationin === 'activetoggle') {
+      if (this.state.categoriesUnsaved[i].id === '' || this.state.categoriesUnsaved[i].id === null) {
+        this.setState({showStatus: true, showStatusMessage: "Du kan inte ändra aktiv status på en kategori som inte är sparad. Spara kategorin först."});
+        return;
+      }
+      operation = 'save';
+    }
+
+    if (operationin === 'delete') {
+      if (this.state.categoriesUnsaved[i].id === '' || this.state.categoriesUnsaved[i].id === null) {
+        this.setState({categoriesUnsaved: update(this.state.categoriesUnsaved, {$splice: [[i, 1]]})});
+        return;
+      }
+      operation = 'delete';
+    }
+
 
 
     this.setState({isSubmitting: true});
@@ -79,8 +99,7 @@ class Categories extends Component {
       user: this.props.login.user,
     })
       .then(response => {
-        console.log(response);
-        axios.post( Config.ApiUrl + '/api/tours/savecategory/' + operation, {
+        axios.post( Config.ApiUrl + '/api/tours/category/' + operation, {
           submittoken: response.data.submittoken,
           apitoken: Config.ApiToken,
           user: this.props.login.user,
@@ -110,6 +129,8 @@ class Categories extends Component {
       });
   };
 
+
+
   
 
   render() {
@@ -118,19 +139,19 @@ class Categories extends Component {
       
       <tr key={i}>
         <td className="align-middle pr-3 py-2 w-50">
-          <input value={category.category} placeholder='Kategorinamn' type='text' className="rounded w-100" maxLength="35" style={{minWidth: '200px'}} />
+          <input value={category.category} onChange={(e) => this.handleCategoryChange(i, 'category', e.target.value)} placeholder='Kategorinamn' type='text' className="rounded w-100" maxLength="35" style={{minWidth: '200px'}} />
         </td>
         <td className="align-middle px-3 py-2 text-center">
           {((this.state.categoriesSaved[i] === undefined) || (this.state.categoriesSaved[i] !== undefined && category.category !== this.state.categoriesSaved[i].category)) && 
-            <span title="Spara ändring i kategorin"><FontAwesomeIcon icon={faSave} size="2x" className="primary-color custom-scale" onClick={(e) => this.handleSubmit(e, i, 'save')}/></span>}          
+            <span title="Spara ändring i kategorin"><FontAwesomeIcon icon={faSave} size="2x" className="primary-color custom-scale" onClick={(e) => this.handleSend(e, i, 'save')}/></span>}          
         </td>   
         <td className="align-middle px-3 py-2 text-center">
           {category.active ? 
-            <span title="Inaktivera denna kategori"><FontAwesomeIcon icon={faCheckSquare} size="2x" className="primary-color custom-scale"/></span>
-            : <span title="Aktivera denna kategori"><FontAwesomeIcon icon={faSquare} size="2x" className="primary-color custom-scale"/></span> }
+            <span title="Inaktivera denna kategori"><FontAwesomeIcon icon={faCheckSquare} size="2x" onClick={(e) => this.handleSend(e, i, 'activetoggle')} className="primary-color custom-scale"/></span>
+            : <span title="Aktivera denna kategori"><FontAwesomeIcon icon={faSquare} onClick={(e) => this.handleSend(e, i, 'activetoggle')} size="2x" className="primary-color custom-scale"/></span> }
         </td>          
         <td className="align-middle pl-3 py-2 text-center">
-          <span title="Ta bord denna kategori permanent"><FontAwesomeIcon icon={faTrashAlt} size="2x" className="danger-color custom-scale"/></span>
+          <span title="Ta bord denna kategori permanent"><FontAwesomeIcon icon={faTrashAlt} onClick={(e) => this.handleSend(e, i, 'delete')} size="2x" className="danger-color custom-scale"/></span>
         </td>   
       </tr>);
     
