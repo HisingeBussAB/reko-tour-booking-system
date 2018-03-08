@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import update from 'react-addons-update';
+import update from 'immutability-helper';
 import faSave from '@fortawesome/fontawesome-free-solid/faSave';
 import faSquare from '@fortawesome/fontawesome-free-regular/faSquare';
 import faCheckSquare from '@fortawesome/fontawesome-free-regular/faCheckSquare';
@@ -21,6 +21,7 @@ class Categories extends Component {
       showStatus: false,
       showStatusMessage: '',
       isSubmitting: true,
+      isUpdating: {save: [], activetoggle: [], delete: []},
       categoriesSaved: [],
       categoriesUnsaved: [],
     };
@@ -30,7 +31,7 @@ class Categories extends Component {
     this.getCategory('all');
   }
 
-  getCategory = (id) => {
+  getCategory = (id, fromUpdate = null) => {
     axios.post( Config.ApiUrl + '/api/tours/category/get', {
       apitoken: Config.ApiToken,
       user: this.props.login.user,
@@ -43,9 +44,12 @@ class Categories extends Component {
             this.setState({categoriesSaved: response.data.category, categoriesUnsaved: response.data.category});
           } else {
             let i = this.state.categoriesSaved.findIndex(function (obj) { return obj.id === response.data.category[0].id; });
-            this.setState({categoriesUnsaved: update(this.state.categoriesUnsaved, {[i]: {$set: response.data.category[0]}})});
-            this.setState({categoriesSaved: update(this.state.categoriesSaved, {[i]: {$set: response.data.category[0]}})});
+            this.setState({categoriesSaved: update(this.state.categoriesSaved, {[i]: {$set: response.data.category[0]}}), categoriesUnsaved: update(this.state.categoriesUnsaved, {[i]: {$set: response.data.category[0]}})});
+            if (fromUpdate !== null) {
+              this.setState({isUpdating: update(this.state.isUpdating, {[fromUpdate] : {$apply: (x) => {x.pop(i); return x;}}})});
+            }
           }
+          
         }
         if (response.data.response !== undefined) {
           this.setState({showStatus: true, showStatusMessage: response.data.response});
@@ -53,8 +57,11 @@ class Categories extends Component {
         this.setState({isSubmitting: false});
       })
       .catch(error => {
-        this.setState({showStatus: true, showStatusMessage: error.response.data.response});
-        this.setState({isSubmitting: false});
+        if (error.response === undefined) {
+          this.setState({isSubmitting: false, showStatus: true, showStatusMessage: 'Okänt fel. Inget svar från API.'});
+        } else {
+          this.setState({isSubmitting: false, showStatus: true, showStatusMessage: error.response.data.response});
+        }
       });
 
   }
@@ -76,6 +83,7 @@ class Categories extends Component {
     let operation = operationin;
     let active = this.state.categoriesUnsaved[i].active;
     if (operationin === 'save') {
+      this.setState({isUpdating: update(this.state.isUpdating, {save: {$push: [i]}})});
       if (this.state.categoriesUnsaved[i].id === '' || this.state.categoriesUnsaved[i].id === null) {
         operation = 'new';
       } else {
@@ -84,23 +92,26 @@ class Categories extends Component {
     }
 
     if (operationin === 'activetoggle') {
+      
       if (this.state.categoriesUnsaved[i].id === '' || this.state.categoriesUnsaved[i].id === null) {
-        this.setState({showStatus: true, showStatusMessage: 'Du kan inte ändra aktiv status på en kategori som inte är sparad. Spara kategorin först.'});
+        this.setState({isSubmitting: false, showStatus: true, showStatusMessage: 'Du kan inte ändra aktiv status på en kategori som inte är sparad. Spara kategorin först.'});
         return;
       }
       if (this.state.categoriesUnsaved[i].category !== this.state.categoriesSaved[i].category) {
-        this.setState({showStatus: true, showStatusMessage: 'Du kan inte ändra status på en kategori med namnändring som inte är sparad ännu. Spara namnet först.'});
+        this.setState({isSubmitting: false, showStatus: true, showStatusMessage: 'Du kan inte ändra status på en kategori med namnändring som inte är sparad ännu. Spara namnet först.'});
         return;
       }
+      this.setState({isUpdating: update(this.state.isUpdating, {activetoggle: {$push: [i]}})});
       active = active ? false : true;
       operation = 'save';
     }
 
     if (operationin === 'delete') {
       if (this.state.categoriesUnsaved[i].id === '' || this.state.categoriesUnsaved[i].id === null) {
-        this.setState({categoriesUnsaved: update(this.state.categoriesUnsaved, {$splice: [[i, 1]]})});
+        this.setState({isSubmitting: false, categoriesUnsaved: update(this.state.categoriesUnsaved, {$splice: [[i, 1]]})});
         return;
       }
+      this.setState({isUpdating: update(this.state.isUpdating, {delete: {$push: [i]}})});
       operation = 'delete';
     }
 
@@ -124,17 +135,20 @@ class Categories extends Component {
         })
           .then(response => {
             if (response.data.modifiedid !== undefined) {
-              this.getCategory(response.data.modifiedid);
+              if (operationin !== 'delete') {
+                this.getCategory(response.data.modifiedid, operationin);
+              } else {
+                let i = this.state.categoriesSaved.findIndex(function (obj) { return obj.id === this.state.categoriesUnsaved[i].id; });
+                this.setState({isUpdating: update(this.state.isUpdating, {delete: {$apply: (x) => {x.pop(i); return x;}}})});
+              }
             }
             console.log(response);
-            this.setState({isSubmitting: false});
-            this.setState({showStatus: true, showStatusMessage: response.data.response});
+            this.setState({isSubmitting: false, showStatus: true, showStatusMessage: response.data.response});
           })
           .catch(error => {
             console.log(error.response.data.response);
             console.log(error.response.data.login);
-            this.setState({showStatus: true, showStatusMessage: error.response.data.response});
-            this.setState({isSubmitting: false});
+            this.setState({isSubmitting: false, showStatus: true, showStatusMessage: error.response.data.response});
           });
       })
       .catch(error => {
@@ -142,7 +156,7 @@ class Categories extends Component {
         if (error.response !== undefined) {
           message = error.response.data.response;
         }
-        this.setState({showStatus: true, showStatusMessage: message});
+        this.setState({isSubmitting: false, showStatus: true, showStatusMessage: message});
       });
   };
 
@@ -159,16 +173,25 @@ class Categories extends Component {
           <input value={category.category} onChange={(e) => this.handleCategoryChange(i, 'category', e.target.value)} placeholder='Kategorinamn' type='text' className="rounded w-100" maxLength="35" style={{minWidth: '200px'}} />
         </td>
         <td className="align-middle px-3 py-2 text-center">
-          {((this.state.categoriesSaved[i] === undefined) || (this.state.categoriesSaved[i] !== undefined && category.category !== this.state.categoriesSaved[i].category)) && 
-            <span title="Spara ändring i kategorin"><FontAwesomeIcon icon={faSave} size="2x" className="primary-color custom-scale" onClick={(e) => this.handleSend(e, i, 'save')}/></span>}          
+          {(((this.state.categoriesSaved[i] === undefined) || (this.state.categoriesSaved[i] !== undefined && category.category !== this.state.categoriesSaved[i].category))) && !this.state.isUpdating.save.includes(i) &&
+            <span title="Spara ändring i kategorin"><FontAwesomeIcon icon={faSave} size="2x" className="primary-color custom-scale" onClick={(e) => this.handleSend(e, i, 'save')}/></span>}  
+          {this.state.isUpdating.save.includes(i) &&
+            <span title="Inaktivera denna kategori"><FontAwesomeIcon icon={faSpinner} size="2x" pulse className="primary-color"/></span> }        
         </td>   
         <td className="align-middle px-3 py-2 text-center">
-          {category.active ? 
-            <span title="Inaktivera denna kategori"><FontAwesomeIcon icon={faCheckSquare} size="2x" onClick={(e) => this.handleSend(e, i, 'activetoggle')} className="primary-color custom-scale"/></span>
-            : <span title="Aktivera denna kategori"><FontAwesomeIcon icon={faSquare} onClick={(e) => this.handleSend(e, i, 'activetoggle')} size="2x" className="primary-color custom-scale"/></span> }
+          {this.state.isUpdating.activetoggle.includes(i) && 
+            <span title="Inaktivera denna kategori"><FontAwesomeIcon icon={faSpinner} size="2x" pulse className="primary-color"/></span> }        
+          {!this.state.isUpdating.activetoggle.includes(i) && category.active &&
+            <span title="Inaktivera denna kategori"><FontAwesomeIcon icon={faCheckSquare} size="2x" onClick={(e) => this.handleSend(e, i, 'activetoggle')} className="primary-color custom-scale"/></span> }
+          {!this.state.isUpdating.activetoggle.includes(i) && !category.active &&  
+            <span title="Aktivera denna kategori"><FontAwesomeIcon icon={faSquare} onClick={(e) => this.handleSend(e, i, 'activetoggle')} size="2x" className="primary-color custom-scale"/></span> }
+
         </td>          
         <td className="align-middle pl-3 py-2 text-center">
-          <span title="Ta bord denna kategori permanent"><FontAwesomeIcon icon={faTrashAlt} onClick={(e) => this.handleSend(e, i, 'delete')} size="2x" className="danger-color custom-scale"/></span>
+          {!this.state.isUpdating.delete.includes(i) && 
+          <span title="Ta bord denna kategori permanent"><FontAwesomeIcon icon={faTrashAlt} onClick={(e) => this.handleSend(e, i, 'delete')} size="2x" className="danger-color custom-scale"/></span>}
+          {this.state.isUpdating.delete.includes(i) && 
+            <span title="Inaktivera denna kategori"><FontAwesomeIcon icon={faSpinner} size="2x" pulse className="danger-color"/></span>}
         </td>   
       </tr>);
     

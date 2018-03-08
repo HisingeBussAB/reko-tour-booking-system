@@ -42,6 +42,27 @@ class Category {
 
   }
 
+  public static function Delete($jsonData, $response, $pdo) {
+
+    if (!Tokens::validateToken($jsonData['submittoken'], 'submit', $pdo, $jsonData['user'])) {
+      Tokens::validationFailedDie($response);
+    }
+
+    
+    try {
+      $sql = "DELETE FROM Kategori WHERE KategoriID = :categoryid";
+      $sth = $pdo->prepare($sql);
+      $sth->bindParam(':categoryid',   $jsonData['categoryid'],   \PDO::PARAM_INT);
+      $sth->execute(); 
+    } catch(\PDOException $e) {
+      DBError::showError($e, __CLASS__, $sql, $response);
+      return false;
+    }
+    $response->AddResponse('modifiedid', $jsonData['categoryid']);
+    return true;
+  }
+
+
   public static function Save($jsonData, $response, $pdo) {
 
     if (!Tokens::validateToken($jsonData['submittoken'], 'submit', $pdo, $jsonData['user'])) {

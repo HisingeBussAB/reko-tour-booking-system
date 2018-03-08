@@ -18,12 +18,12 @@ $pdo = DB::get();
 $newData = true;
 $operation = trim($operation);
 $jsonData = json_decode(trim(file_get_contents('php://input')), true);
-if ($operation == 'new' || $operation == 'save') {
+if ($operation == 'new' || $operation == 'save' || $operation == 'delete') {
   $newData = array();
   $newData = Category::VerifyCategoryInput($jsonData, $response);
 } 
 
-if ($operation == 'get' || $operation == 'delete') {
+if ($operation == 'get') {
   $newData = array();
   if (!empty($jsonData['categoryid']) && trim($jsonData['categoryid']) != 'all') {
     $temp = filter_var(trim($jsonData['categoryid']), FILTER_SANITIZE_NUMBER_INT);
