@@ -9,8 +9,7 @@ namespace RekoBooking\tours;
 
 use RekoBooking\classes\DB;
 use RekoBooking\classes\tours\Category;
-use RekoBooking\classes\Responder;
-use RekoBooking\classes\error\NotFound;
+use RekoBooking\classes\errors\NotFound;
 
 
 
@@ -18,7 +17,7 @@ $pdo = DB::get();
 
 $newData = true;
 $operation = trim($operation);
-if ($operation == 'new' || $operation == 'edit') {
+if ($operation == 'new' || $operation == 'save') {
   $jsonData = json_decode(trim(file_get_contents('php://input')), true);
   $newData = array();
   $newData = Category::VerifyCategoryInput($jsonData, $response);
@@ -53,7 +52,7 @@ switch ($operation) {
       $response->AddResponse('saved', false);
     }
     break;
-  case "edit":
+  case "save":
     if (Category::Save($newData, $response, $pdo)) {
       $response->AddResponse('saved', true);
     } else {
@@ -69,13 +68,16 @@ switch ($operation) {
     break;
   case "get":
     if (Category::Get($newData, $response, $pdo)) {
+      $response->AddResponse('sucess', true);
       $response->AddResponse('saved', false);
     } else {
       $response->AddResponse('saved', false);
+      $response->AddResponse('sucess', false);
     }
     break;
   case "void":
     $response->AddResponse('saved', false);
+    $response->AddResponse('sucess', false);
     break;
   default:
     NotFound::PrintDie();

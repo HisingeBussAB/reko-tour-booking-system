@@ -40,6 +40,8 @@ class Categories extends Component {
       .then(response => {
         if (response.data.category !== undefined && response.data.category.length > 1) {
           this.setState({categoriesSaved: response.data.category, categoriesUnsaved: response.data.category});
+        } else {
+          
         }
         if (response.data.response !== undefined) {
           this.setState({showStatus: true, showStatusMessage: response.data.response});
@@ -104,11 +106,15 @@ class Categories extends Component {
           apitoken: Config.ApiToken,
           user: this.props.login.user,
           jwt: this.props.login.jwt,
+          task: operationin,
           categoryid: this.state.categoriesUnsaved[i].id,
           category: this.state.categoriesUnsaved[i].category,
           active: this.state.categoriesUnsaved[i].active,
         })
           .then(response => {
+            if (response.data.modifiedid !== undefined) {
+              this.getCategory(response.data.modifiedid);
+            }
             console.log(response);
             this.setState({isSubmitting: false});
             this.setState({showStatus: true, showStatusMessage: response.data.response});

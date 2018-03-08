@@ -13,9 +13,7 @@ use RekoBooking\classes\Tokens;
 class Category {
 
   public static function Get($jsonData, $response, $pdo) {
-    try {
-      
-
+    try {  
       if ($jsonData['categoryid'] == 'all') {
         $sql = "SELECT * FROM Kategori ORDER BY Kategori";
         $sth = $pdo->prepare($sql);
@@ -30,45 +28,47 @@ class Category {
       DBError::showError($e, __CLASS__, $sql, $response);
       return false;
     }
-
     if (count($result) > 0) {
       foreach ($result as $category) {
         $active = $category['aktiv'] ? true : false;
         $response->AddResponsePush('category', 
           array('id' => (int)$category['kategoriid'], 'category' => $category['kategori'], 'active' => $active));
       }
-
+      return true;
+    } else {
+      $response->AddResponse('response', 'Inga kategorier hittades');
+      return false;
     }
 
   }
 
   public static function Save($jsonData, $response, $pdo) {
-    $newData = self::VerifyCategoryInput($jsonData, $response);
-    if (!$newData) {
-      return false;
-    } else {
 
-      if (!Tokens::validateToken($jsonData['submittoken'], 'submit', $pdo)) {
-        Tokens::validationFailedDie($responder);
-      }
-/*
-      try {
-      $sql = "INSERT INTO Resa (Resa, AvbskyddPris, AnmavgPris) VALUES (:tour, :cancel, :reserve)";
-      $pdo->beginTransaction();
-      $sth = $pdo->prepare($sql);
-      $sth->bindParam(':tour',    $newData['tourName'],       \PDO::PARAM_STR);
-      $sth->bindParam(':cancel',  $newData['insuranceFee'],   \PDO::PARAM_INT);
-      $sth->bindParam(':reserve', $newData['reservationFee'], \PDO::PARAM_INT);
-      $sth->execute(); 
-      $pdo->commit();
-      
-      } catch(\PDOException $e) {
-        DBError::showError($e, __CLASS__, $sql, $response);
-        return false;
-      }*/
-      return true;
+    if (!Tokens::validateToken($jsonData['submittoken'], 'submit', $pdo, $jsonData['user'])) {
+      Tokens::validationFailedDie($response);
     }
 
+    
+    try {
+      if ($jsonData['task'] == 'activetoggle') {
+        $sql = "UPDATE Kategori SET Aktiv = :active WHERE KategoriID = :categoryid";
+      } else {
+        $sql = "UPDATE Kategori SET Kategori = :category, Aktiv = :active WHERE KategoriID = :categoryid";
+      }
+      
+      $sth = $pdo->prepare($sql);
+      $sth->bindParam(':categoryid',   $jsonData['categoryid'],   \PDO::PARAM_INT);
+      if ($jsonData['task'] != 'activetoggle') {
+        $sth->bindParam(':category', $jsonData['category'], \PDO::PARAM_STR);
+      }      
+      $sth->bindParam(':active',   $jsonData['active'],   \PDO::PARAM_INT);
+      $sth->execute(); 
+    } catch(\PDOException $e) {
+      DBError::showError($e, __CLASS__, $sql, $response);
+      return false;
+    }
+    $response->AddResponse('modifiedid', $jsonData['categoryid']);
+    return true;
   }
 
   public static function New($jsonData, $response, $pdo) {
@@ -77,8 +77,15 @@ class Category {
       Tokens::validationFailedDie($response);
     }
     try {
-      $sql = "INSERT INTO Kategori (Kategori, Aktiv) OUTPUT INSERTED.KategoriID VALUES (:category, :active)";
+      if ($jsonData['categoryid'] == 'new') {
+        $sql = "INSERT INTO Kategori (Kategori, Aktiv) OUTPUT INSERTED.KategoriID VALUES (:category, :active)";
+      } else {
+        $sql = "UPDATE Kategori SET Kategori = :category, Aktiv = :active) WHERE KategoriID = :categoryid";
+      }
       $sth = $pdo->prepare($sql);
+      if ($jsonData['categoryid'] != 'new') {
+        $sth->bindParam(':categoryid',   $jsonData['categoryid'],   \PDO::PARAM_INT);
+      }
       $sth->bindParam(':category', $jsonData['category'], \PDO::PARAM_STR);
       $sth->bindParam(':active',   $jsonData['active'],   \PDO::PARAM_INT);
       $sth->execute(); 
@@ -87,7 +94,12 @@ class Category {
       DBError::showError($e, __CLASS__, $sql, $response);
       return false;
     }
-    $response->AddResponse('newid', (int)$result['kategoriid']);
+    if ($jsonData['categoryid'] != 'new') {
+      $response->AddResponse('modifiedid', (int)$result['kategoriid']);
+    } else {
+      $response->AddResponse('modifiedid', $jsonData['categoryid']);
+    }
+    
     return true;
   
 
@@ -101,6 +113,12 @@ class Category {
     } else {
       $response->AddResponse('response', 'Inget användarnamn skickat.');
       return false;
+    }
+
+    if (!empty($jsonData['task'])) {
+      $newData['task'] = trim(filter_var($jsonData['task'], FILTER_SANITIZE_STRING));
+    } else {
+      $newData['task'] = 'not set';
     }
 
     if (!empty($jsonData['category']) && trim($jsonData['category']) != false) {

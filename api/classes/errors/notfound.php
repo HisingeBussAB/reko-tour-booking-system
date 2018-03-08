@@ -3,7 +3,7 @@
  * Rekå Resor Bokningssystem
  * @author    Håkan Arnoldson
  */
-namespace RekoBooking\classes\error;
+namespace RekoBooking\classes\errors;
 
 class NotFound {
 
