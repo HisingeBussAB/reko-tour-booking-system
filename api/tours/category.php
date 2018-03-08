@@ -17,8 +17,8 @@ $pdo = DB::get();
 
 $newData = true;
 $operation = trim($operation);
+$jsonData = json_decode(trim(file_get_contents('php://input')), true);
 if ($operation == 'new' || $operation == 'save') {
-  $jsonData = json_decode(trim(file_get_contents('php://input')), true);
   $newData = array();
   $newData = Category::VerifyCategoryInput($jsonData, $response);
 } 

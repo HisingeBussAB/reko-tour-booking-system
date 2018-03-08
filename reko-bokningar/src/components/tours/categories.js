@@ -38,10 +38,14 @@ class Categories extends Component {
       categoryid: id,
     })
       .then(response => {
-        if (response.data.category !== undefined && response.data.category.length > 1) {
-          this.setState({categoriesSaved: response.data.category, categoriesUnsaved: response.data.category});
-        } else {
-          
+        if (response.data.category !== undefined) {
+          if (response.data.category.length > 1) {
+            this.setState({categoriesSaved: response.data.category, categoriesUnsaved: response.data.category});
+          } else {
+            let i = this.state.categoriesSaved.findIndex(function (obj) { return obj.id === response.data.category[0].id; });
+            this.setState({categoriesUnsaved: update(this.state.categoriesUnsaved, {[i]: {$set: response.data.category[0]}})});
+            this.setState({categoriesSaved: update(this.state.categoriesSaved, {[i]: {$set: response.data.category[0]}})});
+          }
         }
         if (response.data.response !== undefined) {
           this.setState({showStatus: true, showStatusMessage: response.data.response});
@@ -68,7 +72,9 @@ class Categories extends Component {
 
   handleSend = (e, i, operationin) => {
     e.preventDefault();
+    this.setState({isSubmitting: true});
     let operation = operationin;
+    let active = this.state.categoriesUnsaved[i].active;
     if (operationin === 'save') {
       if (this.state.categoriesUnsaved[i].id === '' || this.state.categoriesUnsaved[i].id === null) {
         operation = 'new';
@@ -79,9 +85,14 @@ class Categories extends Component {
 
     if (operationin === 'activetoggle') {
       if (this.state.categoriesUnsaved[i].id === '' || this.state.categoriesUnsaved[i].id === null) {
-        this.setState({showStatus: true, showStatusMessage: "Du kan inte ändra aktiv status på en kategori som inte är sparad. Spara kategorin först."});
+        this.setState({showStatus: true, showStatusMessage: 'Du kan inte ändra aktiv status på en kategori som inte är sparad. Spara kategorin först.'});
         return;
       }
+      if (this.state.categoriesUnsaved[i].category !== this.state.categoriesSaved[i].category) {
+        this.setState({showStatus: true, showStatusMessage: 'Du kan inte ändra status på en kategori med namnändring som inte är sparad ännu. Spara namnet först.'});
+        return;
+      }
+      active = active ? false : true;
       operation = 'save';
     }
 
@@ -109,7 +120,7 @@ class Categories extends Component {
           task: operationin,
           categoryid: this.state.categoriesUnsaved[i].id,
           category: this.state.categoriesUnsaved[i].category,
-          active: this.state.categoriesUnsaved[i].active,
+          active: active,
         })
           .then(response => {
             if (response.data.modifiedid !== undefined) {
