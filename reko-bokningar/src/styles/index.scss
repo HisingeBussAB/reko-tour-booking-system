@@ -110,6 +110,15 @@ input[type=search] {
   text-align: right;
 }
 
+.Error {
+  .custom-close-error {
+    &:hover {
+      background-color: #0856fb !important;
+      color: white !important;
+    }
+  }
+}
+
 .MainMenu {
   border-bottom: 1px solid grey;
   

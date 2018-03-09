@@ -81,6 +81,8 @@ use \Moment\Moment;
       function($operation, $response) { if (LoginCheck::isLoggedin($response)) { require __DIR__ . '/tours/savetour.php'; }        }),
     array('POST', '/tours/category/[a:operation]',      
       function($operation, $response) { if (LoginCheck::isLoggedin($response)) { require __DIR__ . '/tours/category.php'; }        }),
+    array('GET', '/timestamp',      
+      function() { echo json_encode(array('servertime' => time())); }),
   ));
 
 

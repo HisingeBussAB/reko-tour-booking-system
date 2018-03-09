@@ -3,6 +3,7 @@ import { routerMiddleware } from 'react-router-redux';
 import thunk from 'redux-thunk';
 import createHistory from 'history/createBrowserHistory';
 import rootReducer from '../modules';
+import Config from '../config/config';
 
 export const history = createHistory();
 
@@ -12,9 +13,10 @@ const initialState = {
     message: '',
   },
   login: {
-    'login': false,
-    'user': 'anonymous',
-    'jwt': '',
+    login: false,
+    user: 'anonymous',
+    jwt: '',
+    autoAttempt: Config.AutoLogin,
   },
 
   

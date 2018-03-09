@@ -5,8 +5,5 @@ export function errorPopup(status) {
       type: 'ERROR_POPUP',
       payload: status
     });
-    
-
-    
   };
 }

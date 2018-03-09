@@ -36,11 +36,7 @@ class App extends Component {
   
 
   componentWillMount() {
-
-
-
-
-    
+   
   }
 
   componentDidCatch() {

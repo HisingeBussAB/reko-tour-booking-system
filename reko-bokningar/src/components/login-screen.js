@@ -17,77 +17,44 @@ class LoginScreen extends Component {
   constructor(props){
     super(props);
     this.state = {
-      autoAttempt: true,
-      showError: false,
-      showErrorMessage: '',
-      pwd: Config.AutoLoginPwd,
-      user: Config.AutoUsername,
+      servertime: '',
+      logindata: {
+        pwd: Config.AutoLoginPwd,
+        user: Config.AutoUsername,
+      }
     };    
   }
 
   componentWillMount() {
-    /* Auto authenticate user */
-    this.runLogin(Config);
+    if (!this.props.login.login && this.props.login.autoAttempt) 
+      this.props.Login(this.state.logindata);
   }
-  
-  runLogin = (userConfig) => {
-    axios.post( userConfig.ApiUrl + '/api/token/login', {
-      apitoken: userConfig.ApiToken,
-    })
-      .then(response => {
-        axios.post( userConfig.ApiUrl + '/api/auth', {
-          user: userConfig.AutoUsername,
-          pwd: userConfig.AutoLoginPwd,
-          apitoken: userConfig.ApiToken,
-          logintoken: response.data.logintoken,
-        })
-          .then(response => {
-            this.props.Login(response.data);
-          })
-          .catch(error => {
-            let message = 'Något har gått fel, får inget svar från API.';
-            if (error.response !== undefined) {
-              message = error.response.data.response;
-            }
-            this.setState({showError: true, showErrorMessage: message});
-          });
-      })
-      .catch(error => {
-        let message = 'Något har gått fel, får inget svar från API.';
-        if (error.response !== undefined) {
-          message = error.response.data.response;
-        }
-        this.setState({showError: true, showErrorMessage: message});
-      });
-  };
+
+  componentWillReceiveProps(nextProps) {
+    if (!nextProps.login.login && !nextProps.login.autoAttempt) {
+
+    }
+  }
 
   handleUserChange = (event) => {
-    this.setState({user: event.target.value});
+    this.setState({logindata: {user: event.target.value}});
   }
 
   handlePwdChange = (event) => {
-    this.setState({pwd: event.target.value});
+    this.setState({logindata: {pwd: event.target.value}});
   }
 
-  clearPwd = (event) => {
-    this.setState({pwd: ''});
+  clearPwd = () => {
+    this.setState({logindata: {pwd: ''}});
   }
 
-  clearUser = (event) => {
-    this.setState({user: ''});
+  clearUser = () => {
+    this.setState({logindata: {user: ''}});
   }
 
   handleSubmit = (event) => {
     event.preventDefault();
-    const newConfig = {
-      ApiUrl:         Config.ApiUrl,
-      ApiToken:       Config.ApiToken,
-      AutoLoginPwd:   this.state.pwd,
-      AutoUsername:   this.state.user,
-    };
-    this.runLogin(newConfig);
-    this.setState({autoAttempt: false});
-    this.setState({showError: false});
+    this.props.Login(this.state.logindata);
   }
 
 
@@ -111,13 +78,13 @@ class LoginScreen extends Component {
       <div className="Login" style={style}>
         <p><img src={Logo} alt="Logo" className="rounded my-4" title="Till Startsida" id="mainLogo"/></p>
         <h1 className="my-4">Resesystem</h1>
-        {!this.state.showError ?
+        {this.props.login.autoAttempt ?
           <div>
             <h3 className="mb-4">Försöker automatisk inloggning...</h3>
             <FontAwesomeIcon className="my-4" icon="spinner" pulse size="4x" />
           </div> :
           <div>
-            {this.state.autoAttempt ? <h5 className="w-50 mx-auto my-3" style={{color: 'red'}}>Automatisk inlogging misslyckades!</h5> : null}         
+            {!this.props.login.autoAttempt ? <h5 className="w-50 mx-auto my-3" style={{color: 'red'}}>Automatisk inlogging misslyckades!</h5> : null}         
             <h5 className="w-50 mx-auto my-3" style={{color: 'red'}}>{this.state.showErrorMessage}</h5>
             <h4 className="w-50 mx-auto mt-5 mb-3">Logga in</h4>
             <form onSubmit={this.handleSubmit}>
@@ -135,11 +102,16 @@ class LoginScreen extends Component {
 
 LoginScreen.propTypes = {
   Login:              PropTypes.func,
+  login:              PropTypes.object,
 };
+
+const mapStateToProps = state => ({
+  login: state.login,
+});
 
 const mapDispatchToProps = dispatch => bindActionCreators({
   Login,
 }, dispatch);
 
 
-export default connect(null, mapDispatchToProps)(LoginScreen);
+export default connect(mapStateToProps, mapDispatchToProps)(LoginScreen);

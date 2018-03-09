@@ -33,7 +33,7 @@ class LoginCheck {
   public static function isLoggedin($response) {
 
     $jsonData = json_decode(trim(file_get_contents('php://input')), true);
-    if ($jsonData['apitoken'] === API_TOKEN) {
+    if ($jsonData['apitoken'] === API_TOKEN ) {
 
       $JWTpassed = true;
       $JWTerror = 'unknown';

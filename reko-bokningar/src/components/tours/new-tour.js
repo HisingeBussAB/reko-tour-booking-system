@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import DatePicker from 'react-datepicker';
 import moment from 'moment';
 import 'moment/locale/sv';
-import update from 'react-addons-update';
+import update from 'immutability-helper';
 import fontawesome from '@fortawesome/fontawesome';
 import faPlus from '@fortawesome/fontawesome-free-solid/faPlus';
 import faMinus from '@fortawesome/fontawesome-free-solid/faMinus';

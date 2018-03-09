@@ -11,6 +11,7 @@ import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import Config from '../../config/config';
 import axios from 'axios';
 import PropTypes from 'prop-types';
+import Handler from '../requesthandler';
 
 
 
@@ -29,6 +30,8 @@ class Categories extends Component {
 
   componentWillMount() {
     this.getCategory('all');
+    const Handler2 = new Handler();
+    Handler2.Send(1);
   }
 
   getCategory = (id, fromUpdate = null) => {

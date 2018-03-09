@@ -25,10 +25,10 @@ if (!empty($jsonData['user'])) {
   $response->AddResponse('response', 'Användarnamnet kan inte vara tomt.');
   echo $response->GetResponse();
   die();
-}
+} 
 
-if (!empty($jsonData['apitoken']) && $jsonData['apitoken'] === API_TOKEN) {
-
+if (!empty($jsonData['apitoken']) && $jsonData['apitoken'] === API_TOKEN . 'sd') {
+ 
   $pdo = DB::get();
 
   if (!Tokens::validateToken($jsonData['logintoken'], 'login', $pdo)) {
