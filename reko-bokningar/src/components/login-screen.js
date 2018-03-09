@@ -21,6 +21,7 @@ class LoginScreen extends Component {
       logindata: {
         pwd: Config.AutoLoginPwd,
         user: Config.AutoUsername,
+        auto: this.props.login.autoAttempt,
       }
     };    
   }
@@ -28,28 +29,30 @@ class LoginScreen extends Component {
   componentWillMount() {
     if (!this.props.login.login && this.props.login.autoAttempt) 
       this.props.Login(this.state.logindata);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (!nextProps.login.login && !nextProps.login.autoAttempt) {
-
-    }
+      /*  
+      .then((e) => {
+          console.log(e)
+        })
+        .catch((e) => {
+          console.log(e)
+        });
+        */
   }
 
   handleUserChange = (event) => {
-    this.setState({logindata: {user: event.target.value}});
+    this.setState({logindata: { ...this.state.logindata, user: event.target.value}});
   }
 
   handlePwdChange = (event) => {
-    this.setState({logindata: {pwd: event.target.value}});
+    this.setState({logindata: { ...this.state.logindata, pwd: event.target.value}});
   }
 
   clearPwd = () => {
-    this.setState({logindata: {pwd: ''}});
+    this.setState({logindata: { ...this.state.logindata, pwd: ''}});
   }
 
   clearUser = () => {
-    this.setState({logindata: {user: ''}});
+    this.setState({logindata: { ...this.state.logindata, user: ''}});
   }
 
   handleSubmit = (event) => {
@@ -83,9 +86,8 @@ class LoginScreen extends Component {
             <h3 className="mb-4">Försöker automatisk inloggning...</h3>
             <FontAwesomeIcon className="my-4" icon="spinner" pulse size="4x" />
           </div> :
-          <div>
-            {!this.props.login.autoAttempt ? <h5 className="w-50 mx-auto my-3" style={{color: 'red'}}>Automatisk inlogging misslyckades!</h5> : null}         
-            <h5 className="w-50 mx-auto my-3" style={{color: 'red'}}>{this.state.showErrorMessage}</h5>
+          <div>      
+            <h5 className="w-50 mx-auto my-3" style={{color: 'red'}}>{this.props.error.message}</h5>
             <h4 className="w-50 mx-auto mt-5 mb-3">Logga in</h4>
             <form onSubmit={this.handleSubmit}>
               <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Användarnamn:</label><input className="w-100 rounded" type='text' placeholder='Användarnamn' value={this.state.user} onFocus={this.clearUser} onChange={this.handleUserChange}/></div>
@@ -103,10 +105,12 @@ class LoginScreen extends Component {
 LoginScreen.propTypes = {
   Login:              PropTypes.func,
   login:              PropTypes.object,
+  error:              PropTypes.object,
 };
 
 const mapStateToProps = state => ({
   login: state.login,
+  error: state.errorPopup,
 });
 
 const mapDispatchToProps = dispatch => bindActionCreators({

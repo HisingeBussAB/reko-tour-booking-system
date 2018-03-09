@@ -27,7 +27,7 @@ if (!empty($jsonData['user'])) {
   die();
 } 
 
-if (!empty($jsonData['apitoken']) && $jsonData['apitoken'] === API_TOKEN . 'sd') {
+if (!empty($jsonData['apitoken']) && $jsonData['apitoken'] === API_TOKEN) {
  
   $pdo = DB::get();
 
@@ -53,13 +53,14 @@ if (!empty($jsonData['apitoken']) && $jsonData['apitoken'] === API_TOKEN . 'sd')
   }
 
   if (!$result) {
-    wrongLogin();
+    wrongLogin($response);
   }
 
   $now = time();
 
-    if (password_verify($jsonData['pwd'] . PWD_PEPPER, $result['pwd'])) {
-    $token = array(
+    if (password_verify($jsonData['pwd'] . 'df' . PWD_PEPPER, $result['pwd'])) {
+    
+      $token = array(
       "iss"   => DOMAIN,
       "aud"   => DOMAIN,
       "sub"   => $user,
@@ -82,7 +83,7 @@ if (!empty($jsonData['apitoken']) && $jsonData['apitoken'] === API_TOKEN . 'sd')
     $response->AddResponse('expires', ($now + 600000));
     echo $response->GetResponse();
   } else {
-    wrongLogin();
+    wrongLogin($response);
   }
 
 
@@ -97,7 +98,7 @@ if (!empty($jsonData['apitoken']) && $jsonData['apitoken'] === API_TOKEN . 'sd')
   die();
 }
 
-function wrongLogin() {
+function wrongLogin($response) {
   header( $_SERVER["SERVER_PROTOCOL"] . ' 401 Unauthorized');
   $headers = ob_get_clean();
   echo $headers;

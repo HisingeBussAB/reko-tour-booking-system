@@ -4,7 +4,6 @@ import { connect } from 'react-redux';
 import Loadable from 'react-loadable';
 import Loader from './components/loader';
 import { Route } from 'react-router-dom';
-import ErrorPopup from './components/error-popup';
 import LoginScreen from './components/login-screen';
 import PropTypes from 'prop-types';
 
@@ -53,7 +52,6 @@ class App extends Component {
 
     return (
       <div className="App h-100">
-        {this.props.showError ? <ErrorPopup message={this.props.showErrorMessage}/> : null }
         {this.props.loggedin ?
           <div>
             <MainMenu />

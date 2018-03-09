@@ -9,7 +9,6 @@ use \Moment\Moment;
 
   require __DIR__ . '/config/config.php';
 
-
   if (DEBUG_MODE) {
     ini_set('display_errors', 1);
     ini_set('display_startup_errors', 1);
