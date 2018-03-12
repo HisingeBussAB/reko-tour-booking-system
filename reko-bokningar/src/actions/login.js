@@ -1,19 +1,39 @@
 import Config from '../config/config';
-import axios from 'axios';
+import {myAxios} from '../config/axios';
 import {errorPopup} from './error-popup';
 import {getToken} from './get-token';
 
 export function Login(logindata) {
   
   const errprep = logindata.auto ? 'Automatisk inlogging misslyckades! ' : '';
+  return async (dispatch) => {
+    try {
+      let token = await getToken('login');
+      let post = await myAxios.post( '/auth', {
+        user: logindata.user,
+        pwd: logindata.pwd,
+        logintoken: token.data.logintoken,
+        apitoken: Config.ApiToken
+      });
+      dispatch({
+        type: 'POST',
+        payload: post
+      });
+      dispatch({type: 'LOGIN', payload: errprep});
+    } catch (error) {
+      dispatch('error: ' + error);
+      dispatch(errorPopup({visible: true, message: errprep}));
+      throw error;
+    }
+  };
 
-  return (dispatch) => {
+  /*
+  return dispatch => {  
     getToken('login')
       .then(response => {
-        axios.post( Config.ApiUrl + '/auth', {
+        return myAxios.post( '/auth', {
           user: logindata.user,
           pwd: logindata.pwd,
-          apitoken: Config.ApiToken,
           logintoken: response.data.logintoken,
         })
           .then(response => {
@@ -29,7 +49,6 @@ export function Login(logindata) {
               dispatch(errorPopup({visible: true, message: errprep + 'Okänt svar från API.'}));
             }
             dispatch({type: 'LOGIN', payload: payload});
-            return Promise.resolve();
           })
           .catch(error => {
             let errormsg = errprep + 'Ett fel har uppstått i inloggningen.';
@@ -42,8 +61,9 @@ export function Login(logindata) {
             }
             dispatch(errorPopup({visible: true, message: errormsg}));
             dispatch({type: 'LOGIN', payload: {autoAttempt: false}});
-            return Promise.reject();
+            throw error;
           });
+
       })
       .catch(error => {
         let errormsg = errprep + 'Ett fel har uppstått i inloggningen vid begäran av säkerhetstoken.';
@@ -56,8 +76,7 @@ export function Login(logindata) {
         }
         dispatch(errorPopup({visible: true, message: errormsg}));
         dispatch({type: 'LOGIN', payload: {autoAttempt: false}});
-        return Promise.reject();
       });
-    
-  };
+
+  };*/
 }

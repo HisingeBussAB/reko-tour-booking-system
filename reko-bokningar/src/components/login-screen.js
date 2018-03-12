@@ -17,6 +17,7 @@ class LoginScreen extends Component {
   constructor(props){
     super(props);
     this.state = {
+      issending: false,
       servertime: '',
       logindata: {
         pwd: Config.AutoLoginPwd,
@@ -27,16 +28,11 @@ class LoginScreen extends Component {
   }
 
   componentWillMount() {
-    if (!this.props.login.login && this.props.login.autoAttempt) 
-      this.props.Login(this.state.logindata);
-      /*  
-      .then((e) => {
-          console.log(e)
-        })
-        .catch((e) => {
-          console.log(e)
-        });
-        */
+    if (!this.props.login.login && this.props.login.autoAttempt) {
+      this.props.Login(this.state.logindata)
+        .then(e => {console.log('yes');})
+        .catch(e => {console.log('no');});
+    }
   }
 
   handleUserChange = (event) => {
@@ -57,6 +53,7 @@ class LoginScreen extends Component {
 
   handleSubmit = (event) => {
     event.preventDefault();
+    this.setState({issending: true});
     this.props.Login(this.state.logindata);
   }
 

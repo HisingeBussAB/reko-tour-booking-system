@@ -58,7 +58,7 @@ if (!empty($jsonData['apitoken']) && $jsonData['apitoken'] === API_TOKEN) {
 
   $now = time();
 
-    if (password_verify($jsonData['pwd'] . 'df' . PWD_PEPPER, $result['pwd'])) {
+    if (password_verify($jsonData['pwd'] . PWD_PEPPER, $result['pwd'])) {
     
       $token = array(
       "iss"   => DOMAIN,
