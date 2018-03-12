@@ -17,8 +17,8 @@ use \Moment\Moment;
 
   ob_start(null, 0);
   header("Content-Type: application/json; charset=UTF-8");
+  header("Accept-Charset: utf-8");
   header("Cache-Control: no-cache, must-revalidate");
-  header("Expires: Sat, 26 Jul 2017 05:00:00 GMT");
   header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
   header('Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
   if (ACCESS_CONTROL_ENABLED) {
@@ -26,9 +26,6 @@ use \Moment\Moment;
   } else {
     header("Access-Control-Allow-Origin: *");
   }
-
-
-
 
   if (LAN_LOCK) {
     if (!preg_match("/^192\.168\.\d{0,3}\.\d{0,3}$/", $_SERVER["REMOTE_ADDR"]) &&
@@ -49,19 +46,30 @@ use \Moment\Moment;
 
   if ($_SERVER['REQUEST_METHOD'] == "OPTIONS") {
     //OPTIONS request. Send CORS headers and die. Preflight handler
+    header( $_SERVER["SERVER_PROTOCOL"] . ' 200 OK');
     $headers = ob_get_clean();
     echo $headers;
     die();
   }
 
+  if ($_SERVER["HTTP_AUTHORIZATION"] != API_TOKEN) {
+    header( $_SERVER["SERVER_PROTOCOL"] . ' 401 Unauthorized');
+    $a = array(
+      'saved' => false,
+      'response' => 'Fel eller ingen API token skickad.');
+    $headers = ob_get_clean();
+    echo $headers;
+    echo json_encode($a);
+    die();
+  }
+
+  header("Accept: application/json");
 
   $loader = require __DIR__ . '/vendor/autoload.php';
   $loader->add('RekoBooking', __DIR__);
   $loader->addPsr4('RekoBooking\\', __DIR__);
 
-
   $router = new \AltoRouter();
-
 
   $router->setBasePath('/api');
   Moment::setDefaultTimezone('CET');
@@ -84,7 +92,6 @@ use \Moment\Moment;
       function() { echo json_encode(array('servertime' => time())); }),
   ));
 
-
   $match = $router->match();
   $match['params']['response'] = $response; //Pass responder object into the router
 
@@ -104,5 +111,3 @@ use \Moment\Moment;
   header( $_SERVER["SERVER_PROTOCOL"] . ' 200 OK');
   $website = ob_get_clean();
   echo $website;
-
-
