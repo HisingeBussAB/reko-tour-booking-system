@@ -7,7 +7,6 @@ import { connect } from 'react-redux';
 import { bindActionCreators }from 'redux';
 import {Login} from '../actions';
 import Config from '../config/config';
-import axios from 'axios';
 import Logo from '../img/logo.gif';
 
 
@@ -29,9 +28,17 @@ class LoginScreen extends Component {
 
   componentWillMount() {
     if (!this.props.login.login && this.props.login.autoAttempt) {
+      this.setState({issending: true});
       this.props.Login(this.state.logindata)
-        .then(e => {console.log('yes');})
-        .catch(e => {console.log('no');});
+        .then(() => {
+          //Component will unmount here
+        })
+        .catch(() => {
+          this.setState({issending: false});
+        });
+    }
+    if (this.props.login.autoAttempt === false) {
+      this.setState({issending: false});
     }
   }
 
@@ -54,7 +61,13 @@ class LoginScreen extends Component {
   handleSubmit = (event) => {
     event.preventDefault();
     this.setState({issending: true});
-    this.props.Login(this.state.logindata);
+    this.props.Login(this.state.logindata)
+      .then(() => {
+        this.setState({issending: false});
+      })
+      .catch(() => {
+        this.setState({issending: false});
+      });
   }
 
 
@@ -87,9 +100,11 @@ class LoginScreen extends Component {
             <h5 className="w-50 mx-auto my-3" style={{color: 'red'}}>{this.props.error.message}</h5>
             <h4 className="w-50 mx-auto mt-5 mb-3">Logga in</h4>
             <form onSubmit={this.handleSubmit}>
-              <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Användarnamn:</label><input className="w-100 rounded" type='text' placeholder='Användarnamn' value={this.state.user} onFocus={this.clearUser} onChange={this.handleUserChange}/></div>
-              <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Lösenord:</label><input className="w-100 rounded" type='password' placeholder='Lösenord' value={this.state.pwd} onFocus={this.clearPwd} onChange={this.handlePwdChange}/></div>
-              <div className="my-2 w-50 mx-auto"><input className="w-100 mt-4 rounded text-uppercase font-weight-bold btn btn-primary custom-wide-text" type='submit' value='Logga in'/></div>
+              <fieldset disabled={this.state.issending}>
+                <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Användarnamn:</label><input className="w-100 rounded" type='text' placeholder='Användarnamn' value={this.state.user} onFocus={this.clearUser} onChange={this.handleUserChange}/></div>
+                <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Lösenord:</label><input className="w-100 rounded" type='password' placeholder='Lösenord' value={this.state.pwd} onFocus={this.clearPwd} onChange={this.handlePwdChange}/></div>
+                <div className="my-2 w-50 mx-auto"><input className="w-100 mt-4 rounded text-uppercase font-weight-bold btn btn-primary custom-wide-text" type='submit' value='Logga in'/></div>
+              </fieldset>
             </form>
           </div>
         }

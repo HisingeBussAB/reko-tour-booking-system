@@ -27,76 +27,66 @@ if (!empty($jsonData['user'])) {
   die();
 } 
 
-if (!empty($jsonData['apitoken']) && $jsonData['apitoken'] === API_TOKEN) {
- 
-  $pdo = DB::get();
+$pdo = DB::get();
 
-  if (!Tokens::validateToken($jsonData['logintoken'], 'login', $pdo)) {
-    header( $_SERVER["SERVER_PROTOCOL"] . ' 401 Unauthorized');
-    $headers = ob_get_clean();
-    echo $headers;
-    $response->AddResponse('login', false);
-    $response->AddResponse('saved', false);
-    $response->AddResponse('response', 'En tillfällig token som behövs för den här operationen har troligen gått ut. Prova ladda om sidan (F5).');
-    echo $response->GetResponse();
-    die();
-  }
-
-  try {
-    $sql = "SELECT TOP 1 * FROM Auth WHERE username = :user ORDER BY AuthID;";
-    $sth = $pdo->prepare($sql);
-    $sth->bindParam(':user', $user, \PDO::PARAM_STR);
-    $sth->execute(); 
-    $result = $sth->fetch(\PDO::FETCH_ASSOC);
-  } catch(\PDOException $e) {
-    DBError::showError($e, __CLASS__, $sql);
-  }
-
-  if (!$result) {
-    wrongLogin($response);
-  }
-
-  $now = time();
-
-    if (password_verify($jsonData['pwd'] . PWD_PEPPER, $result['pwd'])) {
-    
-      $token = array(
-      "iss"   => DOMAIN,
-      "aud"   => DOMAIN,
-      "sub"   => $user,
-      "iat"   => $now,
-      "nbf"   => $now - 120,
-      "exp"   => $now + 600000,
-      "jti"   => array(
-        "mark"  => JWT_WATERMARK,
-        "agent" => $_SERVER['HTTP_USER_AGENT'],
-        "ip"    => $_SERVER['REMOTE_ADDR'],
-        "ent"   => bin2hex(openssl_random_pseudo_bytes(6))
-      ),
-    );
-    $jwtSecret = Tokens::createJWTToken('jwt', $user, $pdo);
-    $jwt = JWT::encode($token, $jwtSecret, 'HS512');
-    $response->AddResponse('login', true);
-    $response->AddResponse('saved', false);
-    $response->AddResponse('jwt', $jwt);
-    $response->AddResponse('user', $user);
-    $response->AddResponse('expires', ($now + 600000));
-    echo $response->GetResponse();
-  } else {
-    wrongLogin($response);
-  }
-
-
-} else {
+if (!Tokens::validateToken($jsonData['logintoken'], 'login', $pdo)) {
   header( $_SERVER["SERVER_PROTOCOL"] . ' 401 Unauthorized');
   $headers = ob_get_clean();
   echo $headers;
   $response->AddResponse('login', false);
   $response->AddResponse('saved', false);
-  $response->AddResponse('response', 'Fel APItoken sänd med begäran. Inte tillåten.');
+  $response->AddResponse('response', 'En tillfällig token som behövs för den här operationen har troligen gått ut. Prova ladda om sidan (F5).');
   echo $response->GetResponse();
   die();
 }
+
+try {
+  $sql = "SELECT TOP 1 * FROM Auth WHERE username = :user ORDER BY AuthID;";
+  $sth = $pdo->prepare($sql);
+  $sth->bindParam(':user', $user, \PDO::PARAM_STR);
+  $sth->execute(); 
+  $result = $sth->fetch(\PDO::FETCH_ASSOC);
+} catch(\PDOException $e) {
+  DBError::showError($e, __CLASS__, $sql);
+}
+
+if (!$result) {
+  wrongLogin($response);
+}
+
+$now = time();
+$expires = ($now + 600000);
+
+  if (password_verify($jsonData['pwd'] . PWD_PEPPER, $result['pwd'])) {
+
+
+  
+    $token = array(
+    "iss"   => DOMAIN,
+    "aud"   => DOMAIN,
+    "sub"   => $user,
+    "iat"   => $now,
+    "nbf"   => $now - 30,
+    "exp"   => $expires,
+    "jti"   => array(
+      "mark"  => JWT_WATERMARK,
+      "agent" => $_SERVER['HTTP_USER_AGENT'],
+      "ip"    => $_SERVER['REMOTE_ADDR'],
+      "ent"   => bin2hex(openssl_random_pseudo_bytes(6))
+    ),
+  );
+  $jwtSecret = Tokens::createJWTToken('jwt', $user, $pdo);
+  $jwt = JWT::encode($token, $jwtSecret . JWT_SECRET_PEPPER, 'HS512');
+  $response->AddResponse('login', true);
+  $response->AddResponse('saved', false);
+  $response->AddResponse('jwt', $jwt);
+  $response->AddResponse('user', $user);
+  $response->AddResponse('expires', $expires);
+  echo $response->GetResponse();
+} else {
+  wrongLogin($response);
+}
+
 
 function wrongLogin($response) {
   header( $_SERVER["SERVER_PROTOCOL"] . ' 401 Unauthorized');

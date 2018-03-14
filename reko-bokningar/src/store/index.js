@@ -18,8 +18,12 @@ const initialState = {
     jwt: '',
     autoAttempt: Config.AutoLogin,
   },
-
-  
+  loading: {
+    inprogress: true,
+  },  
+  tours: {
+    categories: [],
+  }
 };
 const enhancers = [];
 const middleware = [

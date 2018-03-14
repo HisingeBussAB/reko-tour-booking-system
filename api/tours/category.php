@@ -68,16 +68,16 @@ switch ($operation) {
     break;
   case "get":
     if (Category::Get($newData, $response, $pdo)) {
-      $response->AddResponse('sucess', true);
+      $response->AddResponse('success', true);
       $response->AddResponse('saved', false);
     } else {
       $response->AddResponse('saved', false);
-      $response->AddResponse('sucess', false);
+      $response->AddResponse('success', false);
     }
     break;
   case "void":
     $response->AddResponse('saved', false);
-    $response->AddResponse('sucess', false);
+    $response->AddResponse('success', false);
     break;
   default:
     NotFound::PrintDie();

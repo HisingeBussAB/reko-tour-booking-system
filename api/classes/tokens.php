@@ -117,10 +117,10 @@ class Tokens
 
     self::flushUsersJWTTokens($user, $pdo);
 
-    $bytes     = openssl_random_pseudo_bytes(64);
+    $bytes     = openssl_random_pseudo_bytes(48);
     $hex       = bin2hex($bytes);
     $created   = time();
-    $newtoken  = hash('sha512', $hex . microtime() . JWT_SECRET_PEPPER);
+    $newtoken  = hash('sha512', $hex . microtime());
 
     try {
       $sql = "INSERT INTO Tokens (Token, TokenType, Created, username) VALUES (:token, :tokentype, :created, :user);";

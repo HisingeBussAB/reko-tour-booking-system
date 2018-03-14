@@ -5,6 +5,8 @@ import Loadable from 'react-loadable';
 import Loader from './components/loader';
 import { Route } from 'react-router-dom';
 import LoginScreen from './components/login-screen';
+import SaveIcon from './components/save-icon';
+import ExpireChecker from './components/expire-checker';
 import PropTypes from 'prop-types';
 
 /*eslint-disable react/display-name */
@@ -62,6 +64,8 @@ class App extends Component {
           </div> : 
           <LoginScreen />
         }
+        <ExpireChecker />
+        <SaveIcon />
       </div>
     );
   }
