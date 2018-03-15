@@ -3,8 +3,6 @@ import faSyncAlt from '@fortawesome/fontawesome-free-solid/faSyncAlt';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { bindActionCreators }from 'redux';
-import {Login} from '../actions';
 
 
 

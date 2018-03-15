@@ -3,8 +3,6 @@ export default function tours(state = {}, action) {
   switch(action.type){
 
   case 'TOURS_SAVE_CATEGORIES':
-    console.log(action.payload);
-    console.log(state.categories);
     return {categories: mergeCategories(state.categories, action.payload)};
 
   default:
@@ -23,13 +21,19 @@ function mergeCategories(originalarray, newarray) {
   }
 
   if (arr2length === 1) {
-    const result = originalarray.map(obj => {
-      if (obj.id === newarray[0].id) {
-        return newarray[0];
-      } else {
-        return obj;
+    let result = originalarray;
+    let found = false;
+    found = result.find((o, i) => {
+      if (o.id === newarray[0].id) {
+        result[i] = newarray[0];
+        return true;
       }
+      return false;
     });
+
+    if (found === false) {
+      result.push(newarray[0]);
+    }
     return result;
   } else {
     return newarray;

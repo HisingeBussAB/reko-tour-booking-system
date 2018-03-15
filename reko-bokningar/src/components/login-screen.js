@@ -22,16 +22,50 @@ class LoginScreen extends Component {
         pwd: Config.AutoLoginPwd,
         user: Config.AutoUsername,
         auto: this.props.login.autoAttempt,
+        isOnce: false,
       }
     };    
   }
 
   componentWillMount() {
-    if (!this.props.login.login && this.props.login.autoAttempt) {
+
+    let logindata = {...this.state.logindata};
+    let userObject = null;
+    try {
+      userObject = localStorage.getObject('user');
+    } catch(e) {
+      userObject = null;
+    }
+    
+    const dateTime = +new Date();
+    const timestamp = Math.floor(dateTime / 1000);
+
+    //Check if userObject appears valid. 
+    //This is just a basic sanity filter. It allows a lot of leeway since the client and server could have timezone differences etc.
+    try {
+      if ((userObject.expires-10000) >= timestamp || userObject.token.length < 10 || userObject.tokenid.length < 10 || userObject.user === '') {
+        userObject = null;
+      }
+    } catch(e) {
+      userObject = null;
+    }
+
+    if (userObject !== null) {
+      logindata = {
+        pwd: userObject.tokenid + Config.OnceLoginToken + userObject.token,
+        user: userObject.user,
+        auto: true,
+        isOnce: true,
+      };
+      localStorage.setObject('user', null);
+    }
+
+
+    if (!this.props.login.login && logindata.auto) {
       this.setState({issending: true});
-      this.props.Login(this.state.logindata)
+      this.props.Login(logindata)
         .then(() => {
-          //Component will unmount here
+          //Component will unmount
         })
         .catch(() => {
           this.setState({issending: false});
@@ -41,6 +75,31 @@ class LoginScreen extends Component {
       this.setState({issending: false});
     }
   }
+
+  componentWillReceiveProps(nextProps) {
+    let userObject = null;
+    try {
+      userObject = localStorage.getObject('user');
+    } catch(e) {
+      userObject = null;
+    }
+
+    if (!nextProps.login.login && nextProps.login.autoAttempt && userObject === null && (typeof Config.AutoUsername !== 'undefined' && Config.AutoUsername) && (typeof Config.AutoLoginPwd !== 'undefined' && Config.AutoLoginPwd)) {
+      this.setState({issending: true});
+      this.props.Login({
+        pwd: Config.AutoLoginPwd,
+        user: Config.AutoUsername,
+        auto: nextProps.login.autoAttempt,
+      })
+        .then(() => {
+          //Component will unmount
+        })
+        .catch(() => {
+          this.setState({issending: false});
+        });
+    }
+  }
+
 
   handleUserChange = (event) => {
     this.setState({logindata: { ...this.state.logindata, user: event.target.value}});

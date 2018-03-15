@@ -9,8 +9,11 @@ import faTrashAlt from '@fortawesome/fontawesome-free-regular/faTrashAlt';
 import faSpinner from '@fortawesome/fontawesome-free-solid/faSpinner';
 import faPlus from '@fortawesome/fontawesome-free-solid/faPlus';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
+import Config from '../../config/config';
+import {myAxios} from '../../config/axios';
 import PropTypes from 'prop-types';
-import {getCategories,setCategories} from '../../actions';
+import {getCategories, loading} from '../../actions';
+
 
 
 class Categories extends Component {
@@ -19,23 +22,72 @@ class Categories extends Component {
     this.state = {
       showStatus: false,
       showStatusMessage: '',
-      isSubmitting: false,
+      isSubmitting: true,
       isUpdating: {save: [], activetoggle: [], delete: []},
+      categoriesSaved: [],
       categoriesUnsaved: [],
     };
   }
 
   componentWillMount() {
-    this.props.getCategories('tours/category/get', {
-      user: this.props.login.user,
-      jwt: this.props.login.jwt,
-      categoryid: 'all',
-    });
-
+    if (typeof this.props.categories === 'object' && this.props.categories.length > 0) {
+      this.setState({categoriesSaved: this.props.categories, categoriesUnsaved: this.props.categories}); 
+    } else {
+      this.getCategory('all');
+    }
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({categoriesUnsaved: [...nextProps.categoriesSaved]});
+  componentWillUnmount() {
+    //Load updated categories to redux
+    this.reduxUpdate();
+  }
+
+  reduxUpdate = () => {this.props.getCategories({
+    user: this.props.login.user,
+    jwt: this.props.login.jwt,
+    categoryid: 'all',
+  });
+  }
+
+  getCategory = (id, fromUpdate = null) => {
+    this.props.loading(true);
+    myAxios.post( Config.ApiUrl + '/tours/category/get', {
+      user: this.props.login.user,
+      jwt: this.props.login.jwt,
+      categoryid: id,
+    })
+      .then(response => {
+        if (response.data.category !== undefined) {
+          if (response.data.category.length > 1) {
+            this.setState({categoriesSaved: response.data.category, categoriesUnsaved: response.data.category});
+            if (this.props.categories !== response.data.category) {
+              //Redux state missmatch, update
+              this.reduxUpdate();
+            }
+          } else {
+            let i = this.state.categoriesSaved.findIndex(function (obj) { return obj.id === response.data.category[0].id; });
+            this.setState({categoriesSaved: update(this.state.categoriesSaved, {[i]: {$set: response.data.category[0]}}), categoriesUnsaved: update(this.state.categoriesUnsaved, {[i]: {$set: response.data.category[0]}})});
+            if (fromUpdate !== null) {
+              this.setState({isUpdating: update(this.state.isUpdating, {[fromUpdate] : {$apply: (x) => {x.pop(i); return x;}}})});
+            }
+          }
+          
+        }
+        if (response.data.response !== undefined) {
+          this.setState({showStatus: true, showStatusMessage: response.data.response});
+        }
+        this.setState({isSubmitting: false});
+        this.props.loading(false);
+      })
+      .catch(error => {
+        this.props.loading(false);
+        if (error.response === undefined) {
+          this.setState({isSubmitting: false, showStatus: true, showStatusMessage: 'Okänt fel. Inget svar från API.'});
+        } else {
+          this.setState({isSubmitting: false, showStatus: true, showStatusMessage: error.response.data.response});
+        }
+      });
+
   }
 
   addRow = () => {
@@ -51,15 +103,74 @@ class Categories extends Component {
 
   handleSend = (e, i, operationin) => {
     e.preventDefault();
+    this.props.loading(true);
     this.setState({isSubmitting: true});
-    this.props.setCategories('tours/category/' + operationin, {
+    let operation = operationin;
+    let active = this.state.categoriesUnsaved[i].active;
+    if (operationin === 'save') {
+      this.setState({isUpdating: update(this.state.isUpdating, {save: {$push: [i]}})});
+      if (this.state.categoriesUnsaved[i].id === '' || this.state.categoriesUnsaved[i].id === null) {
+        operation = 'new';
+      } else {
+        operation = 'save';
+      }
+    }
+
+    if (operationin === 'activetoggle') {
+      
+      if (this.state.categoriesUnsaved[i].id === '' || this.state.categoriesUnsaved[i].id === null) {
+        this.setState({isSubmitting: false, showStatus: true, showStatusMessage: 'Du kan inte ändra aktiv status på en kategori som inte är sparad. Spara kategorin först.'});
+        this.props.loading(false);
+        return;
+      }
+      if (this.state.categoriesUnsaved[i].category !== this.state.categoriesSaved[i].category) {
+        this.setState({isSubmitting: false, showStatus: true, showStatusMessage: 'Du kan inte ändra status på en kategori med namnändring som inte är sparad ännu. Spara namnet först.'});
+        this.props.loading(false);
+        return;
+      }
+      this.setState({isUpdating: update(this.state.isUpdating, {activetoggle: {$push: [i]}})});
+      active = active ? false : true;
+      operation = 'save';
+    }
+
+    if (operationin === 'delete') {
+      if (this.state.categoriesUnsaved[i].id === '' || this.state.categoriesUnsaved[i].id === null) {
+        this.setState({isSubmitting: false, categoriesUnsaved: update(this.state.categoriesUnsaved, {$splice: [[i, 1]]})});
+        return;
+      }
+      this.setState({isUpdating: update(this.state.isUpdating, {delete: {$push: [i]}})});
+      operation = 'delete';
+    }
+
+
+
+    this.setState({isSubmitting: true});
+    this.props.loading(true);
+    myAxios.post( Config.ApiUrl + '/tours/category/' + operation, {
       user: this.props.login.user,
       jwt: this.props.login.jwt,
-      categoryid: this.state.categoriesUnsaved[i].id,
       task: operationin,
+      categoryid: this.state.categoriesUnsaved[i].id,
       category: this.state.categoriesUnsaved[i].category,
-      //active: active,
-    });
+      active: active,
+    })
+      .then(response => {
+        if (response.data.modifiedid !== undefined) {
+          if (operationin !== 'delete') {
+            this.getCategory(response.data.modifiedid, operationin);
+          } else {
+            let i = this.state.categoriesSaved.findIndex(function (obj) { return obj.id === this.state.categoriesUnsaved[i].id; });
+            this.setState({isUpdating: update(this.state.isUpdating, {delete: {$apply: (x) => {x.pop(i); return x;}}})});
+          }
+        }
+        this.setState({isSubmitting: false, showStatus: true, showStatusMessage: response.data.response});
+        this.props.loading(false);
+      })
+      .catch(error => {
+        this.setState({isSubmitting: false, showStatus: true, showStatusMessage: error.response.data.response});
+        this.props.loading(false);
+      });
+
   };
 
 
@@ -68,41 +179,34 @@ class Categories extends Component {
 
   render() {
 
-    let catRowtemp;
-    try {
-      catRowtemp = this.state.categoriesUnsaved.map((category, i) => 
-        
-        <tr key={i}>
-          <td className="align-middle pr-3 py-2 w-50">
-            <input value={category.category} onChange={(e) => this.handleCategoryChange(i, 'category', e.target.value)} placeholder='Kategorinamn' type='text' className="rounded w-100" maxLength="35" style={{minWidth: '200px'}} />
-          </td>
-          <td className="align-middle px-3 py-2 text-center">
-            {(((this.props.categoriesSaved[i] === undefined) || (this.props.categoriesSaved[i] !== undefined && category.category !== this.props.categoriesSaved[i].category))) && !this.state.isUpdating.save.includes(i) &&
-              <span title="Spara ändring i kategorin"><FontAwesomeIcon icon={faSave} size="2x" className="primary-color custom-scale" onClick={(e) => this.handleSend(e, i, 'save')}/></span>}  
-            {this.state.isUpdating.save.includes(i) &&
-              <span title="Inaktivera denna kategori"><FontAwesomeIcon icon={faSpinner} size="2x" pulse className="primary-color"/></span> }        
-          </td>   
-          <td className="align-middle px-3 py-2 text-center">
-            {this.state.isUpdating.activetoggle.includes(i) && 
-              <span title="Inaktivera denna kategori"><FontAwesomeIcon icon={faSpinner} size="2x" pulse className="primary-color"/></span> }        
-            {!this.state.isUpdating.activetoggle.includes(i) && category.active &&
-              <span title="Inaktivera denna kategori"><FontAwesomeIcon icon={faCheckSquare} size="2x" onClick={(e) => this.handleSend(e, i, 'activetoggle')} className="primary-color custom-scale"/></span> }
-            {!this.state.isUpdating.activetoggle.includes(i) && !category.active &&  
-              <span title="Aktivera denna kategori"><FontAwesomeIcon icon={faSquare} onClick={(e) => this.handleSend(e, i, 'activetoggle')} size="2x" className="primary-color custom-scale"/></span> }
+    const categoryRows = this.state.categoriesUnsaved.map((category, i) => 
+      
+      <tr key={i}>
+        <td className="align-middle pr-3 py-2 w-50">
+          <input value={category.category} onChange={(e) => this.handleCategoryChange(i, 'category', e.target.value)} placeholder='Kategorinamn' type='text' className="rounded w-100" maxLength="35" style={{minWidth: '200px'}} />
+        </td>
+        <td className="align-middle px-3 py-2 text-center">
+          {(((this.state.categoriesSaved[i] === undefined) || (this.state.categoriesSaved[i] !== undefined && category.category !== this.state.categoriesSaved[i].category))) && !this.state.isUpdating.save.includes(i) &&
+            <span title="Spara ändring i kategorin"><FontAwesomeIcon icon={faSave} size="2x" className="primary-color custom-scale" onClick={(e) => this.handleSend(e, i, 'save')}/></span>}  
+          {this.state.isUpdating.save.includes(i) &&
+            <span title="Inaktivera denna kategori"><FontAwesomeIcon icon={faSpinner} size="2x" pulse className="primary-color"/></span> }        
+        </td>   
+        <td className="align-middle px-3 py-2 text-center">
+          {this.state.isUpdating.activetoggle.includes(i) && 
+            <span title="Inaktivera denna kategori"><FontAwesomeIcon icon={faSpinner} size="2x" pulse className="primary-color"/></span> }        
+          {!this.state.isUpdating.activetoggle.includes(i) && category.active &&
+            <span title="Inaktivera denna kategori"><FontAwesomeIcon icon={faCheckSquare} size="2x" onClick={(e) => this.handleSend(e, i, 'activetoggle')} className="primary-color custom-scale"/></span> }
+          {!this.state.isUpdating.activetoggle.includes(i) && !category.active &&  
+            <span title="Aktivera denna kategori"><FontAwesomeIcon icon={faSquare} onClick={(e) => this.handleSend(e, i, 'activetoggle')} size="2x" className="primary-color custom-scale"/></span> }
 
-          </td>          
-          <td className="align-middle pl-3 py-2 text-center">
-            {!this.state.isUpdating.delete.includes(i) && 
-            <span title="Ta bord denna kategori permanent"><FontAwesomeIcon icon={faTrashAlt} onClick={(e) => this.handleSend(e, i, 'delete')} size="2x" className="danger-color custom-scale"/></span>}
-            {this.state.isUpdating.delete.includes(i) && 
-              <span title="Inaktivera denna kategori"><FontAwesomeIcon icon={faSpinner} size="2x" pulse className="danger-color"/></span>}
-          </td>   
-        </tr>);
-    } catch(error) {
-      catRowtemp = null;
-    }
-
-    const categoryRows = catRowtemp;
+        </td>          
+        <td className="align-middle pl-3 py-2 text-center">
+          {!this.state.isUpdating.delete.includes(i) && 
+          <span title="Ta bord denna kategori permanent"><FontAwesomeIcon icon={faTrashAlt} onClick={(e) => this.handleSend(e, i, 'delete')} size="2x" className="danger-color custom-scale"/></span>}
+          {this.state.isUpdating.delete.includes(i) && 
+            <span title="Inaktivera denna kategori"><FontAwesomeIcon icon={faSpinner} size="2x" pulse className="danger-color"/></span>}
+        </td>   
+      </tr>);
     
 
     return (
@@ -144,19 +248,23 @@ class Categories extends Component {
 
 Categories.propTypes = {
   login:              PropTypes.object,
-  categoriesSaved:    PropTypes.array,
   getCategories:      PropTypes.func,
-  setCategories:      PropTypes.func,
+  loading:            PropTypes.func,
+  categories:         PropTypes.array,
 };
 
 const mapStateToProps = state => ({
   login: state.login,
-  categoriesSaved: state.tours.categories,
+  showStatus: state.errorPopup.visible,
+  showStatusMessage: state.errorPopup.message,
+  categories: state.tours.categories,
 });
 
 const mapDispatchToProps = dispatch => bindActionCreators({
   getCategories,
-  setCategories,
+  loading
 }, dispatch);
+
+
 
 export default connect(mapStateToProps, mapDispatchToProps)(Categories);

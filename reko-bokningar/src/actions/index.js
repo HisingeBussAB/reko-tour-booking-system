@@ -1,3 +1,4 @@
 export {Login} from './login';
 export {errorPopup} from './error-popup';
-export {getCategories,setCategories} from './categories';
+export {getCategories} from './categories';
+export function loading(bool) {return (dispatch) => { dispatch({type: 'LOADING', payload: bool});};}

@@ -4,6 +4,8 @@ export default function loading(state = {}, action) {
   
   case 'LOADING':
     return {inprogress: action.payload};
+  case 'LOADING_FLAGS':
+    return {flags: action.payload};
   default:
     return state;
   }

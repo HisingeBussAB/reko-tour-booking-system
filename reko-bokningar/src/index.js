@@ -12,11 +12,20 @@ import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import '../node_modules/react-datepicker/dist/react-datepicker.css';
 import './styles/index.css';
 
+Storage.prototype.setObject = function(key, value) {
+  this.setItem(key, JSON.stringify(value));
+}; 
+
+Storage.prototype.getObject = function(key) {
+  var value = this.getItem(key);
+  return value && JSON.parse(value);
+};
+
 const target = document.querySelector('#root');
 
 const App = Loadable({
-  //eslint-disable-next-line
   loader: () => import('./App'),
+  //eslint-disable-next-line
   loading: () => <Loader fullScreen={true} />,
 });
 

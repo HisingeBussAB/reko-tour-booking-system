@@ -40,6 +40,7 @@ class Tokens
     if ($tokentype = 'jwt')       {$expire = 604800;}
     if ($tokentype = 'submit')    {$expire = 1600;}
 
+    $expired = time() - $expire;
 
     try {
       $sql = "DELETE FROM Tokens WHERE TokenType = :tokentype AND Created < :expired;";

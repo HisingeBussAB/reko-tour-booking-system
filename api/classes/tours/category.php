@@ -106,7 +106,7 @@ class Category {
       DBError::showError($e, __CLASS__, $sql, $response);
       return false;
     }
-    if ($jsonData['categoryid'] != 'new') {
+    if ($jsonData['categoryid'] == 'new') {
       $response->AddResponse('modifiedid', (int)$result['kategoriid']);
     } else {
       $response->AddResponse('modifiedid', $jsonData['categoryid']);

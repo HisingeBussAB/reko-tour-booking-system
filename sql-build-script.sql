@@ -15,6 +15,10 @@ DROP TABLE KalkylKostnad
 DROP TABLE Kalkyl
 DROP TABLE Kategori_Resa
 DROP TABLE Bokning_Kund
+DROP TABLE HammerGuard
+DROP TABLE Auth_Once
+-- DROP TABLE Auth
+
 
 -- Exported from QuickDBD: https://www.quickdatatabasediagrams.com/
 -- Link to schema: https://app.quickdatabasediagrams.com/#/schema/w9zPqM6P8UOAWzy4IzSEkQ
@@ -25,6 +29,18 @@ SET XACT_ABORT ON
 
 BEGIN TRANSACTION QUICKDBD
 
+CREATE TABLE [HammerGuard] (
+    [iphash] varchar(255)  NOT NULL ,
+    [created] bigint  NOT NULL 
+)
+
+CREATE TABLE [Auth_Once] (
+    [userID] bigint  NOT NULL ,
+    [tokenid] varchar(255)  NOT NULL ,
+    [token] varchar(255)  NOT NULL,
+    [created] bigint  NOT NULL  
+)
+
 CREATE TABLE [Tokens] (
     [Token] varchar(255)  NOT NULL ,
     [TokenType] varchar(255)  NOT NULL ,
@@ -32,14 +48,14 @@ CREATE TABLE [Tokens] (
     [username] varchar(255)  NULL 
 )
 
-CREATE TABLE [Auth] (
-    [AuthID] bigint IDENTITY(1,1) NOT NULL ,
-    [user] varchar(255)  NOT NULL ,
-    [pwd] varchar(255)  NOT NULL ,
-    CONSTRAINT [PK_Auth] PRIMARY KEY CLUSTERED (
-        [AuthID] ASC
-    )
-)
+-- CREATE TABLE [Auth] (
+--    [AuthID] bigint IDENTITY(1,1) NOT NULL ,
+--    [user] varchar(255)  NOT NULL ,
+--    [pwd] varchar(255)  NOT NULL ,
+--    CONSTRAINT [PK_Auth] PRIMARY KEY CLUSTERED (
+--        [AuthID] ASC
+--    )
+-- )
 
 CREATE TABLE [Bokning] (
     [BokningID] bigint IDENTITY(1,1) NOT NULL ,
@@ -218,6 +234,11 @@ CREATE TABLE [KalkylIntakt] (
         [IntaktID] ASC
     )
 )
+
+ALTER TABLE [Auth_Once] WITH CHECK ADD CONSTRAINT [FK_Auth_Once_userID] FOREIGN KEY([userID])
+REFERENCES [Auth] ([AuthID])
+
+ALTER TABLE [Auth_Once] CHECK CONSTRAINT [FK_Auth_Once_userID]
 
 ALTER TABLE [Bokning] WITH CHECK ADD CONSTRAINT [FK_Bokning_ResaID] FOREIGN KEY([ResaID])
 REFERENCES [Resa] ([ResaID])

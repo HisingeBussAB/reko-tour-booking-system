@@ -34,6 +34,7 @@ const ListView = Loadable({
 
 
 class App extends Component {
+
   
 
   componentWillMount() {
@@ -45,8 +46,10 @@ class App extends Component {
     //alert('Ett fel har inträffat, ladda om sidan eller nåt');
   }
 
+
   
 
+  
   render() {
 
    

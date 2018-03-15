@@ -25,6 +25,7 @@ if (!empty($jsonData['user'])) {
 
 $pdo = DB::get();
 $response->AddResponse('saved', false);
+$response->AddResponse('servertime', time());
 $response->AddResponseArray(Tokens::createToken($tokentype, $pdo, $user));
 echo $response->GetResponse();
 

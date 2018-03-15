@@ -14,10 +14,18 @@ export function Login(logindata) {
         pwd: logindata.pwd,
         logintoken: token.data.logintoken
       });
-      let payload = {
-        login: false,
-        autoAttempt: false,
-      };         
+      let payload;
+      if (logindata.isOnce) {
+        payload = {
+          login: false,
+          autoAttempt: true,
+        };         
+      } else {
+        payload = {
+          login: false,
+          autoAttempt: false,
+        };         
+      }
       try {
         if (response.data.login !== undefined) {
           payload = {...payload, ...response.data};
@@ -25,6 +33,14 @@ export function Login(logindata) {
       } catch(e) {
         dispatch(errorPopup({visible: true, message: errprep + 'Okänt svar från API.'}));
       }
+      localStorage.setObject('user', {
+        user: payload.user, 
+        userid: payload.once.userid, 
+        tokenid: payload.once.tokenid, 
+        token: payload.once.token, 
+        expires: payload.once.expires
+      });
+      payload.once = null; //clean once login before redux
       dispatch({type: 'LOGIN', payload: payload});
       dispatch({type: 'LOADING', payload: false});
     } catch (error) {
