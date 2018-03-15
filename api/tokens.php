@@ -14,8 +14,6 @@ use RekoBooking\classes\Tokens;
 
 $jsonData = json_decode(trim(file_get_contents('php://input')), true);
 
-
-
   
 if (!empty($jsonData['user'])) {
   $user = trim(filter_var($jsonData['user'], FILTER_SANITIZE_STRING));

@@ -7,6 +7,7 @@ import { Route } from 'react-router-dom';
 import LoginScreen from './components/login-screen';
 import SaveIcon from './components/save-icon';
 import ExpireChecker from './components/expire-checker';
+import FirebaseComponent from './components/firebase-component';
 import PropTypes from 'prop-types';
 import Config from './config/config';
 import firebase from './config/firebase';
@@ -36,29 +37,38 @@ const ListView = Loadable({
 
 
 class App extends Component {
-
+  constructor(props){
+    super(props);
+    this.state = {
+      showStatus: false,
+      showStatusMessage: '',
+      useFirebase: false,
+    };
+  }
   
 
   componentWillMount() {
+    console.log(this.useFirbase)
     firebase.auth().signInWithEmailAndPassword(Config.FirebaseLogin, Config.FirebasePwd)
       .then(() => {
-        console.log('success');
-        var user = firebase.auth().currentUser;
-        var database = firebase.database();
-        firebase.database().ref('allowedUids').set({
-          pbrxFwd1yfYjrCG3LoaDyLPvIL02: true,
+        this.setState({useFirebase: firebase.auth().currentUser});
+      })
+      .catch(() => {
+        //TODO Add manual start on subscription failure
+        //this.ManualStart(); TODO
+        this.setState({
+          useFirebase: false,
+          showStatus: true,
+          showStatusMessage: 'Kunde inte ansluta till WebSocket! Programmet går fortfarande att använda men undvik att använda det på flera datorer samtidigt.',
         });
-
-      })   
-    
-      .catch(function(error) {
-      // Handle Errors here.
-        var errorCode = error.code;
-        var errorMessage = error.message;
-        console.log(errorCode + errorMessage);
-
-      // ...
+        setTimeout(() => {
+          this.setState({
+            showStatus: false,
+            showStatusMessage: '',
+          });
+        }, 35000);
       });
+
   }
 
   componentDidCatch() {
@@ -67,18 +77,19 @@ class App extends Component {
   }
 
 
-  
-
-  
+    
   render() {
 
-   
     
-
+    console.log(this.state.useFirebase);
     return (
       <div className="App h-100">
         {this.props.loggedin ?
           <div>
+            {this.state.showStatus ? 
+              <div className="top-main-error m-2" style={{color: 'red', textAlign: 'center', fontSize: '1.22rem'}}>{this.state.showStatusMessage}</div>
+              :
+              null }
             <MainMenu />
             <Route exact path="/" component={MainView} />
             <Route exact path="/bokningar/*" component={TourView} />
@@ -89,6 +100,10 @@ class App extends Component {
         }
         <ExpireChecker />
         <SaveIcon />
+        {(this.state.useFirebase) ? 
+          <FirebaseComponent />
+          :
+          null }
       </div>
     );
   }
@@ -96,15 +111,14 @@ class App extends Component {
 
 App.propTypes = {
   loggedin:           PropTypes.bool,
-  showError:          PropTypes.bool,
-  showErrorMessage:   PropTypes.string,
 };
 
 const mapStateToProps = state => ({
   loggedin: state.login.login,
-  showError: state.errorPopup.visible,
-  showErrorMessage: state.errorPopup.message,
 });
 
-
 export default connect(mapStateToProps, null)(App);
+
+
+
+

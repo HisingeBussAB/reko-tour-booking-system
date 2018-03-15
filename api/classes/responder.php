@@ -26,6 +26,16 @@ class Responder {
     return true;
   }
 
+  public function AddDeepArray($mainkey, $itemkey, $item) {
+    if (empty($this->output[$mainkey]) || !is_array($this->output[$mainkey])) {
+      $this->output[$mainkey] = array();
+    }
+    if (empty($this->output[$mainkey][$itemkey]) || !is_array($this->output[$mainkey][$itemkey])) {
+      $this->output[$mainkey][$itemkey] = array();
+    }
+    array_push($this->output[$mainkey][$itemkey], $item);
+  }
+
   public function AddResponseArray($a) {
     foreach ($a as $key => $value) {
       $this->output[$key] = $value;
