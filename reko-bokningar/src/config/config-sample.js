@@ -5,6 +5,17 @@ const Config = {
   AutoLoginPwd:   'secret',
   AutoUsername:   'username for auto login',
   AutoLogin:      true, //auto login attempt true/false
+  FirebaseLogin:  '',
+  FirebasePwd:    '',
+};
+
+export const firebaseconfig = {
+  apiKey: '',
+  authDomain: '',
+  databaseURL: '',
+  projectId: '',
+  storageBucket: '',
+  messagingSenderId: ''
 };
 
 export default Config;

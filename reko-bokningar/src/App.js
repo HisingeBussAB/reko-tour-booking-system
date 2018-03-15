@@ -6,6 +6,8 @@ import Loader from './components/loader';
 import { Route } from 'react-router-dom';
 import LoginScreen from './components/login-screen';
 import PropTypes from 'prop-types';
+import Config from './config/config';
+import firebase from './config/firebase';
 
 /*eslint-disable react/display-name */
 const MainView = Loadable({
@@ -35,7 +37,25 @@ class App extends Component {
   
 
   componentWillMount() {
-   
+    firebase.auth().signInWithEmailAndPassword(Config.FirebaseLogin, Config.FirebasePwd)
+      .then(() => {
+        console.log('success');
+        var user = firebase.auth().currentUser;
+        var database = firebase.database();
+        firebase.database().ref('allowedUids').set({
+          pbrxFwd1yfYjrCG3LoaDyLPvIL02: true,
+        });
+
+      })   
+    
+      .catch(function(error) {
+      // Handle Errors here.
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        console.log(errorCode + errorMessage);
+
+      // ...
+      });
   }
 
   componentDidCatch() {
