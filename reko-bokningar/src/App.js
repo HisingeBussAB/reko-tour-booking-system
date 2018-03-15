@@ -5,6 +5,8 @@ import Loadable from 'react-loadable';
 import Loader from './components/loader';
 import { Route } from 'react-router-dom';
 import LoginScreen from './components/login-screen';
+import SaveIcon from './components/save-icon';
+import ExpireChecker from './components/expire-checker';
 import PropTypes from 'prop-types';
 import Config from './config/config';
 import firebase from './config/firebase';
@@ -34,6 +36,7 @@ const ListView = Loadable({
 
 
 class App extends Component {
+
   
 
   componentWillMount() {
@@ -63,8 +66,10 @@ class App extends Component {
     //alert('Ett fel har inträffat, ladda om sidan eller nåt');
   }
 
+
   
 
+  
   render() {
 
    
@@ -82,6 +87,8 @@ class App extends Component {
           </div> : 
           <LoginScreen />
         }
+        <ExpireChecker />
+        <SaveIcon />
       </div>
     );
   }

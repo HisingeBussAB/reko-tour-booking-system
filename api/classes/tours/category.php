@@ -44,10 +44,6 @@ class Category {
 
   public static function Delete($jsonData, $response, $pdo) {
 
-    if (!Tokens::validateToken($jsonData['submittoken'], 'submit', $pdo, $jsonData['user'])) {
-      Tokens::validationFailedDie($response);
-    }
-
     
     try {
       $sql = "DELETE FROM Kategori WHERE KategoriID = :categoryid";
@@ -65,9 +61,6 @@ class Category {
 
   public static function Save($jsonData, $response, $pdo) {
 
-    if (!Tokens::validateToken($jsonData['submittoken'], 'submit', $pdo, $jsonData['user'])) {
-      Tokens::validationFailedDie($response);
-    }
 
     
     try {
@@ -95,9 +88,6 @@ class Category {
 
   public static function New($jsonData, $response, $pdo) {
 
-    if (!Tokens::validateToken($jsonData['submittoken'], 'submit', $pdo, $jsonData['user'])) {
-      Tokens::validationFailedDie($response);
-    }
     try {
       if ($jsonData['categoryid'] == 'new') {
         $sql = "INSERT INTO Kategori (Kategori, Aktiv) OUTPUT INSERTED.KategoriID VALUES (:category, :active)";
@@ -116,7 +106,7 @@ class Category {
       DBError::showError($e, __CLASS__, $sql, $response);
       return false;
     }
-    if ($jsonData['categoryid'] != 'new') {
+    if ($jsonData['categoryid'] == 'new') {
       $response->AddResponse('modifiedid', (int)$result['kategoriid']);
     } else {
       $response->AddResponse('modifiedid', $jsonData['categoryid']);
@@ -162,16 +152,13 @@ class Category {
       $newData['categoryid'] = 'new';
     }
 
-    $temp = filter_var($jsonData['active'], FILTER_VALIDATE_BOOLEAN);
-    
-    $temp ? $newData['active']=1 : $newData['active']=0;  
-    
-    if (!empty($jsonData['submittoken'])) {
-      $newData['submittoken'] = filter_var(trim($jsonData['submittoken']), FILTER_SANITIZE_STRING);
+    if (!empty($jsonData['active']) && filter_var($jsonData['active'], FILTER_VALIDATE_BOOLEAN)) {
+      $newData['active']=1;
     } else {
-      $newData['submittoken'] = 'broken'; //Let if fail on token check
+      $newData['active']=0; 
     }
     
+       
     return $newData;
 
   }

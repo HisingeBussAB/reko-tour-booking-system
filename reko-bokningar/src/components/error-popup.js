@@ -49,7 +49,7 @@ class ErrorPopup extends Component {
     const style = {
       color: 'red',
       margin: '0 auto',
-      position: 'absolute',
+      position: 'fixed',
       top: '45%',
       left: '50%',
       transform: 'translate(-50%)',

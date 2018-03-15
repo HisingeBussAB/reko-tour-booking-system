@@ -1,16 +1,7 @@
 # System for managing travel bookings and clients.
 
-## Made summer 2016 for a small travel agency.
+## 2.0
 
-This project was completed before I had any formal education in webdevelopment or otherwise in programming. Only a couple of novice courses some 10 years ago and self-thought. There was no time to modernize my skills before this project as the old systems were completly manual and we needed to start getting customer data into a database asap.
+This system uses a React/Redux front end and a PHP api to manage bookings, budgets and customer information for a small tour agency.
 
-### The main flaws of this system that need to be fixed:
-* CSS-based design.
-* Seperating the back-end and use ajax where applicable.
-* PDF print formats.
-* Use functions properly, also leading to a
-* more modular database integration making it easier to port to different database systems.
-
-This system has however fullfilled its purpose well and is being used daily.
-
-I hope find the time to get the code up to a more modern standard in the future.
+The first implementation of 2.0 will be designed for one single simultanious user and not use Websockets. This is because the server architecture is unknown and can change frequently. However I have strifed to build the app in such a way that a seperate websocket server can be added without too much hassle, which could be running seperatly from the api. This would assist by having the users sending what data they changed to the socket server which then pushes an instruction to update from main api to all other clients.

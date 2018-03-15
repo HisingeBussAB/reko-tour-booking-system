@@ -7,7 +7,6 @@ import { connect } from 'react-redux';
 import { bindActionCreators }from 'redux';
 import {Login} from '../actions';
 import Config from '../config/config';
-import axios from 'axios';
 import Logo from '../img/logo.gif';
 
 
@@ -23,17 +22,84 @@ class LoginScreen extends Component {
         pwd: Config.AutoLoginPwd,
         user: Config.AutoUsername,
         auto: this.props.login.autoAttempt,
+        isOnce: false,
       }
     };    
   }
 
   componentWillMount() {
-    if (!this.props.login.login && this.props.login.autoAttempt) {
-      this.props.Login(this.state.logindata)
-        .then(e => {console.log('yes');})
-        .catch(e => {console.log('no');});
+
+    let logindata = {...this.state.logindata};
+    let userObject = null;
+    try {
+      userObject = localStorage.getObject('user');
+    } catch(e) {
+      userObject = null;
+    }
+    
+    const dateTime = +new Date();
+    const timestamp = Math.floor(dateTime / 1000);
+
+    //Check if userObject appears valid. 
+    //This is just a basic sanity filter. It allows a lot of leeway since the client and server could have timezone differences etc.
+    try {
+      if ((userObject.expires-10000) >= timestamp || userObject.token.length < 10 || userObject.tokenid.length < 10 || userObject.user === '') {
+        userObject = null;
+      }
+    } catch(e) {
+      userObject = null;
+    }
+
+    if (userObject !== null) {
+      logindata = {
+        pwd: userObject.tokenid + Config.OnceLoginToken + userObject.token,
+        user: userObject.user,
+        auto: true,
+        isOnce: true,
+      };
+      localStorage.setObject('user', null);
+    }
+
+
+    if (!this.props.login.login && logindata.auto) {
+      this.setState({issending: true});
+      this.props.Login(logindata)
+        .then(() => {
+          //Component will unmount
+        })
+        .catch(() => {
+          this.setState({issending: false});
+        });
+    }
+    if (this.props.login.autoAttempt === false) {
+      this.setState({issending: false});
     }
   }
+
+  componentWillReceiveProps(nextProps) {
+    let userObject = null;
+    try {
+      userObject = localStorage.getObject('user');
+    } catch(e) {
+      userObject = null;
+    }
+
+    if (!nextProps.login.login && nextProps.login.autoAttempt && userObject === null && (typeof Config.AutoUsername !== 'undefined' && Config.AutoUsername) && (typeof Config.AutoLoginPwd !== 'undefined' && Config.AutoLoginPwd)) {
+      this.setState({issending: true});
+      this.props.Login({
+        pwd: Config.AutoLoginPwd,
+        user: Config.AutoUsername,
+        auto: nextProps.login.autoAttempt,
+      })
+        .then(() => {
+          //Component will unmount
+        })
+        .catch(() => {
+          this.setState({issending: false});
+        });
+    }
+  }
+
 
   handleUserChange = (event) => {
     this.setState({logindata: { ...this.state.logindata, user: event.target.value}});
@@ -54,7 +120,13 @@ class LoginScreen extends Component {
   handleSubmit = (event) => {
     event.preventDefault();
     this.setState({issending: true});
-    this.props.Login(this.state.logindata);
+    this.props.Login(this.state.logindata)
+      .then(() => {
+        this.setState({issending: false});
+      })
+      .catch(() => {
+        this.setState({issending: false});
+      });
   }
 
 
@@ -87,9 +159,11 @@ class LoginScreen extends Component {
             <h5 className="w-50 mx-auto my-3" style={{color: 'red'}}>{this.props.error.message}</h5>
             <h4 className="w-50 mx-auto mt-5 mb-3">Logga in</h4>
             <form onSubmit={this.handleSubmit}>
-              <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Användarnamn:</label><input className="w-100 rounded" type='text' placeholder='Användarnamn' value={this.state.user} onFocus={this.clearUser} onChange={this.handleUserChange}/></div>
-              <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Lösenord:</label><input className="w-100 rounded" type='password' placeholder='Lösenord' value={this.state.pwd} onFocus={this.clearPwd} onChange={this.handlePwdChange}/></div>
-              <div className="my-2 w-50 mx-auto"><input className="w-100 mt-4 rounded text-uppercase font-weight-bold btn btn-primary custom-wide-text" type='submit' value='Logga in'/></div>
+              <fieldset disabled={this.state.issending}>
+                <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Användarnamn:</label><input className="w-100 rounded" type='text' placeholder='Användarnamn' value={this.state.user} onFocus={this.clearUser} onChange={this.handleUserChange}/></div>
+                <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Lösenord:</label><input className="w-100 rounded" type='password' placeholder='Lösenord' value={this.state.pwd} onFocus={this.clearPwd} onChange={this.handlePwdChange}/></div>
+                <div className="my-2 w-50 mx-auto"><input className="w-100 mt-4 rounded text-uppercase font-weight-bold btn btn-primary custom-wide-text" type='submit' value='Logga in'/></div>
+              </fieldset>
             </form>
           </div>
         }

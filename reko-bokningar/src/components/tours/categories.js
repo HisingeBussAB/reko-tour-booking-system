@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators }from 'redux';
 import update from 'immutability-helper';
 import faSave from '@fortawesome/fontawesome-free-solid/faSave';
 import faSquare from '@fortawesome/fontawesome-free-regular/faSquare';
@@ -9,9 +10,9 @@ import faSpinner from '@fortawesome/fontawesome-free-solid/faSpinner';
 import faPlus from '@fortawesome/fontawesome-free-solid/faPlus';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import Config from '../../config/config';
-import axios from 'axios';
+import {myAxios} from '../../config/axios';
 import PropTypes from 'prop-types';
-import Handler from '../requesthandler';
+import {getCategories, loading} from '../../actions';
 
 
 
@@ -29,14 +30,28 @@ class Categories extends Component {
   }
 
   componentWillMount() {
-    this.getCategory('all');
-    const Handler2 = new Handler();
-    Handler2.Send(1);
+    if (typeof this.props.categories === 'object' && this.props.categories.length > 0) {
+      this.setState({categoriesSaved: this.props.categories, categoriesUnsaved: this.props.categories}); 
+    } else {
+      this.getCategory('all');
+    }
+  }
+
+  componentWillUnmount() {
+    //Load updated categories to redux
+    this.reduxUpdate();
+  }
+
+  reduxUpdate = () => {this.props.getCategories({
+    user: this.props.login.user,
+    jwt: this.props.login.jwt,
+    categoryid: 'all',
+  });
   }
 
   getCategory = (id, fromUpdate = null) => {
-    axios.post( Config.ApiUrl + '/api/tours/category/get', {
-      apitoken: Config.ApiToken,
+    this.props.loading(true);
+    myAxios.post( Config.ApiUrl + '/tours/category/get', {
       user: this.props.login.user,
       jwt: this.props.login.jwt,
       categoryid: id,
@@ -45,6 +60,10 @@ class Categories extends Component {
         if (response.data.category !== undefined) {
           if (response.data.category.length > 1) {
             this.setState({categoriesSaved: response.data.category, categoriesUnsaved: response.data.category});
+            if (this.props.categories !== response.data.category) {
+              //Redux state missmatch, update
+              this.reduxUpdate();
+            }
           } else {
             let i = this.state.categoriesSaved.findIndex(function (obj) { return obj.id === response.data.category[0].id; });
             this.setState({categoriesSaved: update(this.state.categoriesSaved, {[i]: {$set: response.data.category[0]}}), categoriesUnsaved: update(this.state.categoriesUnsaved, {[i]: {$set: response.data.category[0]}})});
@@ -58,8 +77,10 @@ class Categories extends Component {
           this.setState({showStatus: true, showStatusMessage: response.data.response});
         }
         this.setState({isSubmitting: false});
+        this.props.loading(false);
       })
       .catch(error => {
+        this.props.loading(false);
         if (error.response === undefined) {
           this.setState({isSubmitting: false, showStatus: true, showStatusMessage: 'Okänt fel. Inget svar från API.'});
         } else {
@@ -82,6 +103,7 @@ class Categories extends Component {
 
   handleSend = (e, i, operationin) => {
     e.preventDefault();
+    this.props.loading(true);
     this.setState({isSubmitting: true});
     let operation = operationin;
     let active = this.state.categoriesUnsaved[i].active;
@@ -98,10 +120,12 @@ class Categories extends Component {
       
       if (this.state.categoriesUnsaved[i].id === '' || this.state.categoriesUnsaved[i].id === null) {
         this.setState({isSubmitting: false, showStatus: true, showStatusMessage: 'Du kan inte ändra aktiv status på en kategori som inte är sparad. Spara kategorin först.'});
+        this.props.loading(false);
         return;
       }
       if (this.state.categoriesUnsaved[i].category !== this.state.categoriesSaved[i].category) {
         this.setState({isSubmitting: false, showStatus: true, showStatusMessage: 'Du kan inte ändra status på en kategori med namnändring som inte är sparad ännu. Spara namnet först.'});
+        this.props.loading(false);
         return;
       }
       this.setState({isUpdating: update(this.state.isUpdating, {activetoggle: {$push: [i]}})});
@@ -121,46 +145,32 @@ class Categories extends Component {
 
 
     this.setState({isSubmitting: true});
-    axios.post( Config.ApiUrl + '/api/token/submit', {
-      apitoken: Config.ApiToken,
+    this.props.loading(true);
+    myAxios.post( Config.ApiUrl + '/tours/category/' + operation, {
       user: this.props.login.user,
+      jwt: this.props.login.jwt,
+      task: operationin,
+      categoryid: this.state.categoriesUnsaved[i].id,
+      category: this.state.categoriesUnsaved[i].category,
+      active: active,
     })
       .then(response => {
-        axios.post( Config.ApiUrl + '/api/tours/category/' + operation, {
-          submittoken: response.data.submittoken,
-          apitoken: Config.ApiToken,
-          user: this.props.login.user,
-          jwt: this.props.login.jwt,
-          task: operationin,
-          categoryid: this.state.categoriesUnsaved[i].id,
-          category: this.state.categoriesUnsaved[i].category,
-          active: active,
-        })
-          .then(response => {
-            if (response.data.modifiedid !== undefined) {
-              if (operationin !== 'delete') {
-                this.getCategory(response.data.modifiedid, operationin);
-              } else {
-                let i = this.state.categoriesSaved.findIndex(function (obj) { return obj.id === this.state.categoriesUnsaved[i].id; });
-                this.setState({isUpdating: update(this.state.isUpdating, {delete: {$apply: (x) => {x.pop(i); return x;}}})});
-              }
-            }
-            console.log(response);
-            this.setState({isSubmitting: false, showStatus: true, showStatusMessage: response.data.response});
-          })
-          .catch(error => {
-            console.log(error.response.data.response);
-            console.log(error.response.data.login);
-            this.setState({isSubmitting: false, showStatus: true, showStatusMessage: error.response.data.response});
-          });
+        if (response.data.modifiedid !== undefined) {
+          if (operationin !== 'delete') {
+            this.getCategory(response.data.modifiedid, operationin);
+          } else {
+            let i = this.state.categoriesSaved.findIndex(function (obj) { return obj.id === this.state.categoriesUnsaved[i].id; });
+            this.setState({isUpdating: update(this.state.isUpdating, {delete: {$apply: (x) => {x.pop(i); return x;}}})});
+          }
+        }
+        this.setState({isSubmitting: false, showStatus: true, showStatusMessage: response.data.response});
+        this.props.loading(false);
       })
       .catch(error => {
-        let message = 'Något har gått fel, får inget svar från API.';
-        if (error.response !== undefined) {
-          message = error.response.data.response;
-        }
-        this.setState({isSubmitting: false, showStatus: true, showStatusMessage: message});
+        this.setState({isSubmitting: false, showStatus: true, showStatusMessage: error.response.data.response});
+        this.props.loading(false);
       });
+
   };
 
 
@@ -238,11 +248,23 @@ class Categories extends Component {
 
 Categories.propTypes = {
   login:              PropTypes.object,
+  getCategories:      PropTypes.func,
+  loading:            PropTypes.func,
+  categories:         PropTypes.array,
 };
 
 const mapStateToProps = state => ({
   login: state.login,
+  showStatus: state.errorPopup.visible,
+  showStatusMessage: state.errorPopup.message,
+  categories: state.tours.categories,
 });
 
+const mapDispatchToProps = dispatch => bindActionCreators({
+  getCategories,
+  loading
+}, dispatch);
 
-export default connect(mapStateToProps, null)(Categories);
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(Categories);
