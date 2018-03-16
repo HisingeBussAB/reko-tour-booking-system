@@ -30,10 +30,7 @@ class Responder {
     if (empty($this->output[$mainkey]) || !is_array($this->output[$mainkey])) {
       $this->output[$mainkey] = array();
     }
-    if (empty($this->output[$mainkey][$itemkey]) || !is_array($this->output[$mainkey][$itemkey])) {
-      $this->output[$mainkey][$itemkey] = array();
-    }
-    array_push($this->output[$mainkey][$itemkey], $item);
+    $this->output[$mainkey][$itemkey] = $item;
   }
 
   public function AddResponseArray($a) {

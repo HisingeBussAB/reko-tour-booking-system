@@ -11,6 +11,7 @@ const initialState = {
   errorPopup: {
     visible: false,
     message: '',
+    suppressed: false,
   },
   login: {
     login: false,
@@ -23,7 +24,7 @@ const initialState = {
     flags: null,
   },  
   tours: {
-    categories: [],
+    categories: {},
   }
 };
 const enhancers = [];

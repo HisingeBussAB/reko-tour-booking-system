@@ -35,7 +35,7 @@ if ($operation == 'get') {
       $newData['categoryid'] = $temp;
     }
   } else {
-    $newData['categoryid'] = 'all';
+    $newData['categoryid'] = 'all';    
   }
 }
 

@@ -1,16 +1,18 @@
 import React, { Component } from 'react';
 import MainMenu from './components/main-menu';
 import { connect } from 'react-redux';
+import { bindActionCreators }from 'redux';
 import Loadable from 'react-loadable';
 import Loader from './components/loader';
 import { Route } from 'react-router-dom';
 import LoginScreen from './components/login-screen';
 import SaveIcon from './components/save-icon';
 import ExpireChecker from './components/expire-checker';
-import FirebaseComponent from './components/firebase-component';
 import PropTypes from 'prop-types';
 import Config from './config/config';
 import firebase from './config/firebase';
+import {startFirebaseSub} from './actions';
+import ErrorPopup from './components/error-popup';
 
 /*eslint-disable react/display-name */
 const MainView = Loadable({
@@ -42,33 +44,37 @@ class App extends Component {
     this.state = {
       showStatus: false,
       showStatusMessage: '',
-      useFirebase: false,
     };
   }
   
 
-  componentWillMount() {
-    console.log(this.useFirbase)
-    firebase.auth().signInWithEmailAndPassword(Config.FirebaseLogin, Config.FirebasePwd)
-      .then(() => {
-        this.setState({useFirebase: firebase.auth().currentUser});
-      })
-      .catch(() => {
-        //TODO Add manual start on subscription failure
-        //this.ManualStart(); TODO
-        this.setState({
-          useFirebase: false,
-          showStatus: true,
-          showStatusMessage: 'Kunde inte ansluta till WebSocket! Programmet går fortfarande att använda men undvik att använda det på flera datorer samtidigt.',
-        });
-        setTimeout(() => {
+  componentWillReceiveProps(nextProps) {
+    //Checks for login change and starts up firebase if login state change and login is detected.
+    let prevLogin;
+    if (typeof this.props.login === 'undefined') {
+      prevLogin = false;
+    } else {
+      prevLogin = this.props.login.login;
+    }
+    if (nextProps.login.login && nextProps.login.login !== prevLogin) {
+      firebase.auth().signInWithEmailAndPassword(Config.FirebaseLogin, Config.FirebasePwd)
+        .then(() => {
+          this.props.startFirebaseSub(this.props.login.user, this.props.login.jwt);
+        })
+        .catch(() => {
+        //manual subscriptions?
           this.setState({
-            showStatus: false,
-            showStatusMessage: '',
+            showStatus: true,
+            showStatusMessage: 'Kunde inte ansluta till WebSocket! Programmet går fortfarande att använda men undvik att använda det på flera datorer samtidigt.',
           });
-        }, 35000);
-      });
-
+          setTimeout(() => {
+            this.setState({
+              showStatus: false,
+              showStatusMessage: '',
+            });
+          }, 35000);
+        });
+    }
   }
 
   componentDidCatch() {
@@ -79,12 +85,9 @@ class App extends Component {
 
     
   render() {
-
-    
-    console.log(this.state.useFirebase);
     return (
       <div className="App h-100">
-        {this.props.loggedin ?
+        {this.props.login.login ?
           <div>
             {this.state.showStatus ? 
               <div className="top-main-error m-2" style={{color: 'red', textAlign: 'center', fontSize: '1.22rem'}}>{this.state.showStatusMessage}</div>
@@ -98,26 +101,31 @@ class App extends Component {
           </div> : 
           <LoginScreen />
         }
+        {!this.props.suppressPopup ? <ErrorPopup /> : null }
         <ExpireChecker />
         <SaveIcon />
-        {(this.state.useFirebase) ? 
-          <FirebaseComponent />
-          :
-          null }
       </div>
     );
   }
 }
 
 App.propTypes = {
-  loggedin:           PropTypes.bool,
+  login:              PropTypes.object,
+  startFirebaseSub:   PropTypes.func,
+  suppressPopup:      PropTypes.bool,
 };
 
 const mapStateToProps = state => ({
-  loggedin: state.login.login,
+  login: state.login,
+  suppressPopup: state.errorPopup.suppressed,
 });
 
-export default connect(mapStateToProps, null)(App);
+const mapDispatchToProps = dispatch => bindActionCreators({
+  startFirebaseSub,
+}, dispatch);
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
 
 
 

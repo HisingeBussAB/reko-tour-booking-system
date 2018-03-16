@@ -13,6 +13,7 @@ use RekoBooking\classes\Tokens;
 class Category {
 
   public static function Get($jsonData, $response, $pdo) {
+    $response->AddResponse('requestedid', $jsonData['categoryid']);
     try {  
       if ($jsonData['categoryid'] == 'all') {
         $sql = "SELECT * FROM Kategori ORDER BY Kategori";
@@ -31,12 +32,13 @@ class Category {
     if (count($result) > 0) {
       foreach ($result as $category) {
         $active = $category['aktiv'] ? true : false;
-        $response->AddResponsePush('category', 
+        $response->AddDeepArray('category', (int)$category['kategoriid'],
           array('id' => (int)$category['kategoriid'], 'category' => $category['kategori'], 'active' => $active));
       }
       return true;
     } else {
       $response->AddResponse('response', 'Inga kategorier hittades');
+      $response->AddResponse('category', []);
       return false;
     }
 

@@ -6,7 +6,7 @@ export function Login(logindata) {
   
   const errprep = logindata.auto ? 'Automatisk inlogging misslyckades! ' : '';
   return async (dispatch) => {
-    dispatch({type: 'LOADING', payload: true});
+    dispatch({type: 'LOADING_START', payload: true});
     try {
       let token = await getToken('login');
       let response = await myAxios.post( '/auth', {
@@ -42,7 +42,7 @@ export function Login(logindata) {
       });
       payload.once = null; //clean once login before redux
       dispatch({type: 'LOGIN', payload: payload});
-      dispatch({type: 'LOADING', payload: false});
+      dispatch({type: 'LOADING_STOP', payload: false});
     } catch (error) {
       let errormsg = errprep + 'Ett fel har uppstått i inloggningen. ';
       try {
@@ -54,7 +54,7 @@ export function Login(logindata) {
       }
       dispatch(errorPopup({visible: true, message: errormsg}));
       dispatch({type: 'LOGIN', payload: {autoAttempt: false}});
-      dispatch({type: 'LOADING', payload: false});
+      dispatch({type: 'LOADING_STOP', payload: false});
       throw error;
     }
   };

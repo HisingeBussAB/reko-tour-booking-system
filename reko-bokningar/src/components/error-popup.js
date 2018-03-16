@@ -20,6 +20,10 @@ class ErrorPopup extends Component {
 
 
   render() {
+    let showme = 'none';
+    if (!this.props.error.suppressed && this.props.error.visible) {
+      showme = 'block';
+    }
 
     const containerstyle = {
       backgroundColor: 'rgba(255,255,255,.7)',
@@ -29,7 +33,7 @@ class ErrorPopup extends Component {
       width: '100%',
       height: '100%',
       zIndex: '90000',
-
+      display: showme,
     };
 
     const closebtnstyle = {
@@ -50,7 +54,7 @@ class ErrorPopup extends Component {
       color: 'red',
       margin: '0 auto',
       position: 'fixed',
-      top: '45%',
+      top: '35%',
       left: '50%',
       transform: 'translate(-50%)',
       textAlign: 'center',
@@ -61,22 +65,22 @@ class ErrorPopup extends Component {
       borderRadius: '5px',
       minWidth: '400px',
       zIndex: '90001',
-      padding: '2px 20px',
+      padding: '3px 22px',
     };
     const textstyle = {
       padding: '20px',
       margin: '0',
     };
-    const text = <p style={textstyle}>{this.props.message}</p>;
+    const text = <p style={textstyle}>{this.props.error.message}</p>;
 
     const closebtn = <div className="custom-close-error" onClick={this.closeMe} style={closebtnstyle}><FontAwesomeIcon icon={faTimes} size="lg" /></div>;
     
     return (
-      <div style={containerstyle}>
+      <div className="ErrorPopup" style={containerstyle}>
         <div className="Error" style={style}>
           {text}
           {closebtn}
-          <button className="btn btn-primary btn-sm text-uppercase mb-2" onClick={this.closeMe}>Stäng felmeddelandet</button>
+          <button className="btn btn-primary btn-sm text-uppercase mb-3" onClick={this.closeMe}>Stäng felmeddelandet</button>
         </div>
       </div>);
 
@@ -86,11 +90,16 @@ class ErrorPopup extends Component {
 ErrorPopup.propTypes = {
   message: PropTypes.string,
   errorPopup: PropTypes.func,
+  error: PropTypes.object,
 };
+
+const mapStateToProps = state => ({
+  error: state.errorPopup,
+});
 
 const mapDispatchToProps = dispatch => bindActionCreators({
   errorPopup,
 }, dispatch);
 
 
-export default connect(null, mapDispatchToProps)(ErrorPopup);
+export default connect(mapStateToProps, mapDispatchToProps)(ErrorPopup);
