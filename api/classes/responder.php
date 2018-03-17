@@ -5,12 +5,15 @@
  */
 namespace RekoBooking\classes;
 
+
 class Responder {
 
   public $output;
+  private $category;
 
   function __construct() {
     $this->output = array();
+    $this->category = array();
   }
 
   public function AddResponse($key, $value) {
@@ -26,13 +29,14 @@ class Responder {
     return true;
   }
 
-  public function AddDeepArray($mainkey, $itemkey, $item) {
+  public function AddToArrayOnKey($mainkey, $item) {
     if (empty($this->output[$mainkey]) || !is_array($this->output[$mainkey])) {
       $this->output[$mainkey] = array();
     }
-    $this->output[$mainkey][$itemkey] = $item;
+    $this->output[$mainkey][] = $item;
   }
 
+  
   public function AddResponseArray($a) {
     foreach ($a as $key => $value) {
       $this->output[$key] = $value;
@@ -45,3 +49,5 @@ class Responder {
   }
 
 }
+
+

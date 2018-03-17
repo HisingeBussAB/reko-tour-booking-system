@@ -32,7 +32,7 @@ class Category {
     if (count($result) > 0) {
       foreach ($result as $category) {
         $active = $category['aktiv'] ? true : false;
-        $response->AddDeepArray('category', (int)$category['kategoriid'],
+        $response->AddToArrayOnKey('category', 
           array('id' => (int)$category['kategoriid'], 'category' => $category['kategori'], 'active' => $active));
       }
       return true;

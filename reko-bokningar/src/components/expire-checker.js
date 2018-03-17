@@ -42,14 +42,47 @@ class ExpireChecker extends Component {
           this.setState({servertime: response.data.servertime});
           if (this.state.servertime > this.props.login.expires-1800) {
             this.setState({displayWarning: true});
-            //attempt auto relog if autouser
+            //attempt auto relog if once token is found in local storage or we are AutoUser
+            let userObject = null;
+            let logindata = null
             if (this.props.login.user === Config.AutoUsername && Config.AutoLogin) {
-              this.props.Login({
-                pwd: Config.AutoLoginPwd,
+              logindata = { pwd: Config.AutoLoginPwd,
                 user: Config.AutoUsername,
                 auto: true,
-              });
-              
+                isOnce: false,
+              };
+            }
+            try {
+              userObject = localStorage.getObject('user');
+            } catch(e) {
+              userObject = null;
+            }
+    
+            const dateTime = +new Date();
+            const timestamp = Math.floor(dateTime / 1000);
+
+            //Check if userObject appears valid. 
+            //This is just a basic sanity filter. It allows a lot of leeway since the client and server could have timezone differences etc.
+            try {
+              if ((userObject.expires-10000) >= timestamp || userObject.token.length < 10 || userObject.tokenid.length < 10 || userObject.user === '') {
+                userObject = null;
+              }
+            } catch(e) {
+              userObject = null;
+            }
+
+            if (userObject !== null) {
+              //change logindata i once is found and appears valid
+              logindata = {
+                pwd: userObject.tokenid + Config.OnceLoginToken + userObject.token,
+                user: userObject.user,
+                auto: true,
+                isOnce: true,
+              };
+              localStorage.setObject('user', null);
+            }
+            if (logindata !== null) {
+              this.props.Login(logindata);
             }
           } else {
             this.setState({displayWarning: false});

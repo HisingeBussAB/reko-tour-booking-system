@@ -1,3 +1,5 @@
+import {merge_object_arrays} from '../utils';
+
 export default function tours(state = {}, action) {
   
   switch(action.type){
@@ -6,12 +8,12 @@ export default function tours(state = {}, action) {
     if (action.payload.id === 'all') {
       return {categories: action.payload.category};
     } else {
-      let result = state.categories;
-      result[action.payload.id] = action.payload.category[action.payload.id];
-      return {categories: result};
+      
+      return {categories: merge_object_arrays(state.categories, action.payload.category, 'id')};
     }
   default:
     return state;
 
   }
 }
+

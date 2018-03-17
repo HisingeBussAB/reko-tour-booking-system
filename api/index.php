@@ -65,6 +65,7 @@ if ($_SERVER["HTTP_AUTHORIZATION"] != API_TOKEN) {
   die();
 }
 
+
 header("Accept: application/json");
 
 $loader = require __DIR__ . '/vendor/autoload.php';

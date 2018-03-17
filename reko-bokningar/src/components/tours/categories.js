@@ -11,6 +11,7 @@ import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import PropTypes from 'prop-types';
 import {getCategories, loading} from '../../actions';
 import CategoriesRow from './categories/row';
+import update from 'immutability-helper';
 
 
 
@@ -20,21 +21,22 @@ class Categories extends Component {
     this.state = {
       showStatus: false,
       showStatusMessage: '',
-      isSubmitting: true,
-      isUpdating: {save: [], activetoggle: [], delete: []},
-      categoriesSaved: [],
-      categoriesUnsaved: [],
+      isSubmitting: false,
+      extracategories: [],
     };
   }
 
   componentWillMount() {
     this.reduxGetAllUpdate();
-
   }
+
 
   componentWillUnmount() {
     this.reduxGetAllUpdate();
   }
+
+
+
 
   reduxGetAllUpdate = () => {this.props.getCategories({
     user: this.props.login.user,
@@ -43,24 +45,45 @@ class Categories extends Component {
   });
   }
 
+  addRow = () => {
+    const newcategory = {
+      id: 'new',
+      category: '',
+      active: true,
+    };
+    const newextracategories = update(this.state.extracategories, {$push: [newcategory]});
+
+    this.setState({extracategories: newextracategories});
+    console.log(this.state.extracategories)
+  }
 
 
+  submitToggle = (b) => {
+    let validatedb;
+    try {
+      validatedb = b ? true : false;
+    } catch(e) {
+      validatedb = false;
+    }
+    this.setState({isSubmitting: validatedb});
+  }
 
   
 
   render() {
-
-    const categoriesArray = Object.values(this.props.categories);
-    console.log(categoriesArray);
-    
-
+    console.log(this.state.extracategories);
+    console.log("rendering...")
     let categoryRows;
     try {
-      categoryRows = categoriesArraySorted.map((category, i) => {
-        <CategoriesRow key={i} KeyId={i} id={category.id} category={category.category} active={category.active} />;
+      categoryRows = this.props.categories.map((category) => {
+        return <CategoriesRow key={category.id} id={category.id} category={category.category} active={category.active} submitToggle={this.submitToggle}/>;
       });} catch(e) {
       categoryRows = null;
     }
+    this.state.extracategories.forEach((item, i) => {
+      console.log('here is an extra')
+      categoryRows.push(<CategoriesRow key={('new' + i)} id={item.id} category={item.category} active={item.active} submitToggle={this.submitToggle}/>);
+    });
 
     return (
       <div className="TourViewNewTour">
@@ -103,7 +126,7 @@ Categories.propTypes = {
   login:              PropTypes.object,
   getCategories:      PropTypes.func,
   loading:            PropTypes.func,
-  categories:         PropTypes.object,
+  categories:         PropTypes.array,
 };
 
 const mapStateToProps = state => ({

@@ -7,10 +7,13 @@ export function startFirebaseSub(user, jwt) {
     
     const toursCategories = firebase.database().ref('tours/categories');
     const today = Date.now();
+    //TODO
+    //DEBUG SET TO INVALID
     toursCategories.set({
       updated: today,
-      id: ['all'],
+      id: ['all54'],
     });
+    //END DEBUG SET TO INVALID
     toursCategories.on('value', function(snapshot) {
       dispatch({type: 'LOADING_START', payload: true});
       const snap = snapshot.val();

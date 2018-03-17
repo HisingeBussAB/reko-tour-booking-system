@@ -24,7 +24,7 @@ const initialState = {
     flags: null,
   },  
   tours: {
-    categories: {},
+    categories: [],
   }
 };
 const enhancers = [];
