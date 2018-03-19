@@ -4,7 +4,7 @@ import {getToken} from './get-token';
 
 export function Login(logindata) {
   
-  const errprep = logindata.auto ? 'Automatisk inlogging misslyckades! ' : '';
+  const errprep = logindata.auto ? 'Automatisk inlogging misslyckades!\n' : '';
   return async (dispatch) => {
     dispatch({type: 'LOADING_START', payload: true});
     try {
@@ -44,13 +44,15 @@ export function Login(logindata) {
       dispatch({type: 'LOGIN', payload: payload});
       dispatch({type: 'LOADING_STOP', payload: false});
     } catch (error) {
-      let errormsg = errprep + 'Ett fel har uppstått i inloggningen. ';
+      let errormsg = errprep + 'Ett fel har uppstått i inloggningen.';
       try {
         if (error.response.data.response !== undefined) {
           errormsg = errprep + error.response.data.response;
+        } else {
+        errormsg = errprep + 'Felformaterat eller inget svar från server.';
         }
       } catch(e) {
-        errormsg = errprep + 'Felformaterat eller inget svar från API.';
+        errormsg = errprep + 'Felformaterat eller inget svar från server.';
       }
       dispatch(errorPopup({visible: true, message: errormsg}));
       dispatch({type: 'LOGIN', payload: {autoAttempt: false}});

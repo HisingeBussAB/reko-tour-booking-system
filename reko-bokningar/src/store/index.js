@@ -27,6 +27,8 @@ const initialState = {
     categories: [],
   }
 };
+
+
 const enhancers = [];
 const middleware = [
   thunk,
@@ -35,6 +37,8 @@ const middleware = [
 
 //eslint-disable-next-line
 if (process.env.NODE_ENV === 'development') {
+  const freeze = require('redux-freeze');
+  middleware.push(freeze);
   const devToolsExtension = window.window.__REDUX_DEVTOOLS_EXTENSION__;
 
   if (typeof devToolsExtension === 'function') {

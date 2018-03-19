@@ -16,7 +16,7 @@ class LoginScreen extends Component {
   constructor(props){
     super(props);
     this.state = {
-      issending: false,
+      issending: true,
       servertime: '',
       logindata: {
         pwd: Config.AutoLoginPwd,
@@ -90,6 +90,7 @@ class LoginScreen extends Component {
         pwd: Config.AutoLoginPwd,
         user: Config.AutoUsername,
         auto: nextProps.login.autoAttempt,
+        isOnce: false,
       })
         .then(() => {
           //Component will unmount
@@ -97,6 +98,8 @@ class LoginScreen extends Component {
         .catch(() => {
           this.setState({issending: false});
         });
+    } else {
+      this.setState({issending: false});
     }
   }
 

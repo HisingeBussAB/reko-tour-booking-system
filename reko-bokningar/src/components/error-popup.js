@@ -70,6 +70,7 @@ class ErrorPopup extends Component {
     const textstyle = {
       padding: '20px',
       margin: '0',
+      whiteSpace: 'pre-line',
     };
     const text = <p style={textstyle}>{this.props.error.message}</p>;
 
