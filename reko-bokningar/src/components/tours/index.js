@@ -4,11 +4,11 @@ import { Link } from 'react-router-dom';
 
 
 class TourViewMain extends Component {
-  
+
 
   render() {
 
-   
+
     return (
       <div className="TourViewMain">
 

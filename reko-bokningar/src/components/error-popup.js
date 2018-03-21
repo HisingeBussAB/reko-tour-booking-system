@@ -9,14 +9,10 @@ import { connect } from 'react-redux';
 
 class ErrorPopup extends Component {
 
-  
+
   closeMe = () => {
     this.props.errorPopup({visible: false, message: ''});
   }
-
-  
-
- 
 
 
   render() {
@@ -75,7 +71,7 @@ class ErrorPopup extends Component {
     const text = <p style={textstyle}>{this.props.error.message}</p>;
 
     const closebtn = <div className="custom-close-error" onClick={this.closeMe} style={closebtnstyle}><FontAwesomeIcon icon={faTimes} size="lg" /></div>;
-    
+
     return (
       <div className="ErrorPopup" style={containerstyle}>
         <div className="Error" style={style}>

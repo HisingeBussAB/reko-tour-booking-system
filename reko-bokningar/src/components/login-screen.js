@@ -24,7 +24,7 @@ class LoginScreen extends Component {
         auto: this.props.login.autoAttempt,
         isOnce: false,
       }
-    };    
+    };
   }
 
   componentWillMount() {
@@ -36,14 +36,14 @@ class LoginScreen extends Component {
     } catch(e) {
       userObject = null;
     }
-    
+
     const dateTime = +new Date();
     const timestamp = Math.floor(dateTime / 1000);
 
-    //Check if userObject appears valid. 
+    //Check if userObject appears valid.
     //This is just a basic sanity filter. It allows a lot of leeway since the client and server could have timezone differences etc.
     try {
-      if ((userObject.expires-10000) >= timestamp || userObject.token.length < 10 || userObject.tokenid.length < 10 || userObject.user === '') {
+      if (userObject.expires-10000 >= timestamp || userObject.token.length < 10 || userObject.tokenid.length < 10 || userObject.user === '') {
         userObject = null;
       }
     } catch(e) {
@@ -133,10 +133,8 @@ class LoginScreen extends Component {
   }
 
 
-  
-
   render() {
-    let style = {
+    const style = {
       color: '#0856fb',
       height: '650px',
       margin: '0 auto',
@@ -148,7 +146,7 @@ class LoginScreen extends Component {
       zIndex: '19999',
     };
 
-    
+
     return (
       <div className="Login" style={style}>
         <p><img src={Logo} alt="Logo" className="rounded my-4" title="Till Startsida" id="mainLogo"/></p>
@@ -158,14 +156,14 @@ class LoginScreen extends Component {
             <h3 className="mb-4">Försöker automatisk inloggning...</h3>
             <FontAwesomeIcon className="my-4" icon="spinner" pulse size="4x" />
           </div> :
-          <div>      
+          <div>
             <h5 className="w-50 mx-auto my-3" style={{color: 'red'}}>{this.props.error.message}</h5>
             <h4 className="w-50 mx-auto mt-5 mb-3">Logga in</h4>
             <form onSubmit={this.handleSubmit}>
               <fieldset disabled={this.state.issending}>
-                <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Användarnamn:</label><input className="w-100 rounded" type='text' placeholder='Användarnamn' value={this.state.user} onFocus={this.clearUser} onChange={this.handleUserChange}/></div>
-                <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Lösenord:</label><input className="w-100 rounded" type='password' placeholder='Lösenord' value={this.state.pwd} onFocus={this.clearPwd} onChange={this.handlePwdChange}/></div>
-                <div className="my-2 w-50 mx-auto"><input className="w-100 mt-4 rounded text-uppercase font-weight-bold btn btn-primary custom-wide-text" type='submit' value='Logga in'/></div>
+                <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Användarnamn:</label><input className="w-100 rounded" type="text" placeholder="Användarnamn" value={this.state.user} onFocus={this.clearUser} onChange={this.handleUserChange}/></div>
+                <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Lösenord:</label><input className="w-100 rounded" type="password" placeholder="Lösenord" value={this.state.pwd} onFocus={this.clearPwd} onChange={this.handlePwdChange}/></div>
+                <div className="my-2 w-50 mx-auto"><input className="w-100 mt-4 rounded text-uppercase font-weight-bold btn btn-primary custom-wide-text" type="submit" value="Logga in"/></div>
               </fieldset>
             </form>
           </div>

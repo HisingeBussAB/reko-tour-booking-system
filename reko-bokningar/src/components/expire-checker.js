@@ -19,7 +19,7 @@ class ExpireChecker extends Component {
       displayWarning: false,
       warningMessage: false,
       servertime: '',
-    };    
+    };
     this.interval = false;
   }
 
@@ -44,7 +44,7 @@ class ExpireChecker extends Component {
             this.setState({displayWarning: true});
             //attempt auto relog if once token is found in local storage or we are AutoUser
             let userObject = null;
-            let logindata = null
+            let logindata = null;
             if (this.props.login.user === Config.AutoUsername && Config.AutoLogin) {
               logindata = { pwd: Config.AutoLoginPwd,
                 user: Config.AutoUsername,
@@ -57,14 +57,14 @@ class ExpireChecker extends Component {
             } catch(e) {
               userObject = null;
             }
-    
+
             const dateTime = +new Date();
             const timestamp = Math.floor(dateTime / 1000);
 
-            //Check if userObject appears valid. 
+            //Check if userObject appears valid.
             //This is just a basic sanity filter. It allows a lot of leeway since the client and server could have timezone differences etc.
             try {
-              if ((userObject.expires-10000) >= timestamp || userObject.token.length < 10 || userObject.tokenid.length < 10 || userObject.user === '') {
+              if (userObject.expires-10000 >= timestamp || userObject.token.length < 10 || userObject.tokenid.length < 10 || userObject.user === '') {
                 userObject = null;
               }
             } catch(e) {
@@ -90,7 +90,7 @@ class ExpireChecker extends Component {
         } catch(e) {
           //Malformatted answer or client not logged.
           try {
-            var expire = this.props.login.expires - 1000; //Set expire within window to show
+            const expire = this.props.login.expires - 1000; //Set expire within window to show
             this.setState({servertime: expire});
           } catch(e) {/*not logged in, probably*/}
           this.props.errorPopup('Kunde inte hämta tid från server. Något är fel i APIn. Spara arbetet.');
@@ -98,24 +98,24 @@ class ExpireChecker extends Component {
       })
       .catch(() => {
         try {
-          var expire = this.props.login.expires - 1000; //Set expire within window to show
+          const expire = this.props.login.expires - 1000; //Set expire within window to show
           this.setState({servertime: expire});
         } catch(e) {/*not logged in, probably*/}
         this.props.errorPopup('Kunde inte hämta tid från server. Något är fel i APIn. Spara arbetet.');
       });
   }
-  
-  
+
+
   closeMe = () => {
     this.setState({displayWarning: false});
   }
 
   render() {
-    let style = {
+    const style = {
       display: 'none',
     };
 
-    let styleShow = {
+    const styleShow = {
       display: 'block',
       position: 'fixed',
       top: '20px',
@@ -138,12 +138,11 @@ class ExpireChecker extends Component {
       minutesLeft = 'okänt antal';
     }
 
-    
-    
+
     return (
       <div className="ExpireChecker text-center" style={this.state.displayWarning ? styleShow : style}><p>
-        {!this.state.warningMessage ? 'Inloggningen går ut om ' + minutesLeft + ' minuter.' 
-          : 
+        {!this.state.warningMessage ? 'Inloggningen går ut om ' + minutesLeft + ' minuter.'
+          :
           this.state.warningMessage} </p>
       <p>Spara arbetet och ladda om appen (tryck F5).</p>
       <button className="btn btn-primary text-uppercase py-1 px-3 m-1" onClick={this.closeMe}>Stäng</button>

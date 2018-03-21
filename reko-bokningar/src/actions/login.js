@@ -3,13 +3,13 @@ import {errorPopup} from './error-popup';
 import {getToken} from './get-token';
 
 export function Login(logindata) {
-  
+
   const errprep = logindata.auto ? 'Automatisk inlogging misslyckades!\n' : '';
   return async (dispatch) => {
     dispatch({type: 'LOADING_START', payload: true});
     try {
-      let token = await getToken('login');
-      let response = await myAxios.post( '/auth', {
+      const token = await getToken('login');
+      const response = await myAxios.post( '/auth', {
         user: logindata.user,
         pwd: logindata.pwd,
         logintoken: token.data.logintoken
@@ -19,12 +19,12 @@ export function Login(logindata) {
         payload = {
           login: false,
           autoAttempt: true,
-        };         
+        };
       } else {
         payload = {
           login: false,
           autoAttempt: false,
-        };         
+        };
       }
       try {
         if (response.data.login !== undefined) {
@@ -34,10 +34,10 @@ export function Login(logindata) {
         dispatch(errorPopup({visible: true, message: errprep + 'Okänt svar från API.'}));
       }
       localStorage.setObject('user', {
-        user: payload.user, 
-        userid: payload.once.userid, 
-        tokenid: payload.once.tokenid, 
-        token: payload.once.token, 
+        user: payload.user,
+        userid: payload.once.userid,
+        tokenid: payload.once.tokenid,
+        token: payload.once.token,
         expires: payload.once.expires
       });
       payload.once = null; //clean once login before redux
@@ -49,7 +49,7 @@ export function Login(logindata) {
         if (error.response.data.response !== undefined) {
           errormsg = errprep + error.response.data.response;
         } else {
-        errormsg = errprep + 'Felformaterat eller inget svar från server.';
+          errormsg = errprep + 'Felformaterat eller inget svar från server.';
         }
       } catch(e) {
         errormsg = errprep + 'Felformaterat eller inget svar från server.';

@@ -7,8 +7,7 @@ import PropTypes from 'prop-types';
 fontawesome.library.add(faSpinner);
 
 class Loader extends Component {
-  
-  
+
 
   render() {
     let style;
@@ -41,13 +40,13 @@ class Loader extends Component {
       text = '';
       size = '2x';
     }
-    
+
     if (this.props.error) {
       return (<div className="Loader" style={style}>Fel! Kunde inte ladda komponent!</div>);
     } else if (this.props.pastDelay) {
       return (<div className="Loader" style={style}><FontAwesomeIcon icon="spinner" pulse size={size} />{text}</div>);
     } else {
-      return (null);
+      return null;
     }
 
   }
@@ -59,4 +58,4 @@ Loader.propTypes = {
   error: PropTypes.bool,
 };
 
-export default (Loader);
+export default Loader;

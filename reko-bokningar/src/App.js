@@ -37,7 +37,6 @@ const ListView = Loadable({
 /*eslint-enable react/display-name */
 
 
-
 class App extends Component {
   constructor(props){
     super(props);
@@ -46,7 +45,7 @@ class App extends Component {
       showStatusMessage: '',
     };
   }
-  
+
 
   componentWillReceiveProps(nextProps) {
     //Checks for login change and starts up firebase if login state change and login is detected.
@@ -83,13 +82,12 @@ class App extends Component {
   }
 
 
-    
   render() {
     return (
       <div className="App h-100">
         {this.props.login.login ?
           <div>
-            {this.state.showStatus ? 
+            {this.state.showStatus ?
               <div className="top-main-error m-2" style={{color: 'red', textAlign: 'center', fontSize: '1.22rem'}}>{this.state.showStatusMessage}</div>
               :
               null }
@@ -98,7 +96,7 @@ class App extends Component {
             <Route exact path="/bokningar/*" component={TourView} />
             <Route exact path="/kalkyler/*" component={BudgetView} />
             <Route exact path="/utskick/*" component={ListView} />
-          </div> : 
+          </div> :
           <LoginScreen />
         }
         {!this.props.suppressPopup ? <ErrorPopup /> : null }
@@ -126,7 +124,5 @@ const mapDispatchToProps = dispatch => bindActionCreators({
 
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);
-
-
 
 

@@ -5,11 +5,9 @@ import LatePayments from './late-payments';
 
 
 class MainView extends Component {
-  
 
   render() {
 
-   
     return (
       <div className="container-fluid MainView">
         <div className="row">

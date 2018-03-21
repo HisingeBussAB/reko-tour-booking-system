@@ -9,21 +9,20 @@ import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import PropTypes from 'prop-types';
 
 
-
 class CategoriesRow extends Component {
   /* NOTICE
   this.props.id
   recives -1 for new item
   output for new item must be id: 'new'
   */
-   
+
   constructor (props) {
     super(props);
     this.state = {
-      updatingSave: false, 
-      updatingActive: false, 
+      updatingSave: false,
+      updatingActive: false,
       deleting: false,
-      category: '', 
+      category: '',
     };
   }
 
@@ -40,11 +39,11 @@ class CategoriesRow extends Component {
       //for some reason id changed, component state needs reset.
       this.setState({
         category: nextProps.category,
-        updatingSave: false,  
-        updatingActive: false, 
+        updatingSave: false,
+        updatingActive: false,
         deleting: false,
       });
-    } 
+    }
     //cancel loaders on changes recived
     if (nextProps.category !== this.props.category) {
       this.setState({updatingSave: false});
@@ -64,9 +63,9 @@ class CategoriesRow extends Component {
     this.setState({updatingSave: true});
 
   }
-      
+
   render() {
-    
+
     return (
       <tr>
         <td className="align-middle pr-3 py-2 w-50">
@@ -74,25 +73,25 @@ class CategoriesRow extends Component {
         </td>
         <td className="align-middle px-3 py-2 text-center">
           {(((this.state.category === '') || (this.state.category !== undefined && this.state.category !== this.props.category))) && !this.state.updatingSave &&
-            <span title="Spara ändring i kategorin"><FontAwesomeIcon icon={faSave} size="2x" className="primary-color custom-scale" onClick={(e) => this.saveCategory(e, e.target.value)}/></span>}  
+            <span title="Spara ändring i kategorin"><FontAwesomeIcon icon={faSave} size="2x" className="primary-color custom-scale" onClick={(e) => this.saveCategory(e, e.target.value)}/></span>}
           {this.state.updatingSave &&
-            <span title="Sparar ändring i kategorin..."><FontAwesomeIcon icon={faSpinner} size="2x" pulse className="primary-color"/></span> }        
-        </td>   
+            <span title="Sparar ändring i kategorin..."><FontAwesomeIcon icon={faSpinner} size="2x" pulse className="primary-color"/></span> }
+        </td>
         <td className="align-middle px-3 py-2 text-center">
-          {this.state.updatingActive && 
-            <span title="Sparar aktiv status..."><FontAwesomeIcon icon={faSpinner} size="2x" pulse className="primary-color"/></span> }        
+          {this.state.updatingActive &&
+            <span title="Sparar aktiv status..."><FontAwesomeIcon icon={faSpinner} size="2x" pulse className="primary-color"/></span> }
           {!this.state.updatingActive && this.props.active &&
             <span title="Inaktivera denna kategori"><FontAwesomeIcon icon={faCheckSquare} size="2x" onClick={null} className="primary-color custom-scale"/></span> }
-          {!this.state.updatingActive && !this.props.active &&  
+          {!this.state.updatingActive && !this.props.active &&
             <span title="Aktivera denna kategori"><FontAwesomeIcon icon={faSquare} onClick={null} size="2x" className="primary-color custom-scale"/></span> }
 
-        </td>          
+        </td>
         <td className="align-middle pl-3 py-2 text-center">
-          {!this.state.deleting && 
+          {!this.state.deleting &&
           <span title="Ta bord denna kategori permanent"><FontAwesomeIcon icon={faTrashAlt} onClick={null} size="2x" className="danger-color custom-scale"/></span>}
-          {this.state.deleting && 
+          {this.state.deleting &&
             <span title="Inaktivera denna kategori"><FontAwesomeIcon icon={faSpinner} size="2x" pulse className="danger-color"/></span>}
-        </td>   
+        </td>
       </tr>
     );
   }
@@ -106,7 +105,6 @@ CategoriesRow.propTypes = {
   submitToggle: PropTypes.func,
 
 };
-
 
 
 export default connect(null, null)(CategoriesRow);

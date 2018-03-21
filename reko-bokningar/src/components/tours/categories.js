@@ -14,7 +14,6 @@ import CategoriesRow from './categories/row';
 import update from 'immutability-helper';
 
 
-
 class Categories extends Component {
   constructor (props) {
     super(props);
@@ -34,8 +33,6 @@ class Categories extends Component {
   componentWillUnmount() {
     this.reduxGetAllUpdate();
   }
-
-
 
 
   reduxGetAllUpdate = () => {this.props.getCategories({
@@ -68,7 +65,6 @@ class Categories extends Component {
     this.setState({isSubmitting: validatedb});
   }
 
-  
 
   render() {
     console.log(this.state.extracategories);
@@ -140,7 +136,6 @@ const mapDispatchToProps = dispatch => bindActionCreators({
   getCategories,
   loading
 }, dispatch);
-
 
 
 export default connect(mapStateToProps, mapDispatchToProps)(Categories);

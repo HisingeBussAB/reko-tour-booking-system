@@ -16,21 +16,21 @@
         },
         "sourceType": "module"
     },
-    "plugins": [
-        "react"
-    ],
+    "plugins": ["react"],
     "rules": {
-        "indent": [
-            "error",
-            2
-        ],
-        "quotes": [
-            "error",
-            "single"
-        ],
-        "semi": [
-            "error",
-            "always"
-        ]
+        "indent": ["error",2],
+        "quotes": ["error","single", {"avoidEscape": true, "allowTemplateLiterals": true}],
+        "semi": ["error","always"],
+        "no-extra-parens": ["error", "all", { "ignoreJSX": "all" }],
+        "no-trailing-spaces": "error",
+        "eol-last": ["error", "always"],
+        "no-useless-return": "error",
+        "no-warning-comments": [1, { "terms": ["todo", "fixme", "debug"], "location": "anywhere" }],
+        "no-use-before-define": "error",
+        "prefer-const": "error",
+        "no-var": "error",
+        "no-tabs": "error",
+        "no-multiple-empty-lines": "error",
+        "jsx-quotes": ["error", "prefer-double"]
     }
 }

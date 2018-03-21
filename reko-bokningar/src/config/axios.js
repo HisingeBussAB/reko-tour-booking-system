@@ -6,5 +6,3 @@ export const myAxios = axios.create({
   timeout: 7000,
   headers: {'Authorization': Config.ApiToken},
 });
-
-
