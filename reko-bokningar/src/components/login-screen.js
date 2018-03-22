@@ -5,7 +5,7 @@ import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators }from 'redux';
-import {Login} from '../actions';
+import {Login,errorPopup} from '../actions';
 import Config from '../config/config';
 import Logo from '../img/logo.gif';
 
@@ -23,6 +23,7 @@ class LoginScreen extends Component {
         user: Config.AutoUsername,
         auto: this.props.login.autoAttempt,
         isOnce: false,
+        blockError: false
       }
     };
   }
@@ -63,6 +64,8 @@ class LoginScreen extends Component {
 
     if (!this.props.login.login && logindata.auto) {
       this.setState({issending: true});
+      //Will we try again if we fail?
+
       this.props.Login(logindata)
         .then(() => {
           //Component will unmount
@@ -77,6 +80,54 @@ class LoginScreen extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
+
+    if (!nextProps.login.login) {
+      myAxios.get( '/timestamp')
+      .then(response => {
+        try {
+          this.setState({servertime: response.data.servertime});
+        } catch (e) {
+
+        })
+        .catch(() => {
+          //try auto login
+          this.setState({issending: true});
+          this.props.Login(this.state.logindata)
+            .then(() => {
+            //Component will unmount
+            })
+            .catch(() => {
+            this.setState({issending: false});
+            });
+        });
+
+
+
+
+      let logindata = {...this.state.logindata};
+
+
+      let userObject = null;
+      try {
+        userObject = localStorage.getObject('user');
+      } catch(e) {
+        userObject = null;
+      }
+      const dateTime = +new Date();
+      const timestamp = Math.floor(dateTime / 1000);
+
+      try {
+        /* Check if userObject appears valid.
+         This is just a basic sanity filter. It allows a lot of leeway since the client and server could have timezone differences etc. */
+        if (userObject.expires-10000 >= timestamp || userObject.token.length < 10 || userObject.tokenid.length < 10 || userObject.user === '') {
+          userObject = null;
+        }
+      } catch(e) {
+        userObject = null;
+      }
+
+    }
+
     let userObject = null;
     try {
       userObject = localStorage.getObject('user');
@@ -125,7 +176,7 @@ class LoginScreen extends Component {
     this.setState({issending: true});
     this.props.Login(this.state.logindata)
       .then(() => {
-        this.setState({issending: false});
+        //Component will unmount
       })
       .catch(() => {
         this.setState({issending: false});
@@ -178,6 +229,7 @@ LoginScreen.propTypes = {
   Login:              PropTypes.func,
   login:              PropTypes.object,
   error:              PropTypes.object,
+  errorPopup:         PropTypes.func,
 };
 
 const mapStateToProps = state => ({
@@ -187,6 +239,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => bindActionCreators({
   Login,
+  errorPopup,
 }, dispatch);
 
 

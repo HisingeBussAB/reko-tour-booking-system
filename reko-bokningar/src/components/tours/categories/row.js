@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators }from 'redux';
 import faSave from '@fortawesome/fontawesome-free-solid/faSave';
 import faSquare from '@fortawesome/fontawesome-free-regular/faSquare';
 import faCheckSquare from '@fortawesome/fontawesome-free-regular/faCheckSquare';
@@ -27,14 +28,10 @@ class CategoriesRow extends Component {
   }
 
   componentDidMount() {
-    console.log('row mounted')
-    console.log(this.props);
     this.setState({category: this.props.category});
   }
+
   componentWillReceiveProps(nextProps) {
-    console.log('row got props')
-    console.log(nextProps)
-    console.log(this.props);
     if (nextProps.id !== this.props.id) {
       //for some reason id changed, component state needs reset.
       this.setState({
@@ -61,7 +58,7 @@ class CategoriesRow extends Component {
     e.preventDefault();
     this.props.submitToggle(true);
     this.setState({updatingSave: true});
-
+    console.log(val)
   }
 
   render() {
@@ -106,5 +103,9 @@ CategoriesRow.propTypes = {
 
 };
 
+const mapDispatchToProps = dispatch => bindActionCreators({
 
-export default connect(null, null)(CategoriesRow);
+}, dispatch);
+
+
+export default connect(null, mapDispatchToProps)(CategoriesRow);

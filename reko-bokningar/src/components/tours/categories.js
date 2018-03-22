@@ -1,11 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators }from 'redux';
-import faSave from '@fortawesome/fontawesome-free-solid/faSave';
-import faSquare from '@fortawesome/fontawesome-free-regular/faSquare';
-import faCheckSquare from '@fortawesome/fontawesome-free-regular/faCheckSquare';
-import faTrashAlt from '@fortawesome/fontawesome-free-regular/faTrashAlt';
-import faSpinner from '@fortawesome/fontawesome-free-solid/faSpinner';
 import faPlus from '@fortawesome/fontawesome-free-solid/faPlus';
 import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import PropTypes from 'prop-types';

@@ -4,8 +4,8 @@ import {getToken} from './get-token';
 
 export function Login(logindata) {
 
-  const errprep = logindata.auto ? 'Automatisk inlogging misslyckades!\n' : '';
   return async (dispatch) => {
+    const errprep = logindata.auto ? 'Automatisk inlogging misslyckades!\n' : '';
     dispatch({type: 'LOADING_START', payload: true});
     try {
       const token = await getToken('login');
@@ -27,7 +27,7 @@ export function Login(logindata) {
         };
       }
       try {
-        if (response.data.login !== undefined) {
+        if (typeof (response.data.login !== undefined) {
           payload = {...payload, ...response.data};
         }
       } catch(e) {
