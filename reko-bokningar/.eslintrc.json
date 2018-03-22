@@ -31,6 +31,10 @@
         "semi": [
             "error",
             "always"
+        ],
+        "react/destructuring-assignment": [
+              <enabled>, 
+              'always'
         ]
     }
 }
