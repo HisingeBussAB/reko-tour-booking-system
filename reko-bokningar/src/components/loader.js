@@ -10,10 +10,12 @@ class Loader extends Component {
 
 
   render() {
+    const {isError = false, isFullScreen = false, pastDelay = true} = this.props;
+    /* TODO pastDelay?? */
     let style;
     let text;
     let size;
-    if (this.props.fullScreen === true) {
+    if (isFullScreen === true) {
       style = {
         color: '#0856fb',
         margin: '0 auto',
@@ -41,9 +43,9 @@ class Loader extends Component {
       size = '2x';
     }
 
-    if (this.props.error) {
+    if (isError) {
       return (<div className="Loader" style={style}>Fel! Kunde inte ladda komponent!</div>);
-    } else if (this.props.pastDelay) {
+    } else if (pastDelay) {
       return (<div className="Loader" style={style}><FontAwesomeIcon icon="spinner" pulse size={size} />{text}</div>);
     } else {
       return null;
@@ -53,9 +55,9 @@ class Loader extends Component {
 }
 
 Loader.propTypes = {
-  fullScreen: PropTypes.bool,
+  isFullScreen: PropTypes.bool,
   pastDelay: PropTypes.number,
-  error: PropTypes.bool,
+  isError: PropTypes.bool,
 };
 
 export default Loader;

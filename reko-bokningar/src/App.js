@@ -49,19 +49,17 @@ class App extends Component {
 
   componentWillReceiveProps(nextProps) {
     //Checks for login change and starts up firebase if login state change and login is detected.
-    let prevLogin;
-    if (typeof this.props.login === 'undefined') {
-      prevLogin = false;
-    } else {
-      prevLogin = this.props.login.login;
-    }
+    const {startFirebaseSub = function(){}, login = {login: {login: false, user: 'none', jwt: 'none'}}} = this.props;
+    const prevLogin = login.login;
     if (nextProps.login.login && nextProps.login.login !== prevLogin) {
       firebase.auth().signInWithEmailAndPassword(Config.FirebaseLogin, Config.FirebasePwd)
         .then(() => {
-          this.props.startFirebaseSub(this.props.login.user, this.props.login.jwt);
+
+          startFirebaseSub(login.user, login.jwt);
         })
         .catch(() => {
-        //manual subscriptions?
+        //TODO
+        //manuallt download sub data?
           this.setState({
             showStatus: true,
             showStatusMessage: 'Kunde inte ansluta till WebSocket! Programmet går fortfarande att använda men undvik att använda det på flera datorer samtidigt.',
@@ -83,12 +81,14 @@ class App extends Component {
 
 
   render() {
+    const {isSuppressedPopup = true, login = {login: {login: false}}} = this.props;
+    const {showStatus = true, showStatusMessage = 'Okänt fel, inget state'} = this.state;
     return (
       <div className="App h-100">
-        {this.props.login.login ?
+        {login.login ?
           <div>
-            {this.state.showStatus ?
-              <div className="top-main-error m-2" style={{color: 'red', textAlign: 'center', fontSize: '1.22rem'}}>{this.state.showStatusMessage}</div>
+            {showStatus ?
+              <div className="top-main-error m-2" style={{color: 'red', textAlign: 'center', fontSize: '1.22rem'}}>{showStatusMessage}</div>
               :
               null }
             <MainMenu />
@@ -99,7 +99,7 @@ class App extends Component {
           </div> :
           <LoginScreen />
         }
-        {!this.props.suppressPopup ? <ErrorPopup /> : null }
+        {!isSuppressedPopup ? <ErrorPopup /> : null }
         <ExpireChecker />
         <SaveIcon />
       </div>
@@ -110,12 +110,12 @@ class App extends Component {
 App.propTypes = {
   login:              PropTypes.object,
   startFirebaseSub:   PropTypes.func,
-  suppressPopup:      PropTypes.bool,
+  isSuppressedPopup:  PropTypes.bool,
 };
 
 const mapStateToProps = state => ({
-  login: state.login,
-  suppressPopup: state.errorPopup.suppressed,
+  login:              state.login,
+  isSuppressedPopup:  state.errorPopup.suppressed,
 });
 
 const mapDispatchToProps = dispatch => bindActionCreators({

@@ -8,6 +8,7 @@ import { bindActionCreators }from 'redux';
 import {Login,errorPopup} from '../actions';
 import Config from '../config/config';
 import Logo from '../img/logo.gif';
+import {getServerTime} from '../utils/common-calls';
 
 
 fontawesome.library.add(faSpinner);
@@ -15,21 +16,32 @@ fontawesome.library.add(faSpinner);
 class LoginScreen extends Component {
   constructor(props){
     super(props);
+    const {login = {autoAttempt: false}} = this.props;
     this.state = {
       issending: true,
-      servertime: '',
+      servertime: false,
       logindata: {
         pwd: Config.AutoLoginPwd,
         user: Config.AutoUsername,
-        auto: this.props.login.autoAttempt,
+        auto: login.autoAttempt,
         isOnce: false,
+        onceExpires: 0,
         blockError: false
       }
     };
   }
 
   componentWillMount() {
+    const {login = {login: false}} = this.props;
+    if (!login.login) {
+      this.getLocalStorage();
+      this.getUnixTime();
+    }
+  }
+    
 
+
+  /*
     let logindata = {...this.state.logindata};
     let userObject = null;
     try {
@@ -76,18 +88,28 @@ class LoginScreen extends Component {
     }
     if (this.props.login.autoAttempt === false) {
       this.setState({issending: false});
-    }
-  }
+    }*/
 
   componentWillReceiveProps(nextProps) {
-
+    const {login = {login: false}} = this.props;
+    if (nextProps.login.login !== login.login && !nextProps.login.login) {
+      this.getLocalStorage();
+      this.getUnixTime();
+    }
+  }
+    
+  /*
+    console.log('will recive props')
+    console.log(nextProps)
     if (!nextProps.login.login) {
       myAxios.get( '/timestamp')
-      .then(response => {
-        try {
-          this.setState({servertime: response.data.servertime});
-        } catch (e) {
+        .then(response => {
+          console.log(response.data)
+          try {
+            this.setState({servertime: response.data.servertime});
+          } catch (e) {
 
+          }
         })
         .catch(() => {
           //try auto login
@@ -97,7 +119,7 @@ class LoginScreen extends Component {
             //Component will unmount
             })
             .catch(() => {
-            this.setState({issending: false});
+              this.setState({issending: false});
             });
         });
 
@@ -116,9 +138,9 @@ class LoginScreen extends Component {
       const dateTime = +new Date();
       const timestamp = Math.floor(dateTime / 1000);
 
-      try {
-        /* Check if userObject appears valid.
-         This is just a basic sanity filter. It allows a lot of leeway since the client and server could have timezone differences etc. */
+      try {*/
+  /* Check if userObject appears valid.
+         This is just a basic sanity filter. It allows a lot of leeway since the client and server could have timezone differences etc. *//*
         if (userObject.expires-10000 >= timestamp || userObject.token.length < 10 || userObject.tokenid.length < 10 || userObject.user === '') {
           userObject = null;
         }
@@ -151,6 +173,37 @@ class LoginScreen extends Component {
         });
     } else {
       this.setState({issending: false});
+    }*/
+  
+
+  getUnixTime = () => {getServerTime().then(response => {   
+    this.setState({servertime: response})
+  })
+    .catch(()=>{
+      this.setState({servertime: Math.round(+new Date()/1000)})
+    });
+  }
+
+  getLocalStorage = () => {
+    const {login = {autoAttempt: false}} = this.props;
+    let userObject = null;
+    try {
+      userObject = localStorage.getObject('user');
+    } catch(e) {
+      userObject = null;
+    }
+    if (userObject !== null) {
+      if (typeof userObject.user === 'string' && typeof userObject.tokenid === 'string' &&
+        typeof userObject.token === 'string' && typeof userObject.expires === 'number') {
+        this.setState({logindata: {
+          pwd: userObject.tokenid + Config.OnceLoginToken + userObject.token,
+          user: userObject.token,
+          auto: login.autoAttempt,
+          once: true,
+          onceExpires: userObject.expires,
+          blockError: login.autoAttempt //sets to block error output if auto login is on, normal auto login is always fired directly after failed once if autologin is active
+        }});
+      }
     }
   }
 

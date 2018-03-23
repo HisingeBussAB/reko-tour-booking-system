@@ -16,19 +16,22 @@ class MainMenu extends Component {
 
   shortcutToggler = (flag) => {
     if (flag === null) {
-      this.state.shortcutToggle ? flag = false : flag = true;
+      const {shortcutToggle = false} = this.state;
+      shortcutToggle ? flag = false : flag = true;
     }
     this.setState({shortcutToggle: flag});
   }
 
   tourToggler = (flag) => {
     if (flag === null) {
-      this.state.tourToggle ? flag = false : flag = true;
+      const {tourToggle = false} = this.state;
+      tourToggle ? flag = false : flag = true;
     }
     this.setState({tourToggle: flag});
   }
 
   render() {
+    const {shortcutToggle = false} = this.state;
 
     const searchStyle= {
       backgroundImage: 'url(' + SearchIcon + ')'
@@ -44,7 +47,7 @@ class MainMenu extends Component {
       </div>
     </div>;
 
-    const shortcuts = this.state.shortcutToggle ? [
+    const shortcuts = shortcutToggle ? [
       'Skapa bokning',
       'Programbeställningar',
       'Lägg in betalningar',
@@ -74,9 +77,9 @@ class MainMenu extends Component {
               </div>
             </div>
             {tours}
-            <Link to={'/bokningar/'} title="Resor, bokningar och betalningar" className="text-uppercase font-weight-bold btn btn-primary custom-scale custom-wide-text my-2 mx-3 larger-btn">Bokningar</Link>
-            <Link to={'/kalkyler/'} title="Resekalkyler" className="text-uppercase font-weight-bold btn btn-primary custom-scale custom-wide-text my-2 mx-3">Kalkyler</Link>
-            <Link to={'/utskick/'} title="Adresslistor för utskick" className="text-uppercase font-weight-bold btn btn-primary custom-scale custom-wide-text my-2 mx-3 ">Utskick</Link>
+            <span className="my-2 mx-3"><Link to={'/bokningar/'}><button style={{minWidth:'140px'}} type="button" title="Resor, bokningar och betalningar" className="text-uppercase font-weight-bold btn btn-primary custom-scale custom-wide-text">Bokningar</button></Link></span>
+            <span className="my-2 mx-3"><Link to={'/kalkyler/'}><button style={{minWidth:'140px'}} type="button" title="Resekalkyler" className="text-uppercase font-weight-bold btn btn-primary custom-scale custom-wide-text">Kalkyler</button></Link></span>
+            <span className="my-2 mx-3"><Link to={'/utskick/'}><button style={{minWidth:'140px'}} title="Adresslistor för utskick" type="button" className="text-uppercase font-weight-bold btn btn-primary custom-scale custom-wide-text">Utskick</button></Link></span>
           </div>
         </nav>
 

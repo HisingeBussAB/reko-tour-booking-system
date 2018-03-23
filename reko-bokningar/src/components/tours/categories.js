@@ -30,23 +30,25 @@ class Categories extends Component {
   }
 
 
-  reduxGetAllUpdate = () => {this.props.getCategories({
-    user: this.props.login.user,
-    jwt: this.props.login.jwt,
-    categoryid: 'all',
-  });
+  reduxGetAllUpdate = () => {
+    const {getCategories = ()=>{}, login = {user:'anonymous', jwt: 'none'}} = this.props;
+    getCategories({
+      user: login.user,
+      jwt: login.jwt,
+      categoryid: 'all',
+    });
   }
 
   addRow = () => {
+    const {extracategories = []} = this.state;
     const newcategory = {
       id: 'new',
       category: '',
       active: true,
     };
-    const newextracategories = update(this.state.extracategories, {$push: [newcategory]});
+    const newextracategories = update(extracategories, {$push: [newcategory]});
 
     this.setState({extracategories: newextracategories});
-    console.log(this.state.extracategories)
   }
 
 
@@ -62,17 +64,18 @@ class Categories extends Component {
 
 
   render() {
-    console.log(this.state.extracategories);
-    console.log("rendering...")
+
+    const {categories = []} = this.props;
+    const {extracategories = [], showStatus = false, showStatusMessage = '', isSubmitting = false} = this.state;
+
     let categoryRows;
     try {
-      categoryRows = this.props.categories.map((category) => {
+      categoryRows = categories.map((category) => {
         return <CategoriesRow key={category.id} id={category.id} category={category.category} active={category.active} submitToggle={this.submitToggle}/>;
       });} catch(e) {
       categoryRows = null;
     }
-    this.state.extracategories.forEach((item, i) => {
-      console.log('here is an extra')
+    extracategories.forEach((item, i) => {
       categoryRows.push(<CategoriesRow key={('new' + i)} id={item.id} category={item.category} active={item.active} submitToggle={this.submitToggle}/>);
     });
 
@@ -80,7 +83,7 @@ class Categories extends Component {
       <div className="TourViewNewTour">
 
         <form onSubmit={this.handleSubmit}>
-          <fieldset disabled={this.state.isSubmitting}>
+          <fieldset disabled={isSubmitting}>
             <div className="container text-left" style={{maxWidth: '650px'}}>
               <h3 className="my-4 w-50 mx-auto text-center">Resekategorier</h3>
               <table className="table table-hover w-100">
@@ -96,8 +99,8 @@ class Categories extends Component {
                   {categoryRows}
                   <tr>
                     <td colSpan="4" className="py-2">
-                      <button onClick={this.addRow} disabled={this.state.isSubmitting} type="button" title="Lägg till flera kategorier" className="btn btn-primary custom-scale">
-                        <FontAwesomeIcon icon={faPlus} size="lg" className="mt-1"/>
+                      <button onClick={this.addRow} disabled={isSubmitting} type="button" title="Lägg till flera kategorier" className="btn btn-primary custom-scale">
+                        <span className="mt-1"><FontAwesomeIcon icon={faPlus} size="lg" /></span>
                       </button>
                     </td>
                   </tr>
@@ -106,7 +109,7 @@ class Categories extends Component {
             </div>
           </fieldset>
         </form>
-        {this.state.showStatus ? <div>{this.state.showStatusMessage}</div> : null}
+        {showStatus ? <div>{showStatusMessage}</div> : null}
       </div>
     );
   }
@@ -116,7 +119,6 @@ class Categories extends Component {
 Categories.propTypes = {
   login:              PropTypes.object,
   getCategories:      PropTypes.func,
-  loading:            PropTypes.func,
   categories:         PropTypes.array,
 };
 

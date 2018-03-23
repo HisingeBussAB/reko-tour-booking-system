@@ -27,6 +27,17 @@ if (!empty($jsonData['user'])) {
   die();
 } 
 
+if (empty($jsonData['logintoken']) || empty($jsonData['pwd'])) {
+  header( $_SERVER["SERVER_PROTOCOL"] . ' 401 Unauthorized');
+  $headers = ob_get_clean();
+  echo $headers;
+  $response->AddResponse('login', false);
+  $response->AddResponse('saved', false);
+  $response->AddResponse('response', 'För lite data skickad för att validera inloggning.');
+  echo $response->GetResponse();
+  die();
+}
+
 $pdo = DB::get();
 
 if (!Tokens::validateToken($jsonData['logintoken'], 'login', $pdo)) {
@@ -104,7 +115,7 @@ $expires = ($now + 600000);
     DBError::showError($e, __CLASS__, $sql);
   }
 
-  $onceObj = (object) array('userid' => $userid, 'tokenid' =>  $onceid, 'token' => $oncetoken, 'expires' => ($now - 260000));
+  $onceObj = (object) array('user' => $user, 'tokenid' =>  $onceid, 'token' => $oncetoken, 'expires' => ($now - 260000));
   $response->AddResponse('once', $onceObj);
 
 

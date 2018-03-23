@@ -1,4 +1,4 @@
-import {myAxios} from '../config/axios';
+import myAxios from '../config/axios';
 
 export async function apiPost(url, payload) {
   try {

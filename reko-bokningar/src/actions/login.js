@@ -1,4 +1,4 @@
-import {myAxios} from '../config/axios';
+import myAxios from '../config/axios';
 import {errorPopup} from './error-popup';
 import {getToken} from './get-token';
 
@@ -27,15 +27,14 @@ export function Login(logindata) {
         };
       }
       try {
-        if (typeof (response.data.login !== undefined) {
+        if (typeof response.data.login !== 'undefined') {
           payload = {...payload, ...response.data};
         }
       } catch(e) {
         dispatch(errorPopup({visible: true, message: errprep + 'Okänt svar från API.'}));
       }
       localStorage.setObject('user', {
-        user: payload.user,
-        userid: payload.once.userid,
+        user: payload.once.user,
         tokenid: payload.once.tokenid,
         token: payload.once.token,
         expires: payload.once.expires
