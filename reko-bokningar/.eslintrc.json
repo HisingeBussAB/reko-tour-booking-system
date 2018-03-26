@@ -21,7 +21,7 @@
         "indent": ["error",2],
         "quotes": ["error","single", {"avoidEscape": true, "allowTemplateLiterals": true}],
         "semi": ["error","always"],
-        "no-extra-parens": ["error", "all", { "ignoreJSX": "all" }],
+        "no-extra-parens": ["error", "all", { "nestedBinaryExpressions": false, "ignoreJSX": "all" }],
         "no-trailing-spaces": "error",
         "eol-last": ["error", "always"],
         "no-useless-return": "error",
