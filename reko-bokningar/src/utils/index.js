@@ -2,9 +2,10 @@ import _ from 'underscore';
 
 export function merge_object_arrays (arr1, arr2, match) {
   //"Mustafa Dokumacı" https://stackoverflow.com/questions/30093561/merge-two-json-object-based-on-key-value-in-javascript
+  let same;
   return _.union(
     _.map(arr1, function (obj1) {
-      var same = _.find(arr2, function (obj2) {
+      same = _.find(arr2, function (obj2) {
         return obj1[match] === obj2[match];
       });
       return same ? _.extend(obj1, same) : obj1;
@@ -15,3 +16,4 @@ export function merge_object_arrays (arr1, arr2, match) {
       });
     })
   );}
+

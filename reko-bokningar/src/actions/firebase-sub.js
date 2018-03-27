@@ -4,7 +4,7 @@ import {onThenCategory, onCatchCategory} from './categories';
 
 export function startFirebaseSub(user, jwt) {
   return function(dispatch){
-    
+
     const toursCategories = firebase.database().ref('tours/categories');
     const today = Date.now();
     //TODO
@@ -48,8 +48,8 @@ export function startFirebaseSub(user, jwt) {
             }
             return item;
           });
-        } catch(e) { 
-          /*id isnt array, ignore*/ 
+        } catch(e) {
+          /*id isnt array, ignore*/
         }
       }
     });

@@ -3,12 +3,11 @@ import { connect } from 'react-redux';
 
 
 class Deadlines extends Component {
-  
-  
+
 
   render() {
 
-   
+
     return (
       <div className="Deadlines text-center">
         <h3>Deadlines</h3>

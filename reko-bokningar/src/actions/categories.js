@@ -1,20 +1,6 @@
 import {apiPost} from './api-post';
 
 
-export function getCategories(indata) {
-  return (dispatch) => {
-    dispatch({type: 'LOADING_START', payload: true});
-    apiPost('/tours/category/get' , indata)
-      .then(response => {
-        onThenCategory(dispatch, response);
-      })
-      .catch(error => {
-        onCatchCategory(dispatch, error);
-      });
-  };
-}
-
-
 export function onThenCategory(dispatch, response) {
   try {
     if (response.data.success === false) {
@@ -42,7 +28,7 @@ export function onCatchCategory(dispatch, error) {
   let message;
   try {
     message = error.response.data.response;
-  } catch (e) { 
+  } catch (e) {
     message = 'Ett fel har uppstått under hämtning av kategorier.';
   }
   dispatch({
@@ -50,4 +36,17 @@ export function onCatchCategory(dispatch, error) {
     payload: {visible: true, message: message}
   });
   dispatch({type: 'LOADING_STOP', payload: false});
+}
+
+export function getCategories(indata) {
+  return (dispatch) => {
+    dispatch({type: 'LOADING_START', payload: true});
+    apiPost('/tours/category/get' , indata)
+      .then(response => {
+        onThenCategory(dispatch, response);
+      })
+      .catch(error => {
+        onCatchCategory(dispatch, error);
+      });
+  };
 }

@@ -22,7 +22,7 @@ const initialState = {
   loading: {
     inprogress: true,
     flags: null,
-  },  
+  },
   tours: {
     categories: [],
   }

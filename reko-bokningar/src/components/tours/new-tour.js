@@ -87,16 +87,16 @@ class NewTour extends Component {
         this.setState({showError: true, showErrorMessage: error.response.data.response});
         this.setState({isSubmitting: false});
       });
-    
+
 
   }
 
 
   render() {
 
-    const roomRows = this.state.roomTypes.map((room, i) => 
+    const roomRows = this.state.roomTypes.map((room, i) =>
       <div className="container-fluid m-0 p-0" key={i}>
-      
+
         <div className="row mb-1">
           <div className="col-sm-12 col-md-6 text-left mb-1">
             <input value={room.type} onChange={(e) => this.handleRoomChange(i, 'type', e.target.value)} placeholder='Rumstyp' type='text' className="rounded w-75" maxLength="35" style={{minWidth: '300px'}} />
@@ -109,7 +109,7 @@ class NewTour extends Component {
           </div>
         </div>
       </div>);
-    
+
 
     return (
       <div className="TourViewNewTour">
@@ -129,7 +129,7 @@ class NewTour extends Component {
                     <DatePicker
                       dateFormat="YYYY-MM-DD"
                       selected={this.state.startDate}
-                      onChange={this.handleDateChange} 
+                      onChange={this.handleDateChange}
                       showWeekNumbers
                       locale="sv"
                       disabled={this.state.isSubmitting}
@@ -163,9 +163,9 @@ class NewTour extends Component {
               </div>
               <div className="row">
                 <h5 className="col-12 d-block mt-4 text-left">Avbeställningskydd & anmälningsavgift:</h5>
-              </div>     
+              </div>
               <div className="row">
-              
+
                 <div className="col-12 text-left">
                   <label className="small d-block text-left custom-price-input mr-auto pt-2">Anmälningsavgift:</label>
                   <input placeholder='300' value={this.state.reservationFee} onChange={e => this.handleChange('reservationFee', e.target.value)} pattern="[0-9]*" inputMode="numeric" maxLength="4" min="0" max="9999" type='number' className="rounded custom-price-input" /> kr

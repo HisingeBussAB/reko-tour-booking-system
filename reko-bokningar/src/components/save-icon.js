@@ -5,25 +5,17 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 
-
 class SaveIcon extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      displayWarning: false,
-      servertime: '',
-    };    
-  }
-
-  
-  
 
   render() {
-    let style = {
+
+    const {isLoading = true} = this.props;
+
+    const style = {
       display: 'none',
     };
 
-    let styleShow = {
+    const styleShow = {
       display: 'block',
       position: 'fixed',
       bottom: '0',
@@ -39,9 +31,9 @@ class SaveIcon extends Component {
       width: '30px',
     };
 
-    
+
     return (
-      <div className="SaveIcon text-center" style={this.props.loading ? styleShow : style}>
+      <div className="SaveIcon text-center" style={isLoading ? styleShow : style}>
         <FontAwesomeIcon icon={faSyncAlt} size="1x" spin />
       </div>);
 
@@ -50,13 +42,12 @@ class SaveIcon extends Component {
 }
 
 SaveIcon.propTypes = {
-  loading:            PropTypes.bool,
+  isLoading:            PropTypes.bool,
 };
 
 const mapStateToProps = state => ({
   loading: state.loading.inprogress,
 });
-
 
 
 export default connect(mapStateToProps, null)(SaveIcon);
