@@ -31,7 +31,7 @@ export function Login(logindata) {
           payload = {...payload, ...response.data};
         }
       } catch(e) {
-        dispatch(errorPopup({visible: true, message: errprep + 'Okänt svar från API.'}));
+        dispatch(errorPopup({visible: true, message: errprep + 'Okänt svar från API.', suppressed: true}));
       }
       localStorage.setObject('user', {
         user: payload.once.user,
@@ -53,7 +53,7 @@ export function Login(logindata) {
       } catch(e) {
         errormsg = errprep + 'Felformaterat eller inget svar från server.';
       }
-      dispatch(errorPopup({visible: true, message: errormsg}));
+      dispatch(errorPopup({visible: true, message: errormsg, suppressed: true}));
       dispatch({type: 'LOGIN', payload: {autoAttempt: false}});
       dispatch({type: 'LOADING_STOP', payload: false});
       throw error;

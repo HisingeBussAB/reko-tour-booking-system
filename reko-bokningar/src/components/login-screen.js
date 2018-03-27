@@ -74,7 +74,7 @@ class LoginScreen extends Component {
         typeof userObject.token === 'string' && typeof userObject.expires === 'number') {
         this.setState({logindata: {
           pwd: userObject.tokenid + Config.OnceLoginToken + userObject.token,
-          user: userObject.token,
+          user: userObject.user,
           auto: login.autoAttempt,
           isOnce: true,
           onceExpires: userObject.expires,
@@ -118,7 +118,7 @@ class LoginScreen extends Component {
         this.setState({issending: true});
         const newlogin = {
           pwd: Config.AutoLoginPwd,
-          user: Config.AutoUsername + '5',
+          user: Config.AutoUsername,
           auto: true,
           isOnce: false,
           onceExpires: 0,
@@ -129,6 +129,8 @@ class LoginScreen extends Component {
             //Component will unmount
           })
           .catch(() => {
+            logindata.user = '';
+            logindata.pwd = '';
             logindata.isOnce = false;
             logindata.auto = false;
             logindata.blockError = false;
@@ -214,8 +216,6 @@ class LoginScreen extends Component {
       width: '100%',
       zIndex: '19999',
     };
-    console.log('render log')
-    console.log(this.state.logindata)
     return (
       <div className="Login" style={style}>
         <p><img src={Logo} alt="Logo" className="rounded my-4" title="Till Startsida" id="mainLogo"/></p>

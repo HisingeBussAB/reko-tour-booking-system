@@ -70,7 +70,6 @@ $userid = $result['authid'];
 
 $now = time();
 $expires = ($now + 600000);
-
   if (password_verify($jsonData['pwd'] . PWD_PEPPER, $result['pwd']) || validateOnce($userid, $jsonData['pwd'], $pdo)) {
 
     //Generate JWT
@@ -105,17 +104,17 @@ $expires = ($now + 600000);
   try {
     $sql = "INSERT INTO Auth_Once (userID, tokenid, token, created) VALUES (:userid, :tokenid, :token, :created);";
     $sth = $pdo->prepare($sql);
-    $sth->bindParam(':userid',  $userid, \PDO::PARAM_INT);
-    $sth->bindParam(':tokenid', $onceid,   \PDO::PARAM_STR);
-    $sth->bindParam(':token',   $oncetoken,   \PDO::PARAM_STR);
-    $sth->bindParam(':created', $now,   \PDO::PARAM_INT);
+    $sth->bindParam(':userid',  $userid,       \PDO::PARAM_INT);
+    $sth->bindParam(':tokenid', $onceid,       \PDO::PARAM_STR);
+    $sth->bindParam(':token',   $oncetoken,    \PDO::PARAM_STR);
+    $sth->bindParam(':created', $now,          \PDO::PARAM_INT);
     $sth->execute(); 
     
   } catch(\PDOException $e) {
     DBError::showError($e, __CLASS__, $sql);
   }
 
-  $onceObj = (object) array('user' => $user, 'tokenid' =>  $onceid, 'token' => $oncetoken, 'expires' => ($now - 260000));
+  $onceObj = (object) array('user' => $user, 'tokenid' =>  $onceid, 'token' => $oncetoken, 'expires' => ($now + 259200));
   $response->AddResponse('once', $onceObj);
 
 
