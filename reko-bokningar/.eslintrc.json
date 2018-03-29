@@ -18,24 +18,6 @@
     },
     "plugins": ["react"],
     "rules": {
-<<<<<<< HEAD
-        "indent": [
-            "error",
-            2
-        ],
-        "quotes": [
-            "error",
-            "single"
-        ],
-        "semi": [
-            "error",
-            "always"
-        ],
-        "react/destructuring-assignment": [
-              <enabled>, 
-              'always'
-        ]
-=======
         "indent": ["error",2],
         "quotes": ["error","single", {"avoidEscape": true, "allowTemplateLiterals": true}],
         "semi": ["error","always"],
@@ -60,6 +42,5 @@
         "react/no-unused-prop-types": [2],
         "react/no-unused-state": [2],
         "react/no-will-update-set-state": [2]
->>>>>>> 5a031255cccbd909008474fcfe244f786640f1ad
     }
 }
