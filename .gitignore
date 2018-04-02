@@ -56,3 +56,5 @@ Sync.ffs_batch
 api/config/config.php
 npm-debug.log
 
+/reko-bokningar/build/
+
