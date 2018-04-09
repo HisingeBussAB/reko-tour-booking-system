@@ -1,10 +1,10 @@
-import myAxios from '../config/axios';
+import myAxios from '../config/axios'
 
-export async function getToken(tokentype) {
+export async function getToken (tokentype) {
 
   try {
-    return await myAxios.post( '/token/' + tokentype);
+    return await myAxios.post('/token/' + tokentype)
   } catch (error) {
-    throw error;
+    throw error
   }
 }

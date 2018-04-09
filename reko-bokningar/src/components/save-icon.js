@@ -1,19 +1,16 @@
-import React, { Component } from 'react';
-import faSyncAlt from '@fortawesome/fontawesome-free-solid/faSyncAlt';
-import FontAwesomeIcon from '@fortawesome/react-fontawesome';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-
+import React, { Component } from 'react'
+import faSyncAlt from '@fortawesome/fontawesome-free-solid/faSyncAlt'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 
 class SaveIcon extends Component {
-
-  render() {
-
-    const {isLoading = true} = this.props;
+  render () {
+    const {isLoading = true} = this.props
 
     const style = {
-      display: 'none',
-    };
+      display: 'none'
+    }
 
     const styleShow = {
       display: 'block',
@@ -28,26 +25,22 @@ class SaveIcon extends Component {
       marginBottom: '8px',
       opacity: '0.7',
       height: '30px',
-      width: '30px',
-    };
-
+      width: '30px'
+    }
 
     return (
       <div className="SaveIcon text-center" style={isLoading ? styleShow : style}>
         <FontAwesomeIcon icon={faSyncAlt} size="1x" spin />
-      </div>);
-
-
+      </div>)
   }
 }
 
 SaveIcon.propTypes = {
-  isLoading:            PropTypes.bool,
-};
+  isLoading: PropTypes.bool
+}
 
 const mapStateToProps = state => ({
-  loading: state.loading.inprogress,
-});
+  isLoading: state.loading.inprogress
+})
 
-
-export default connect(mapStateToProps, null)(SaveIcon);
+export default connect(mapStateToProps, null)(SaveIcon)

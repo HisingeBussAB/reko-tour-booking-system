@@ -1,13 +1,10 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import Deadlines from './deadlines';
-import LatePayments from './late-payments';
-
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import Deadlines from './deadlines'
+import LatePayments from './late-payments'
 
 class MainView extends Component {
-
-  render() {
-
+  render () {
     return (
       <div className="container-fluid MainView">
         <div className="row">
@@ -19,8 +16,8 @@ class MainView extends Component {
           </div>
         </div>
       </div>
-    );
+    )
   }
 }
 
-export default connect(null, null)(MainView);
+export default connect(null, null)(MainView)

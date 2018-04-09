@@ -1,35 +1,33 @@
-import firebase from '../config/firebase';
-import {apiPost} from './api-post';
-import {onThenCategory, onCatchCategory} from './categories';
+import firebase from '../config/firebase'
+import {apiPost} from './api-post'
+import {onThenCategory, onCatchCategory} from './categories'
 
-export function startFirebaseSub(user, jwt) {
-  return function(dispatch){
-
-    const toursCategories = firebase.database().ref('tours/categories');
-    const today = Date.now();
-    //TODO
-    //DEBUG SET TO INVALID
+export function startFirebaseSub (user, jwt) {
+  return function (dispatch) {
+    const toursCategories = firebase.database().ref('tours/categories')
+    const today = Date.now()
+    // TODO
+    // DEBUG SET TO INVALID
     toursCategories.set({
       updated: today,
-      id: ['all54'],
-    });
-    //END DEBUG SET TO INVALID
-    toursCategories.on('value', function(snapshot) {
-      dispatch({type: 'LOADING_START', payload: true});
-      const snap = snapshot.val();
+      id: ['all54']
+    })
+    // END DEBUG SET TO INVALID
+    toursCategories.on('value', function (snapshot) {
+      dispatch({type: 'LOADING_START', payload: true})
+      const snap = snapshot.val()
       if (snap.id.indexOf('all') !== -1) {
         apiPost('/tours/category/get', {
           user: user,
           jwt: jwt,
-          categoryid: 'all',
+          categoryid: 'all'
         })
           .then(response => {
-            onThenCategory(dispatch, response);
+            onThenCategory(dispatch, response)
           })
           .catch(error => {
-            onCatchCategory(dispatch, error);
-          });
-
+            onCatchCategory(dispatch, error)
+          })
       } else {
         try {
           snap.id.map((item) => {
@@ -37,21 +35,22 @@ export function startFirebaseSub(user, jwt) {
               apiPost('/tours/category/get', {
                 user: user,
                 jwt: jwt,
-                categoryid: item,
+                categoryid: item
               })
                 .then(response => {
-                  onThenCategory(dispatch, response);
+                  onThenCategory(dispatch, response)
                 })
                 .catch(error => {
-                  onCatchCategory(dispatch, error);
-                });
+                  onCatchCategory(dispatch, error)
+                })
             }
-            return item;
-          });
-        } catch(e) {
-          /*id isnt array, ignore*/
+            return item
+          })
+        } catch (e) {
+          /* id isnt array, ignore */
+          dispatch({type: 'LOADING_STOP', payload: false})
         }
       }
-    });
-  };
+    })
+  }
 }
