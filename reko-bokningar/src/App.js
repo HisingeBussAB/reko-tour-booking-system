@@ -52,7 +52,7 @@ class App extends Component {
     if (nextProps.login.login && nextProps.login.login !== prevLogin) {
       firebase.auth().signInWithEmailAndPassword(Config.FirebaseLogin, Config.FirebasePwd)
         .then(() => {
-          startFirebaseSub(login.user, login.jwt)
+          startFirebaseSub(nextProps.login.user, nextProps.login.jwt)
         })
         .catch(() => {
         // TODO

@@ -1,6 +1,6 @@
-import myAxios from '../config/axios'
-import {errorPopup} from './error-popup'
-import {getToken} from './get-token'
+import myAxios from '../../config/axios'
+import {errorPopup} from '../error-popup'
+import {getToken} from '../get-token'
 
 export function Login (logindata) {
   return async (dispatch) => {

@@ -1,4 +1,4 @@
-import {apiPost} from './api-post'
+import apiPost from './api-post'
 
 export function onThenCategory (dispatch, response) {
   try {
@@ -20,7 +20,6 @@ export function onThenCategory (dispatch, response) {
       payload: {visible: true, message: 'Felformaterat eller okänt svar från API.'}
     })
   }
-  dispatch({type: 'LOADING_STOP', payload: false})
 }
 
 export function onCatchCategory (dispatch, error) {
@@ -34,11 +33,10 @@ export function onCatchCategory (dispatch, error) {
     type: 'ERROR_POPUP',
     payload: {visible: true, message: message}
   })
-  dispatch({type: 'LOADING_STOP', payload: false})
 }
 
 export function getCategories (indata) {
-  return (dispatch) => {
+  return async (dispatch) => {
     dispatch({type: 'LOADING_START', payload: true})
     apiPost('/tours/category/get', indata)
       .then(response => {
@@ -46,6 +44,7 @@ export function getCategories (indata) {
       })
       .catch(error => {
         onCatchCategory(dispatch, error)
+        throw error
       })
   }
 }

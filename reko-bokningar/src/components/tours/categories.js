@@ -1,83 +1,79 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators }from 'redux';
-import faPlus from '@fortawesome/fontawesome-free-solid/faPlus';
-import FontAwesomeIcon from '@fortawesome/react-fontawesome';
-import PropTypes from 'prop-types';
-import {getCategories, loading} from '../../actions';
-import CategoriesRow from './categories/row';
-import update from 'immutability-helper';
-
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import { bindActionCreators } from 'redux'
+import faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
+import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import PropTypes from 'prop-types'
+import {getCategories, loading} from '../../actions'
+import CategoriesRow from './categories/row'
+import update from 'immutability-helper'
 
 class Categories extends Component {
   constructor (props) {
-    super(props);
+    super(props)
     this.state = {
       showStatus: false,
       showStatusMessage: '',
       isSubmitting: false,
-      extracategories: [],
-    };
+      extracategories: []
+    }
   }
 
-  componentWillMount() {
-    this.reduxGetAllUpdate();
+  componentWillMount () {
+    this.reduxGetAllUpdate()
   }
 
-
-  componentWillUnmount() {
-    this.reduxGetAllUpdate();
+  componentWillUnmount () {
+    this.reduxGetAllUpdate()
   }
-
 
   reduxGetAllUpdate = () => {
-    const {getCategories = ()=>{}, login = {user:'anonymous', jwt: 'none'}} = this.props;
+    const {getCategories = () => {}, login = {user: 'anonymous', jwt: 'none'}} = this.props
+    loading(true, 'START')
     getCategories({
       user: login.user,
       jwt: login.jwt,
-      categoryid: 'all',
-    });
+      categoryid: 'all'
+    }).then(() => { loading(false, 'STOP') })
   }
 
   addRow = () => {
-    const {extracategories = []} = this.state;
+    const {extracategories = []} = this.state
     const newcategory = {
       id: 'new',
       category: '',
-      active: true,
-    };
-    const newextracategories = update(extracategories, {$push: [newcategory]});
+      active: true
+    }
+    const newextracategories = update(extracategories, {$push: [newcategory]})
 
-    this.setState({extracategories: newextracategories});
+    this.setState({extracategories: newextracategories})
   }
-
 
   submitToggle = (b) => {
-    let validatedb;
+    let validatedb
     try {
-      validatedb = b ? true : false;
-    } catch(e) {
-      validatedb = false;
+      validatedb = !!b
+    } catch (e) {
+      validatedb = false
     }
-    this.setState({isSubmitting: validatedb});
+    this.setState({isSubmitting: validatedb})
   }
 
+  render () {
+    const {categories = []} = this.props
+    const {extracategories = [], showStatus = false, showStatusMessage = '', isSubmitting = false} = this.state
 
-  render() {
-
-    const {categories = []} = this.props;
-    const {extracategories = [], showStatus = false, showStatusMessage = '', isSubmitting = false} = this.state;
-
-    let categoryRows;
+    let categoryRows
     try {
       categoryRows = categories.map((category) => {
-        return <CategoriesRow key={category.id} id={category.id} category={category.category} active={category.active} submitToggle={this.submitToggle}/>;
-      });} catch(e) {
-      categoryRows = null;
+        return <CategoriesRow key={category.id} id={category.id} category={category.category} active={category.active} submitToggle={this.submitToggle} />
+      })
+    } catch (e) {
+      categoryRows = null
     }
     extracategories.forEach((item, i) => {
-      categoryRows.push(<CategoriesRow key={('new' + i)} id={item.id} category={item.category} active={item.active} submitToggle={this.submitToggle}/>);
-    });
+      categoryRows.push(<CategoriesRow key={('new' + i)} id={item.id} category={item.category} active={item.active} submitToggle={this.submitToggle} />)
+    })
 
     return (
       <div className="TourViewNewTour">
@@ -111,28 +107,25 @@ class Categories extends Component {
         </form>
         {showStatus ? <div>{showStatusMessage}</div> : null}
       </div>
-    );
+    )
   }
 }
 
-
 Categories.propTypes = {
-  login:              PropTypes.object,
-  getCategories:      PropTypes.func,
-  categories:         PropTypes.array,
-};
+  login: PropTypes.object,
+  getCategories: PropTypes.func,
+  categories: PropTypes.array
+}
 
 const mapStateToProps = state => ({
   login: state.login,
   showStatus: state.errorPopup.visible,
   showStatusMessage: state.errorPopup.message,
-  categories: state.tours.categories,
-});
+  categories: state.tours.categories
+})
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-  getCategories,
-  loading
-}, dispatch);
+  getCategories
+}, dispatch)
 
-
-export default connect(mapStateToProps, mapDispatchToProps)(Categories);
+export default connect(mapStateToProps, mapDispatchToProps)(Categories)
