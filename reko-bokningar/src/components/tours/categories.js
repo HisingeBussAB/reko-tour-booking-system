@@ -59,6 +59,12 @@ class Categories extends Component {
     this.setState({isSubmitting: validatedb})
   }
 
+  removeExtraCategory = (i) => {
+    const {extracategories} = this.state
+    console.log(i)
+    extracategories.splice(i, 1)
+  }
+
   render () {
     const {categories = []} = this.props
     const {extracategories = [], showStatus = false, showStatusMessage = '', isSubmitting = false} = this.state
@@ -72,7 +78,7 @@ class Categories extends Component {
       categoryRows = null
     }
     extracategories.forEach((item, i) => {
-      categoryRows.push(<CategoriesRow key={('new' + i)} id={item.id} category={item.category} active={item.active} submitToggle={this.submitToggle} />)
+      categoryRows.push(<CategoriesRow key={('new' + i)} index={i} id={item.id} remove={this.removeExtraCategory} category={item.category} active={item.active} submitToggle={this.submitToggle} />)
     })
 
     return (

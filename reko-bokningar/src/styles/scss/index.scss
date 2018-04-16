@@ -2,7 +2,6 @@
 
 @import '_variables.scss';
 
-
 body {
   margin: 0;
   padding: 0;
@@ -211,6 +210,10 @@ input[type=search] {
   }
 
 
+}
+
+.Loader {
+  color: $primary-color;
 }
 
 .loading-text {

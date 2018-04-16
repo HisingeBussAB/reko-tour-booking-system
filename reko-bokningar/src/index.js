@@ -5,12 +5,11 @@ import { ConnectedRouter } from 'react-router-redux'
 import { Route } from 'react-router-dom'
 import registerServiceWorker from './registerServiceWorker'
 import store, { history } from './store'
-import Loadable from 'react-loadable'
-import Loader from './components/loader'
+import MyLoadable from './components/loader/myloadable'
 
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css'
 import '../node_modules/react-datepicker/dist/react-datepicker.css'
-import './styles/index.css'
+import './styles/css/index.css'
 
 Storage.prototype.setObject = function (key, value) {
   this.setItem(key, JSON.stringify(value))
@@ -23,10 +22,8 @@ Storage.prototype.getObject = function (key) {
 
 const target = document.querySelector('#root')
 
-const App = Loadable({
+const App = MyLoadable({
   loader: () => import('./App'),
-  // eslint-disable-next-line
-  loading: () => <Loader fullScreen={true} />,
 })
 
 render(

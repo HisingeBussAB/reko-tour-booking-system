@@ -2,8 +2,7 @@ import React, { Component } from 'react'
 import MainMenu from './components/main-menu'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import Loadable from 'react-loadable'
-import Loader from './components/loader'
+import MyLoadable from './components/loader/myloadable'
 import { Route } from 'react-router-dom'
 import LoginScreen from './components/login-screen'
 import SaveIcon from './components/save-icon'
@@ -15,24 +14,20 @@ import {startFirebaseSub} from './actions'
 import ErrorPopup from './components/error-popup'
 
 /* eslint-disable react/display-name */
-const MainView = Loadable({
-  loader: () => import('./components/main-view'),
-  loading: () => <Loader fullScreen={false} />
+const MainView = MyLoadable({
+  loader: () => import('./components/main-view')
 })
 
-const TourView = Loadable({
-  loader: () => import('./components/tour-view'),
-  loading: () => <Loader fullScreen={false} />
+const TourView = MyLoadable({
+  loader: () => import('./components/tour-view')
 })
 
-const BudgetView = Loadable({
-  loader: () => import('./components/budget-view'),
-  loading: () => <Loader fullScreen={false} />
+const BudgetView = MyLoadable({
+  loader: () => import('./components/budget-view')
 })
 
-const ListView = Loadable({
-  loader: () => import('./components/list-view'),
-  loading: () => <Loader fullScreen={false} />
+const ListView = MyLoadable({
+  loader: () => import('./components/list-view')
 })
 /* eslint-enable react/display-name */
 

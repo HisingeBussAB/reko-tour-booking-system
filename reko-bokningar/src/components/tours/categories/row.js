@@ -54,7 +54,7 @@ class CategoriesRow extends Component {
 
   saveCategory = (e, val) => {
     e.preventDefault()
-    const {submitToggle = function () {}, id, login, isActive} = this.props
+    const {submitToggle = function () {}, id, login, isActive, remove, index, getCategories, saveCategoryFirebaseNotice, loading} = this.props
     const {category} = this.state
     submitToggle(true)
     this.setState({updatingSave: true})
@@ -68,13 +68,26 @@ class CategoriesRow extends Component {
       active: isActive
     })
       .then(response => {
+        console.log(response)
         if (typeof response !== 'undefined' && response.data.saved) {
           saveCategoryFirebaseNotice(response.data.modifiedid)
+          console.log(response.data.modifiedid)
+          console.log(response.data.saved)
           getCategories({
             user: login.user,
             jwt: login.jwt,
             categoryid: response.data.modifiedid
-          }).then(() => {
+          }).then(response => {
+            submitToggle(false)
+            loading(false, 'STOP')
+            console.log('got')
+            if (action === 'new') {
+              console.log('remove', index)
+              remove(index)
+            }
+          })
+          .catch(error => {
+            console.log('cought', index)
             submitToggle(false)
             loading(false, 'STOP')
           })
@@ -85,7 +98,7 @@ class CategoriesRow extends Component {
         }
       })
       .catch(error => {
-        let message;
+        let message
         try {
           message = error.response.data.response
         } catch (e) {
@@ -150,7 +163,8 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => bindActionCreators({
   getCategories,
-  loading
+  loading,
+  saveCategoryFirebaseNotice
 }, dispatch)
 
 export default connect(mapStateToProps, mapDispatchToProps)(CategoriesRow)

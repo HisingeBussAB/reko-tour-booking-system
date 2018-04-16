@@ -144,11 +144,15 @@ class Category {
     if (!empty($jsonData['categoryid'])) {
       $temp = filter_var(trim($jsonData['categoryid']), FILTER_SANITIZE_NUMBER_INT);
       $temp = filter_var($temp, FILTER_VALIDATE_INT);
-      if (!$temp) {
+      if (!$temp && $jsonData['categoryid'] !== 'new') {
         $response->AddResponse('response', 'Felformaterat kategoriID. Prova ladda om eller kontakta tekniker.');
         return false;
       } else {
-        $newData['categoryid'] = $temp;
+        if ($jsonData['categoryid'] === 'new') {
+          $newData['categoryid'] = 'new';
+        } else {
+          $newData['categoryid'] = $temp;
+        }
       }
     } else {
       $newData['categoryid'] = 'new';
