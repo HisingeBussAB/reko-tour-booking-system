@@ -11,11 +11,11 @@ class Loader extends Component {
     const {...props} = this.props
 
     const style = {
-      width: '100%',
-      height: '100%',
-      padding: '10px',
-      textAlign: 'center',
-      display: 'flex',
+      width        : '100%',
+      height       : '100%',
+      padding      : '10px',
+      textAlign    : 'center',
+      display      : 'flex',
       flexDirection: 'column'
     }
 
@@ -24,21 +24,18 @@ class Loader extends Component {
     let icon = faSpinner
     let pulse = true
 
-    /* eslint-disable react/forbid-component-props */
-    // TextFit needs relative heights to be applied directly on the component to scale properly
     const theLoader = (style, icon, pulse, firstline, secondline) =>
       <div className="Loader" style={style}>
-        <Textfit style={{width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '6px'}} mode="single" forceSingleModeWidth={true} max={200} min={4} throttle={900}><FontAwesomeIcon icon={icon} pulse={pulse} /></Textfit>
+        <Textfit style={{width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '6px'}} mode="single" forceSingleModeWidth max={200} min={4} throttle={900}><FontAwesomeIcon icon={icon} pulse={pulse} /></Textfit>
         {firstline === 'Laddar'
-          ? <Textfit style={{width: '100%', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '2px'}} mode="single" forceSingleModeWidth={true} max={40} min={4} throttle={900}><p className="loading-text">{firstline}</p></Textfit>
-          : <Textfit style={{width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '2px'}} mode="single" forceSingleModeWidth={true} max={35} min={9} throttle={900}><p>{firstline}</p></Textfit>
+          ? <Textfit style={{width: '100%', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '2px'}} mode="single" forceSingleModeWidth max={40} min={4} throttle={900}><p className="loading-text">{firstline}</p></Textfit>
+          : <Textfit style={{width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '2px'}} mode="single" forceSingleModeWidth max={35} min={9} throttle={900}><p>{firstline}</p></Textfit>
         }
         {firstline === 'Laddar' ? null
-          : <Textfit style={{width: '100%', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '2px'}} mode="single" forceSingleModeWidth={true} max={35} min={8} throttle={900}>{secondline}</Textfit>
+          : <Textfit style={{width: '100%', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '2px'}} mode="single" forceSingleModeWidth max={35} min={8} throttle={900}>{secondline}</Textfit>
         }
 
       </div>
-      /* eslint-enable react/forbid-component-props */
 
     if (props.error !== null) {
       // When the loader has errored
@@ -71,8 +68,8 @@ class Loader extends Component {
 /* eslint-disable react/boolean-prop-naming */
 Loader.propTypes = {
   pastDelay: PropTypes.bool,
-  error: PropTypes.object,
-  timedOut: PropTypes.bool,
+  error    : PropTypes.object,
+  timedOut : PropTypes.bool
 }
 /* eslint-enable react/boolean-prop-naming */
 

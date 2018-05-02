@@ -3,12 +3,12 @@ import fontawesome from '@fortawesome/fontawesome'
 import faSpinner from '@fortawesome/fontawesome-free-solid/faSpinner'
 import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
-import {Login, errorPopup} from '../actions'
+import {connect} from 'react-redux'
+import {bindActionCreators} from 'redux'
+import {Login, errorPopup, networkAction} from '../actions'
 import Config from '../config/config'
 import Logo from '../img/logo.gif'
-import {getServerTime} from '../utils/common-calls'
+import {getServerTime} from '../functions'
 
 fontawesome.library.add(faSpinner)
 
@@ -17,16 +17,16 @@ class LoginScreen extends Component {
     super(props)
     const {login = {autoAttempt: false}} = this.props
     this.state = {
-      issending: true,
+      issending : true,
       servertime: false,
-      first: true,
-      logindata: {
-        pwd: Config.AutoLoginPwd,
-        user: Config.AutoUsername,
-        auto: login.autoAttempt,
-        isOnce: false,
+      first     : true,
+      logindata : {
+        pwd        : Config.AutoLoginPwd,
+        user       : Config.AutoUsername,
+        auto       : login.autoAttempt,
+        isOnce     : false,
         onceExpires: 0,
-        blockError: false
+        blockError : false
       }
     }
   }
@@ -35,7 +35,6 @@ class LoginScreen extends Component {
     const {login = {login: false}} = this.props
     if (!login.login) {
       this.getLocalStorageToState()
-      this.getUnixTime()
     }
   }
 
@@ -43,20 +42,21 @@ class LoginScreen extends Component {
     const {login = {login: false}} = this.props
     if (nextProps.login.login !== login.login && !nextProps.login.login) {
       this.getLocalStorageToState()
-      this.getUnixTime()
     }
   }
 
   getUnixTime = () => {
+    const {networkAction} = this.props
+    networkAction(1, 'login get time')
     getServerTime()
       .then(response => {
-        this.setState({servertime: Number(response)})
-        this.runAutoLoginFirst(Number(response))
+        this.setState({servertime: Number(response)}, () => this.runAutoLoginFirst(Number(response)))
+        networkAction(0, 'login get time')
       })
       .catch(() => {
         const time = Math.round(+new Date() / 1000)
-        this.setState({servertime: Number(time)})
-        this.runAutoLoginFirst(Number(time))
+        this.setState({servertime: Number(time)}, () => this.runAutoLoginFirst(Number(time)))
+        networkAction(0, 'login get time')
       })
   }
 
@@ -72,59 +72,63 @@ class LoginScreen extends Component {
       if (typeof userObject.user === 'string' && typeof userObject.tokenid === 'string' &&
         typeof userObject.token === 'string' && typeof userObject.expires === 'number') {
         this.setState({logindata: {
-          pwd: userObject.tokenid + Config.OnceLoginToken + userObject.token,
-          user: userObject.user,
-          auto: login.autoAttempt,
-          isOnce: true,
+          pwd        : userObject.tokenid + Config.OnceLoginToken + userObject.token,
+          user       : userObject.user,
+          auto       : login.autoAttempt,
+          isOnce     : true,
           onceExpires: userObject.expires,
-          blockError: login.autoAttempt // block error output if auto login is active (auto login is fired directly after failed once)
-        }})
+          blockError : login.autoAttempt // block error output if auto login is active (auto login is fired directly after failed once)
+        }}, () => { this.getUnixTime() })
         return true
       }
     }
+    this.getUnixTime()
     return false
   }
 
   runAutoLoginFirst = (servertime, blockonce = false) => {
-    // Destructors, defaults to App initialization state
     const {first = false} = this.state
-    const {login = {autoAttempt: false}} = this.props
+    const {networkAction, login = {autoAttempt: false}} = this.props
     const {logindata = {
-      pwd: Config.AutoLoginPwd,
-      user: Config.AutoUsername,
-      auto: login.autoAttempt,
-      isOnce: false,
+      pwd        : Config.AutoLoginPwd,
+      user       : Config.AutoUsername,
+      auto       : login.autoAttempt,
+      isOnce     : false,
       onceExpires: 0,
-      blockError: false
+      blockError : false
     }} = this.state
     const {Login = function () {}} = this.props
 
-    // Check if servertime is fetched. Run autosequence if found. App should re-rerender every time server time is recived.
+    // Check if servertime is set. Run autosequence if found.
     if (servertime !== false && typeof servertime === 'number') {
       if (!blockonce && logindata.isOnce && logindata.onceExpires > servertime - 120) {
         this.setState({issending: true})
+        networkAction(1, 'trying login')
         Login(logindata)
           .then(() => {
+            networkAction(0, 'trying login')
             // Component will unmount
           })
           .catch(() => {
             logindata.isOnce = false
-            console.log(logindata)
+            networkAction(0, 'trying login')
             this.setState({issending: false, logindata: logindata})
             this.runAutoLoginFirst(servertime, true)
           })
       } else if (logindata.auto && typeof Config.AutoUsername === 'string' && typeof Config.AutoLoginPwd === 'string') {
         this.setState({issending: true})
         const newlogin = {
-          pwd: Config.AutoLoginPwd,
-          user: Config.AutoUsername,
-          auto: true,
-          isOnce: false,
+          pwd        : Config.AutoLoginPwd,
+          user       : Config.AutoUsername,
+          auto       : true,
+          isOnce     : false,
           onceExpires: 0,
-          blockError: false
+          blockError : false
         }
+        networkAction(1, 'trying login')
         Login(newlogin)
           .then(() => {
+            networkAction(0, 'trying login')
             // Component will unmount
           })
           .catch(() => {
@@ -133,20 +137,21 @@ class LoginScreen extends Component {
             logindata.isOnce = false
             logindata.auto = false
             logindata.blockError = false
+            networkAction(0, 'trying login')
             this.setState({issending: false, logindata: logindata})
           })
       } else if (first) {
-        // no autos & first try. reset and unlock
+        // no autos or first try. reset and unlock
         this.setState({
-          first: false,
+          first    : false,
           issending: false,
           logindata: {
-            pwd: '',
-            user: '',
-            auto: false,
-            isOnce: false,
+            pwd        : '',
+            user       : '',
+            auto       : false,
+            isOnce     : false,
             onceExpires: 0,
-            blockError: false
+            blockError : false
           }
         })
       } else {
@@ -196,25 +201,25 @@ class LoginScreen extends Component {
     const {servertime = false} = this.state
     const {issending = false} = this.state
     const {logindata = {
-      pwd: '',
-      user: '',
-      auto: false,
-      isOnce: false,
+      pwd        : '',
+      user       : '',
+      auto       : false,
+      isOnce     : false,
       onceExpires: 0,
-      blockError: false
+      blockError : false
     }} = this.state
     const {error = {message: ''}} = this.props
 
     const style = {
-      color: '#0856fb',
-      height: '650px',
-      margin: '0 auto',
-      position: 'absolute',
-      top: '50%',
+      color    : '#0856fb',
+      height   : '650px',
+      margin   : '0 auto',
+      position : 'absolute',
+      top      : '50%',
       transform: 'translateY(-50%)',
       textAlign: 'center',
-      width: '100%',
-      zIndex: '19999'
+      width    : '100%',
+      zIndex   : '19999'
     }
     return (
       <div className="Login" style={style}>
@@ -242,9 +247,10 @@ class LoginScreen extends Component {
 }
 
 LoginScreen.propTypes = {
-  Login: PropTypes.func,
-  login: PropTypes.object,
-  error: PropTypes.object
+  Login        : PropTypes.func,
+  login        : PropTypes.object,
+  error        : PropTypes.object,
+  networkAction: PropTypes.func
 }
 
 const mapStateToProps = state => ({
@@ -254,7 +260,8 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => bindActionCreators({
   Login,
-  errorPopup
+  errorPopup,
+  networkAction
 }, dispatch)
 
 export default connect(mapStateToProps, mapDispatchToProps)(LoginScreen)

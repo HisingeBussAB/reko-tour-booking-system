@@ -8,7 +8,8 @@ import faTrashAlt from '@fortawesome/fontawesome-free-regular/faTrashAlt'
 import faSpinner from '@fortawesome/fontawesome-free-solid/faSpinner'
 import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
-import {apiPost, loading, getCategories, saveCategoryFirebaseNotice, errorPopup} from '../../../actions'
+import {getCategories, errorPopup} from '../../actions'
+import {apiPost, firebaseSavedCategory} from '../../functions'
 
 class CategoriesRow extends Component {
   /* NOTICE
@@ -21,10 +22,10 @@ class CategoriesRow extends Component {
     super(props)
     const {category = ''} = this.props
     this.state = {
-      updatingSave: false,
+      updatingSave  : false,
       updatingActive: false,
-      deleting: false,
-      category: category
+      deleting      : false,
+      category      : category
     }
   }
 
@@ -33,10 +34,10 @@ class CategoriesRow extends Component {
     if (nextProps.id !== id) {
       // for some reason id changed, component state needs reset.
       this.setState({
-        category: nextProps.category,
-        updatingSave: false,
+        category      : nextProps.category,
+        updatingSave  : false,
         updatingActive: false,
-        deleting: false
+        deleting      : false
       })
     }
     // cancel loaders on changes recived
@@ -54,45 +55,41 @@ class CategoriesRow extends Component {
 
   saveCategory = (e, val) => {
     e.preventDefault()
-    const {submitToggle = function () {}, id, login, isActive, remove, index, getCategories, saveCategoryFirebaseNotice, loading} = this.props
+    const {submitToggle = function () {}, id, login, isActive, remove, index, getCategories, firebaseSavedCategory} = this.props
     const {category} = this.state
     submitToggle(true)
     this.setState({updatingSave: true})
-    loading(true, 'START')
     const action = id === 'new' ? 'new' : 'save'
     apiPost('/tours/category/' + action, {
-      user: login.user,
-      jwt: login.jwt,
+      user      : login.user,
+      jwt       : login.jwt,
       categoryid: id,
-      category: category,
-      active: isActive
+      category  : category,
+      active    : isActive
     })
       .then(response => {
         console.log(response)
         if (typeof response !== 'undefined' && response.data.saved) {
-          saveCategoryFirebaseNotice(response.data.modifiedid)
+          firebaseSavedCategory(response.data.modifiedid)
           console.log(response.data.modifiedid)
           console.log(response.data.saved)
           getCategories({
-            user: login.user,
-            jwt: login.jwt,
+            user      : login.user,
+            jwt       : login.jwt,
             categoryid: response.data.modifiedid
           }).then(response => {
             submitToggle(false)
-            loading(false, 'STOP')
             console.log('got')
             if (action === 'new') {
               console.log('remove', index)
               remove(index)
             }
           })
-          .catch(error => {
-            console.log('cought', index)
-            submitToggle(false)
-            loading(false, 'STOP')
-          })
+            .catch(() => {
+              console.log('cought', index)
+              submitToggle(false)
+            })
         } else {
-          loading(false, 'STOP')
           errorPopup({visisble: true, message: 'Kunde inte spara kategori', suppressed: false})
           submitToggle(false)
         }
@@ -104,7 +101,6 @@ class CategoriesRow extends Component {
         } catch (e) {
           message = 'Ett okänt fel har uppstått i APIn.'
         }
-        loading(false, 'STOP')
         errorPopup({visisble: true, message: message, suppressed: false})
         submitToggle(false)
       })
@@ -150,11 +146,11 @@ class CategoriesRow extends Component {
 }
 
 CategoriesRow.propTypes = {
-  category: PropTypes.string,
-  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  isActive: PropTypes.bool,
+  category    : PropTypes.string,
+  id          : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  isActive    : PropTypes.bool,
   submitToggle: PropTypes.func,
-  login: PropTypes.object
+  login       : PropTypes.object
 }
 
 const mapStateToProps = state => ({
@@ -163,8 +159,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => bindActionCreators({
   getCategories,
-  loading,
-  saveCategoryFirebaseNotice
+  firebaseSavedCategory
 }, dispatch)
 
 export default connect(mapStateToProps, mapDispatchToProps)(CategoriesRow)

@@ -1,13 +1,8 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
 
 class ListView extends Component {
-
-
-  render() {
-
-
+  render () {
     return (
       <div className="ListView text-center pt-3">
         <h3 className="my-4">Utskick</h3>
@@ -28,9 +23,8 @@ class ListView extends Component {
           </div>
         </div>
       </div>
-    );
+    )
   }
 }
 
-
-export default connect(null, null)(ListView);
+export default connect(null, null)(ListView)

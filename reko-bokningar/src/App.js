@@ -1,33 +1,33 @@
 import React, { Component } from 'react'
-import MainMenu from './components/main-menu'
+import MainMenu from './components/global/main-menu'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import MyLoadable from './components/loader/myloadable'
 import { Route } from 'react-router-dom'
-import LoginScreen from './components/login-screen'
-import SaveIcon from './components/save-icon'
-import ExpireChecker from './components/expire-checker'
+import LoginScreen from './screens/login'
+import NetworkIcon from './components/global/network-icon'
+import ExpireChecker from './components/global/expire-checker'
 import PropTypes from 'prop-types'
 import Config from './config/config'
 import firebase from './config/firebase'
-import {startFirebaseSub} from './actions'
-import ErrorPopup from './components/error-popup'
+import {firebaseCategoriesSub} from './actions/firebase/firebase-categories-sub'
+import ErrorPopup from './components/global/error-popup'
 
 /* eslint-disable react/display-name */
 const MainView = MyLoadable({
-  loader: () => import('./components/main-view')
+  loader: () => import('./screens/main')
 })
 
 const TourView = MyLoadable({
-  loader: () => import('./components/tour-view')
+  loader: () => import('./screens/tours')
 })
 
 const BudgetView = MyLoadable({
-  loader: () => import('./components/budget-view')
+  loader: () => import('./screens/budget')
 })
 
 const ListView = MyLoadable({
-  loader: () => import('./components/list-view')
+  loader: () => import('./screens/list')
 })
 /* eslint-enable react/display-name */
 
@@ -35,30 +35,30 @@ class App extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      showStatus: false,
+      showStatus       : false,
       showStatusMessage: ''
     }
   }
 
   componentWillReceiveProps (nextProps) {
     // Checks for login change and starts up firebase if login state change and login is detected.
-    const {startFirebaseSub = function () {}, login = {login: {login: false, user: 'none', jwt: 'none'}}} = this.props
+    const {firebaseCategoriesSub = function () {}, login = {login: {login: false, user: 'none', jwt: 'none'}}} = this.props
     const prevLogin = login.login
     if (nextProps.login.login && nextProps.login.login !== prevLogin) {
       firebase.auth().signInWithEmailAndPassword(Config.FirebaseLogin, Config.FirebasePwd)
         .then(() => {
-          startFirebaseSub(nextProps.login.user, nextProps.login.jwt)
+          firebaseCategoriesSub(nextProps.login.user, nextProps.login.jwt)
         })
         .catch(() => {
         // TODO
         // manuallt download sub data?
           this.setState({
-            showStatus: true,
+            showStatus       : true,
             showStatusMessage: 'Kunde inte ansluta till WebSocket! Programmet går fortfarande att använda men undvik att använda det på flera datorer samtidigt.'
           })
           setTimeout(() => {
             this.setState({
-              showStatus: false,
+              showStatus       : false,
               showStatusMessage: ''
             })
           }, 35000)
@@ -91,25 +91,25 @@ class App extends Component {
         }
         {!isSuppressedPopup ? <ErrorPopup /> : null }
         <ExpireChecker />
-        <SaveIcon />
+        <NetworkIcon />
       </div>
     )
   }
 }
 
 App.propTypes = {
-  login: PropTypes.object,
-  startFirebaseSub: PropTypes.func,
-  isSuppressedPopup: PropTypes.bool
+  login                : PropTypes.object,
+  firebaseCategoriesSub: PropTypes.func,
+  isSuppressedPopup    : PropTypes.bool
 }
 
 const mapStateToProps = state => ({
-  login: state.login,
+  login            : state.login,
   isSuppressedPopup: state.errorPopup.suppressed
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-  startFirebaseSub
+  firebaseCategoriesSub
 }, dispatch)
 
 export default connect(mapStateToProps, mapDispatchToProps)(App)

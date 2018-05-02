@@ -1,13 +1,8 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
 
 class BudgetView extends Component {
-
-
-  render() {
-
-
+  render () {
     return (
       <div className="BudgetView text-center pt-3">
         <h3 className="my-4">Resekalkyler</h3>
@@ -21,9 +16,8 @@ class BudgetView extends Component {
           </div>
         </div>
       </div>
-    );
+    )
   }
 }
 
-
-export default connect(null, null)(BudgetView);
+export default connect(null, null)(BudgetView)

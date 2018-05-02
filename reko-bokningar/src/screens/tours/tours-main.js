@@ -1,17 +1,11 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
-
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import { Link } from 'react-router-dom'
 
 class TourViewMain extends Component {
-
-
-  render() {
-
-
+  render () {
     return (
       <div className="TourViewMain">
-
 
         <h3 className="my-4">Resor &amp; Bokningar</h3>
         <div className="container-fluid pt-2">
@@ -34,14 +28,12 @@ class TourViewMain extends Component {
               <Link to={'/bokningar/kategorier'} className="btn w-75 btn-primary my-3 mx-auto py-2">Ändra resekategorier</Link>
               <p className="w-75 my-3 py-2 mx-auto px-1 text-justify d-block">Lista på resor här.</p>
 
-
             </div>
           </div>
         </div>
       </div>
-    );
+    )
   }
 }
 
-
-export default connect(null, null)(TourViewMain);
+export default connect(null, null)(TourViewMain)

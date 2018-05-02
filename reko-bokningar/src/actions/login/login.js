@@ -1,27 +1,28 @@
 import myAxios from '../../config/axios'
 import {errorPopup} from '../error-popup'
 import {getToken} from '../get-token'
+import {networkAction} from '../'
 
 export function Login (logindata) {
   return async (dispatch) => {
+    dispatch(networkAction(1, 'login action'))
     const errprep = logindata.auto ? 'Automatisk inlogging misslyckades!\n' : ''
-    dispatch({type: 'LOADING_START', payload: true})
     try {
       const token = await getToken('login')
       const response = await myAxios.post('/auth', {
-        user: logindata.user,
-        pwd: logindata.pwd,
+        user      : logindata.user,
+        pwd       : logindata.pwd,
         logintoken: token.data.logintoken
       })
       let payload
       if (logindata.isOnce) {
         payload = {
-          login: false,
+          login      : false,
           autoAttempt: true
         }
       } else {
         payload = {
-          login: false,
+          login      : false,
           autoAttempt: false
         }
       }
@@ -31,16 +32,17 @@ export function Login (logindata) {
         }
       } catch (e) {
         dispatch(errorPopup({visible: true, message: errprep + 'Okänt svar från API.', suppressed: true}))
+        dispatch(networkAction(0, 'login action'))
       }
       localStorage.setObject('user', {
-        user: payload.once.user,
+        user   : payload.once.user,
         tokenid: payload.once.tokenid,
-        token: payload.once.token,
+        token  : payload.once.token,
         expires: payload.once.expires
       })
       payload.once = null // clean once login before redux
       dispatch({type: 'LOGIN', payload: payload})
-      dispatch({type: 'LOADING_STOP', payload: false})
+      dispatch(networkAction(0, 'login action'))
     } catch (error) {
       let errormsg = errprep + 'Ett fel har uppstått i inloggningen.'
       try {
@@ -54,7 +56,7 @@ export function Login (logindata) {
       }
       dispatch(errorPopup({visible: true, message: errormsg, suppressed: true}))
       dispatch({type: 'LOGIN', payload: {autoAttempt: false}})
-      dispatch({type: 'LOADING_STOP', payload: false})
+      dispatch(networkAction(0, 'login action', dispatch))
       throw error
     }
   }

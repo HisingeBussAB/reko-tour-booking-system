@@ -18,6 +18,17 @@
     },
     "plugins": ["react"],
     "rules": {
+        "key-spacing": ["error", { 
+            "singleLine": {
+                "beforeColon": false, 
+                "afterColon": true 
+            },
+            "multiLine": {
+                "beforeColon": false,
+                "afterColon": true,
+                "align": "colon"
+            }
+        }],
         "quotes": ["error","single", {"avoidEscape": true, "allowTemplateLiterals": true}],
         "no-extra-parens": ["error", "all", { "nestedBinaryExpressions": false, "ignoreJSX": "all" }],
         "no-trailing-spaces": "error",
@@ -31,7 +42,6 @@
         "jsx-quotes": ["error", "prefer-double"],
         "react/boolean-prop-naming": [2, { "rule": "^(is|has)[A-Z]([A-Za-z0-9]?)+" }],
         "react/destructuring-assignment": [2, "always"],
-        "react/forbid-component-props": [2],
         "react/no-access-state-in-setstate": [2],
         "react/no-did-mount-set-state": [2],
         "react/no-did-update-set-state": [2],

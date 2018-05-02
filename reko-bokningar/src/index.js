@@ -23,7 +23,7 @@ Storage.prototype.getObject = function (key) {
 const target = document.querySelector('#root')
 
 const App = MyLoadable({
-  loader: () => import('./App'),
+  loader: () => import('./App')
 })
 
 render(

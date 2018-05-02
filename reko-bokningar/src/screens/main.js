@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import Deadlines from './deadlines'
-import LatePayments from './late-payments'
+import Deadlines from '../components/main/deadlines'
+import LatePayments from '../components/main/late-payments'
 
 class MainView extends Component {
   render () {

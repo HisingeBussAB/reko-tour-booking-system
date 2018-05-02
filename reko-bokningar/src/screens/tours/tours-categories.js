@@ -4,18 +4,18 @@ import { bindActionCreators } from 'redux'
 import faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
-import {getCategories, loading} from '../../actions'
-import CategoriesRow from './categories/row'
+import {getCategories} from '../../actions'
+import CategoriesRow from '../../components/tours/category-row'
 import update from 'immutability-helper'
 
 class Categories extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      showStatus: false,
+      showStatus       : false,
       showStatusMessage: '',
-      isSubmitting: false,
-      extracategories: []
+      isSubmitting     : false,
+      extracategories  : []
     }
   }
 
@@ -29,20 +29,19 @@ class Categories extends Component {
 
   reduxGetAllUpdate = () => {
     const {getCategories = () => {}, login = {user: 'anonymous', jwt: 'none'}} = this.props
-    loading(true, 'START')
     getCategories({
-      user: login.user,
-      jwt: login.jwt,
+      user      : login.user,
+      jwt       : login.jwt,
       categoryid: 'all'
-    }).then(() => { loading(false, 'STOP') })
+    }).then(() => {})
   }
 
   addRow = () => {
     const {extracategories = []} = this.state
     const newcategory = {
-      id: 'new',
+      id      : 'new',
       category: '',
-      active: true
+      active  : true
     }
     const newextracategories = update(extracategories, {$push: [newcategory]})
 
@@ -118,16 +117,16 @@ class Categories extends Component {
 }
 
 Categories.propTypes = {
-  login: PropTypes.object,
+  login        : PropTypes.object,
   getCategories: PropTypes.func,
-  categories: PropTypes.array
+  categories   : PropTypes.array
 }
 
 const mapStateToProps = state => ({
-  login: state.login,
-  showStatus: state.errorPopup.visible,
+  login            : state.login,
+  showStatus       : state.errorPopup.visible,
   showStatusMessage: state.errorPopup.message,
-  categories: state.tours.categories
+  categories       : state.tours.categories
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({

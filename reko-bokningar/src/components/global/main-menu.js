@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import Logo from '../img/logo.gif'
-import SearchIcon from '../img/searchicon.png'
+import Logo from '../../img/logo.gif'
+import SearchIcon from '../../img/searchicon.png'
 import { Link } from 'react-router-dom'
 
 class MainMenu extends Component {
@@ -9,7 +9,7 @@ class MainMenu extends Component {
     super(props)
     this.state = {
       shortcutToggle: false,
-      tourToggle: false
+      tourToggle    : false
     }
   }
 

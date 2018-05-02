@@ -1,61 +1,52 @@
-import firebase from '../config/firebase'
-import {apiPost} from './index'
-import {onThenCategory, onCatchCategory} from './categories'
+import firebase from '../../config/firebase'
+import {apiPost} from '../../functions'
+import {onThenCategory, onCatchCategory} from '../tours/categories'
+import {networkAction} from '../'
 
-export function startFirebaseSub (user, jwt) {
+export function firebaseCategoriesSub (user, jwt) {
   return function (dispatch) {
     const toursCategories = firebase.database().ref('tours/categories')
     toursCategories.on('value', function (snapshot) {
       const snap = snapshot.val()
       try {
         if (snap.id.indexOf('all') !== -1) {
-          dispatch({type: 'LOADING_START', payload: true})
+          dispatch(networkAction(1, 'get all cat firebase act'))
           apiPost('/tours/category/get', {
-            user: user,
-            jwt: jwt,
+            user      : user,
+            jwt       : jwt,
             categoryid: 'all'
           })
             .then(response => {
               onThenCategory(dispatch, response)
-              dispatch({type: 'LOADING_STOP', payload: false})
+              dispatch(networkAction(0, 'get all cat firebase act'))
             })
             .catch(error => {
               onCatchCategory(dispatch, error)
-              dispatch({type: 'LOADING_STOP', payload: false})
+              dispatch(networkAction(0, 'get all cat firebase act'))
             })
         } else {
           snap.id.forEach((item) => {
             if (Number.isInteger(item)) {
-              dispatch({type: 'LOADING_START', payload: true})
+              dispatch(networkAction(1, 'get ' + item + ' cat firebase act'))
               apiPost('/tours/category/get', {
-                user: user,
-                jwt: jwt,
+                user      : user,
+                jwt       : jwt,
                 categoryid: item
               })
                 .then(response => {
                   onThenCategory(dispatch, response)
-                  dispatch({type: 'LOADING_STOP', payload: false})
+                  dispatch(networkAction(0, 'get ' + item + ' cat firebase act'))
                 })
                 .catch(error => {
                   onCatchCategory(dispatch, error)
-                  dispatch({type: 'LOADING_STOP', payload: false})
+                  dispatch(networkAction(0, 'get ' + item + ' cat firebase act'))
                 })
             }
           })
         }
       } catch (e) {
-      /* likley id isnt array, ignore */
-        dispatch({type: 'LOADING_STOP', payload: false})
+      /* firebase data malformated, ignore */
       }
     })
   }
-}
-
-export function saveCategoryFirebaseNotice (id) {
-  const toursCategories = firebase.database().ref('tours/categories')
-  const today = Date.now()
-  toursCategories.set({
-    updated: today,
-    id: [id]
-  })
 }
