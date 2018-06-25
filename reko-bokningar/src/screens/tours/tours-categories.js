@@ -12,10 +12,8 @@ class Categories extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      showStatus       : false,
-      showStatusMessage: '',
-      isSubmitting     : false,
-      extracategories  : []
+      isSubmitting   : false,
+      extracategories: []
     }
   }
 
@@ -67,7 +65,7 @@ class Categories extends Component {
 
   render () {
     const {categories = []} = this.props
-    const {extracategories = [], showStatus = false, showStatusMessage = '', isSubmitting = false} = this.state
+    const {extracategories = [], isSubmitting = false} = this.state
 
     let categoryRows
     try {
@@ -78,11 +76,11 @@ class Categories extends Component {
       categoryRows = null
     }
     extracategories.forEach((item, i) => {
-      categoryRows.push(<CategoriesRow key={('new' + i)} isNew={true} index={i} id={item.id} remove={this.removeExtraCategory} category={item.category} isActive={item.active} submitToggle={this.submitToggle} />)
+      categoryRows.push(<CategoriesRow key={('new' + i)} isNew index={i} id={item.id} remove={this.removeExtraCategory} category={item.category} isActive={item.active} submitToggle={this.submitToggle} />)
     })
 
     return (
-      <div className="TourViewNewTour">
+      <div className="TourView Categories">
 
         <form onSubmit={this.handleSubmit}>
           <fieldset disabled={isSubmitting}>
@@ -111,7 +109,6 @@ class Categories extends Component {
             </div>
           </fieldset>
         </form>
-        {showStatus ? <div>{showStatusMessage}</div> : null}
       </div>
     )
   }

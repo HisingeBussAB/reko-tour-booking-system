@@ -105,44 +105,44 @@ class CategoriesRow extends Component {
     const {submitToggle = function () {}, login, id, getCategories, isNew, errorPopup} = this.props
     const {category} = this.state
     if (!isNew) {
-    this.setState({updatingActive: true})
-    submitToggle(true)
-    apiPost('/tours/category/save', {
-      task      : 'activetoggle',
-      user      : login.user,
-      jwt       : login.jwt,
-      category  : category,
-      categoryid: id,
-      active    : toggle
-    })
-      .then(response => {
-        if (typeof response !== 'undefined' && response.data.saved) {
-          getCategories({
-            user      : login.user,
-            jwt       : login.jwt,
-            categoryid: response.data.modifiedid
-          }).then(() => {
-            submitToggle(false)
-          })
-            .catch(() => {
+      this.setState({updatingActive: true})
+      submitToggle(true)
+      apiPost('/tours/category/save', {
+        task      : 'activetoggle',
+        user      : login.user,
+        jwt       : login.jwt,
+        category  : category,
+        categoryid: id,
+        active    : toggle
+      })
+        .then(response => {
+          if (typeof response !== 'undefined' && response.data.saved) {
+            getCategories({
+              user      : login.user,
+              jwt       : login.jwt,
+              categoryid: response.data.modifiedid
+            }).then(() => {
               submitToggle(false)
             })
-          firebaseSavedCategory(response.data.modifiedid)
-        } else {
-          errorPopup({visible: true, message: 'Kunde inte uppdatera kategori', suppressed: false})
+              .catch(() => {
+                submitToggle(false)
+              })
+            firebaseSavedCategory(response.data.modifiedid)
+          } else {
+            errorPopup({visible: true, message: 'Kunde inte uppdatera kategori', suppressed: false})
+            submitToggle(false)
+          }
+        })
+        .catch(error => {
+          let message
+          try {
+            message = error.response.data.response
+          } catch (e) {
+            message = 'Ett okänt fel har uppstått i APIn.'
+          }
+          errorPopup({visible: true, message: message, suppressed: false})
           submitToggle(false)
-        }
-      })
-      .catch(error => {
-        let message
-        try {
-          message = error.response.data.response
-        } catch (e) {
-          message = 'Ett okänt fel har uppstått i APIn.'
-        }
-        errorPopup({visible: true, message: message, suppressed: false})
-        submitToggle(false)
-      })
+        })
     }
   }
 
@@ -153,42 +153,42 @@ class CategoriesRow extends Component {
     this.setState({deleting: true})
     submitToggle(true)
     if (!isNew) {
-    apiPost('/tours/category/delete', {
-      user      : login.user,
-      jwt       : login.jwt,
-      category  : category,
-      categoryid: id,
-      active    : false
-    })
-      .then(response => {
-        if (typeof response !== 'undefined' && response.data.saved) {
-          getCategories({
-            user      : login.user,
-            jwt       : login.jwt,
-            categoryid: 'all'
-          }).then(() => {
-            submitToggle(false)
-          })
-            .catch(() => {
+      apiPost('/tours/category/delete', {
+        user      : login.user,
+        jwt       : login.jwt,
+        category  : category,
+        categoryid: id,
+        active    : false
+      })
+        .then(response => {
+          if (typeof response !== 'undefined' && response.data.saved) {
+            getCategories({
+              user      : login.user,
+              jwt       : login.jwt,
+              categoryid: 'all'
+            }).then(() => {
               submitToggle(false)
             })
-          firebaseSavedCategory('all')
-        } else {
-          errorPopup({visible: true, message: 'Kunde inte ta bort kategori', suppressed: false})
+              .catch(() => {
+                submitToggle(false)
+              })
+            firebaseSavedCategory('all')
+          } else {
+            errorPopup({visible: true, message: 'Kunde inte ta bort kategori', suppressed: false})
+            submitToggle(false)
+          }
+        })
+        .catch(error => {
+          console.log(error)
+          let message
+          try {
+            message = error.response.data.response
+          } catch (e) {
+            message = 'Ett okänt fel har uppstått i APIn.'
+          }
+          errorPopup({visible: true, message: message, suppressed: false})
           submitToggle(false)
-        }
-      })
-      .catch(error => {
-        console.log(error)
-        let message
-        try {
-          message = error.response.data.response
-        } catch (e) {
-          message = 'Ett okänt fel har uppstått i APIn.'
-        }
-        errorPopup({visible: true, message: message, suppressed: false})
-        submitToggle(false)
-      })
+        })
     } else {
       submitToggle(false)
       remove(index)
@@ -237,17 +237,16 @@ class CategoriesRow extends Component {
 }
 
 CategoriesRow.propTypes = {
-  category             : PropTypes.string,
-  id                   : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  isActive             : PropTypes.bool,
-  isNew                : PropTypes.bool,
-  submitToggle         : PropTypes.func,
-  login                : PropTypes.object,
-  getCategories        : PropTypes.func,
-  firebaseSavedCategory: PropTypes.func,
-  index                : PropTypes.number,
-  remove               : PropTypes.func,
-  errorPopup           : PropTypes.func
+  category     : PropTypes.string,
+  id           : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  isActive     : PropTypes.bool,
+  isNew        : PropTypes.bool,
+  submitToggle : PropTypes.func,
+  login        : PropTypes.object,
+  getCategories: PropTypes.func,
+  index        : PropTypes.number,
+  remove       : PropTypes.func,
+  errorPopup   : PropTypes.func
 }
 
 const mapStateToProps = state => ({
