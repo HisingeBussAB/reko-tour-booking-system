@@ -53,9 +53,9 @@ class CategoriesRow extends Component {
     this.setState({category: val})
   }
 
-  saveCategory = (e, val) => {
+  saveCategory = (e) => {
     e.preventDefault()
-    const {submitToggle = function () {}, id, login, isActive, remove, index, getCategories, firebaseSavedCategory} = this.props
+    const {submitToggle = function () {}, id, login, isActive, remove, index, getCategories, errorPopup} = this.props
     const {category} = this.state
     submitToggle(true)
     this.setState({updatingSave: true})
@@ -67,30 +67,24 @@ class CategoriesRow extends Component {
       category  : category,
       active    : isActive
     })
-      .then(response => {
-        console.log(response)
+      .then((response) => {
         if (typeof response !== 'undefined' && response.data.saved) {
-          firebaseSavedCategory(response.data.modifiedid)
-          console.log(response.data.modifiedid)
-          console.log(response.data.saved)
           getCategories({
             user      : login.user,
             jwt       : login.jwt,
             categoryid: response.data.modifiedid
-          }).then(response => {
+          }).then(() => {
             submitToggle(false)
-            console.log('got')
             if (action === 'new') {
-              console.log('remove', index)
               remove(index)
             }
           })
             .catch(() => {
-              console.log('cought', index)
               submitToggle(false)
             })
+          firebaseSavedCategory(response.data.modifiedid)
         } else {
-          errorPopup({visisble: true, message: 'Kunde inte spara kategori', suppressed: false})
+          errorPopup({visible: true, message: 'Kunde inte spara kategori', suppressed: false})
           submitToggle(false)
         }
       })
@@ -106,8 +100,103 @@ class CategoriesRow extends Component {
       })
   }
 
+  toggleActive = (e, toggle) => {
+    e.preventDefault()
+    const {submitToggle = function () {}, login, id, getCategories, isNew, errorPopup} = this.props
+    const {category} = this.state
+    if (!isNew) {
+    this.setState({updatingActive: true})
+    submitToggle(true)
+    apiPost('/tours/category/save', {
+      task      : 'activetoggle',
+      user      : login.user,
+      jwt       : login.jwt,
+      category  : category,
+      categoryid: id,
+      active    : toggle
+    })
+      .then(response => {
+        if (typeof response !== 'undefined' && response.data.saved) {
+          getCategories({
+            user      : login.user,
+            jwt       : login.jwt,
+            categoryid: response.data.modifiedid
+          }).then(() => {
+            submitToggle(false)
+          })
+            .catch(() => {
+              submitToggle(false)
+            })
+          firebaseSavedCategory(response.data.modifiedid)
+        } else {
+          errorPopup({visible: true, message: 'Kunde inte uppdatera kategori', suppressed: false})
+          submitToggle(false)
+        }
+      })
+      .catch(error => {
+        let message
+        try {
+          message = error.response.data.response
+        } catch (e) {
+          message = 'Ett okänt fel har uppstått i APIn.'
+        }
+        errorPopup({visible: true, message: message, suppressed: false})
+        submitToggle(false)
+      })
+    }
+  }
+
+  doDelete = (e) => {
+    e.preventDefault()
+    const {submitToggle = function () {}, login, id, remove, index, getCategories, isNew, errorPopup} = this.props
+    const {category} = this.state
+    this.setState({deleting: true})
+    submitToggle(true)
+    if (!isNew) {
+    apiPost('/tours/category/delete', {
+      user      : login.user,
+      jwt       : login.jwt,
+      category  : category,
+      categoryid: id,
+      active    : false
+    })
+      .then(response => {
+        if (typeof response !== 'undefined' && response.data.saved) {
+          getCategories({
+            user      : login.user,
+            jwt       : login.jwt,
+            categoryid: 'all'
+          }).then(() => {
+            submitToggle(false)
+          })
+            .catch(() => {
+              submitToggle(false)
+            })
+          firebaseSavedCategory('all')
+        } else {
+          errorPopup({visible: true, message: 'Kunde inte ta bort kategori', suppressed: false})
+          submitToggle(false)
+        }
+      })
+      .catch(error => {
+        console.log(error)
+        let message
+        try {
+          message = error.response.data.response
+        } catch (e) {
+          message = 'Ett okänt fel har uppstått i APIn.'
+        }
+        errorPopup({visible: true, message: message, suppressed: false})
+        submitToggle(false)
+      })
+    } else {
+      submitToggle(false)
+      remove(index)
+    }
+  }
+
   render () {
-    const {category: propsCategory = 'new', isActive: propsActive = false} = this.props
+    const {category: propsCategory = 'new', isActive: propsActive = false, isNew} = this.props
     const {
       category: stateCategory = 'new',
       updatingSave = false,
@@ -121,22 +210,24 @@ class CategoriesRow extends Component {
         </td>
         <td className="align-middle px-3 py-2 text-center">
           {(((stateCategory === '' || stateCategory) !== undefined && stateCategory !== propsCategory)) && !updatingSave &&
-            <span title="Spara ändring i kategorin" className="primary-color custom-scale"><FontAwesomeIcon icon={faSave} size="2x" onClick={(e) => this.saveCategory(e, e.target.value)} /></span>}
+            <span title="Spara ändring i kategorin" className="primary-color custom-scale"><FontAwesomeIcon icon={faSave} size="2x" onClick={(e) => this.saveCategory(e)} /></span>}
           {updatingSave &&
             <span title="Sparar ändring i kategorin..." className="primary-color"><FontAwesomeIcon icon={faSpinner} size="2x" pulse /></span> }
         </td>
         <td className="align-middle px-3 py-2 text-center">
           {updatingActive &&
             <span title="Sparar aktiv status..." className="primary-color"><FontAwesomeIcon icon={faSpinner} size="2x" pulse /></span> }
-          {!updatingActive && propsActive &&
-            <span title="Inaktivera denna kategori" className="primary-color custom-scale"><FontAwesomeIcon icon={faCheckSquare} size="2x" onClick={null} /></span> }
-          {!updatingActive && !propsActive &&
-            <span title="Aktivera denna kategori" className="primary-color custom-scale"><FontAwesomeIcon icon={faSquare} onClick={null} size="2x" /></span> }
+          {!updatingActive && propsActive && !isNew &&
+            <span title="Inaktivera denna kategori" className="primary-color custom-scale"><FontAwesomeIcon icon={faCheckSquare} size="2x" onClick={(e) => this.toggleActive(e, false)} /></span> }
+          {!updatingActive && !propsActive && !isNew &&
+            <span title="Aktivera denna kategori" className="primary-color custom-scale"><FontAwesomeIcon icon={faSquare} onClick={(e) => this.toggleActive(e, true)} size="2x" /></span> }
+          {!updatingActive && isNew &&
+            <span title="Spara kategorin först" className="text-secondary custom-scale"><FontAwesomeIcon icon={faCheckSquare} size="2x" onClick={null} /></span> }
 
         </td>
         <td className="align-middle pl-3 py-2 text-center">
           {!deleting &&
-          <span title="Ta bord denna kategori permanent" className="danger-color custom-scale"><FontAwesomeIcon icon={faTrashAlt} onClick={null} size="2x" /></span>}
+          <span title="Ta bord denna kategori permanent" className="danger-color custom-scale"><FontAwesomeIcon icon={faTrashAlt} onClick={(e) => this.doDelete(e)} size="2x" /></span>}
           {deleting &&
             <span title="Inaktivera denna kategori" className="danger-color"><FontAwesomeIcon icon={faSpinner} size="2x" pulse /></span>}
         </td>
@@ -146,11 +237,17 @@ class CategoriesRow extends Component {
 }
 
 CategoriesRow.propTypes = {
-  category    : PropTypes.string,
-  id          : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  isActive    : PropTypes.bool,
-  submitToggle: PropTypes.func,
-  login       : PropTypes.object
+  category             : PropTypes.string,
+  id                   : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  isActive             : PropTypes.bool,
+  isNew                : PropTypes.bool,
+  submitToggle         : PropTypes.func,
+  login                : PropTypes.object,
+  getCategories        : PropTypes.func,
+  firebaseSavedCategory: PropTypes.func,
+  index                : PropTypes.number,
+  remove               : PropTypes.func,
+  errorPopup           : PropTypes.func
 }
 
 const mapStateToProps = state => ({
@@ -159,7 +256,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => bindActionCreators({
   getCategories,
-  firebaseSavedCategory
+  errorPopup
 }, dispatch)
 
 export default connect(mapStateToProps, mapDispatchToProps)(CategoriesRow)

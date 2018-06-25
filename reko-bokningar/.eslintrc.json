@@ -29,6 +29,7 @@
                 "align": "colon"
             }
         }],
+        "no-console": "warn",
         "quotes": ["error","single", {"avoidEscape": true, "allowTemplateLiterals": true}],
         "no-extra-parens": ["error", "all", { "nestedBinaryExpressions": false, "ignoreJSX": "all" }],
         "no-trailing-spaces": "error",

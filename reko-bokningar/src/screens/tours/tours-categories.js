@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux'
 import faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
-import {getCategories} from '../../actions'
+import {getCategories, networkAction} from '../../actions'
 import CategoriesRow from '../../components/tours/category-row'
 import update from 'immutability-helper'
 
@@ -49,19 +49,20 @@ class Categories extends Component {
   }
 
   submitToggle = (b) => {
+    const {networkAction} = this.props
     let validatedb
     try {
       validatedb = !!b
     } catch (e) {
       validatedb = false
     }
+    networkAction(Number(validatedb), 'category update')
     this.setState({isSubmitting: validatedb})
   }
 
   removeExtraCategory = (i) => {
     const {extracategories} = this.state
-    console.log(i)
-    extracategories.splice(i, 1)
+    delete extracategories[i]
   }
 
   render () {
@@ -71,13 +72,13 @@ class Categories extends Component {
     let categoryRows
     try {
       categoryRows = categories.map((category) => {
-        return <CategoriesRow key={category.id} id={category.id} category={category.category} active={category.active} submitToggle={this.submitToggle} />
+        return <CategoriesRow key={category.id} isNew={false} id={category.id} category={category.category} isActive={category.active} submitToggle={this.submitToggle} />
       })
     } catch (e) {
       categoryRows = null
     }
     extracategories.forEach((item, i) => {
-      categoryRows.push(<CategoriesRow key={('new' + i)} index={i} id={item.id} remove={this.removeExtraCategory} category={item.category} active={item.active} submitToggle={this.submitToggle} />)
+      categoryRows.push(<CategoriesRow key={('new' + i)} isNew={true} index={i} id={item.id} remove={this.removeExtraCategory} category={item.category} isActive={item.active} submitToggle={this.submitToggle} />)
     })
 
     return (
@@ -119,7 +120,8 @@ class Categories extends Component {
 Categories.propTypes = {
   login        : PropTypes.object,
   getCategories: PropTypes.func,
-  categories   : PropTypes.array
+  categories   : PropTypes.array,
+  networkAction: PropTypes.func
 }
 
 const mapStateToProps = state => ({
@@ -130,7 +132,8 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-  getCategories
+  getCategories,
+  networkAction
 }, dispatch)
 
 export default connect(mapStateToProps, mapDispatchToProps)(Categories)
