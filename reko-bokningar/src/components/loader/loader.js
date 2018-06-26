@@ -39,7 +39,7 @@ class Loader extends Component {
 
     if (props.error !== null) {
       // When the loader has errored
-      firstline = 'Ett fel inträffade. Kompponenten kunde inte laddas!'
+      firstline = 'Ett fel inträffade. Komponenten kunde inte laddas!'
       secondline = 'Försök att ladda om sidan, tryck på F5.'
       icon = faFrown
       pulse = false

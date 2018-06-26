@@ -69,6 +69,16 @@ body {
   height: 40px;
 }
 
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
 select,
 input {
   padding: 6px 8px 5px 8px;
@@ -211,15 +221,15 @@ input[type=search] {
 
 @keyframes dots {
   0%, 20% {
-    color: transparent;
-    text-shadow: 0.25em 0 0 transparent, 0.5em 0 0 transparent;
+    color: rgba(0, 0, 0, 0);
+    text-shadow: 0.25em 0 0 rgba(0, 0, 0, 0), 0.5em 0 0 rgba(0, 0, 0, 0);
   }
   40% {
     color: white;
-    text-shadow: 0.25em 0 0 transparent, 0.5em 0 0 transparent;
+    text-shadow: 0.25em 0 0 rgba(0, 0, 0, 0), 0.5em 0 0 rgba(0, 0, 0, 0);
   }
   60% {
-    text-shadow: 0.25em 0 0 white, 0.5em 0 0 transparent;
+    text-shadow: 0.25em 0 0 white, 0.5em 0 0 rgba(0, 0, 0, 0);
   }
   80%, 100% {
     text-shadow: .25em 0 0 white, .5em 0 0 white;

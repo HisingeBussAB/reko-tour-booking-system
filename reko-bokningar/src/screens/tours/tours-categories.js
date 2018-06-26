@@ -26,12 +26,13 @@ class Categories extends Component {
   }
 
   reduxGetAllUpdate = () => {
-    const {getCategories = () => {}, login = {user: 'anonymous', jwt: 'none'}} = this.props
+    const {networkAction = () => {}, getCategories = () => {}, login = {user: 'anonymous', jwt: 'none'}} = this.props
+    networkAction(0, 'updating categories')
     getCategories({
       user      : login.user,
       jwt       : login.jwt,
       categoryid: 'all'
-    }).then(() => {})
+    }).then(() => {networkAction(1, 'updating categories')})
   }
 
   addRow = () => {
@@ -82,7 +83,7 @@ class Categories extends Component {
     return (
       <div className="TourView Categories">
 
-        <form onSubmit={this.handleSubmit}>
+        <form>
           <fieldset disabled={isSubmitting}>
             <div className="container text-left" style={{maxWidth: '650px'}}>
               <h3 className="my-4 w-50 mx-auto text-center">Resekategorier</h3>

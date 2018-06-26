@@ -6,13 +6,21 @@ use RekoBooking\classes\LoginCheck;
 use RekoBooking\classes\Responder;
 use \Moment\Moment;
 
+use \Monolog\Logger;
+use \Monolog\Handler\RotatingFileHandler;
+use \Monolog\ErrorHandler;
+
 
 require __DIR__ . '/config/config.php';
 
 if (DEBUG_MODE) {
+  error_reporting(-1); 
   ini_set('display_errors', 1);
   ini_set('display_startup_errors', 1);
-  error_reporting(E_ALL);
+} else {
+  ini_set('display_errors', 0);
+  ini_set('display_startup_errors', 0);
+  error_reporting(0);
 }
 
 ob_start(null, 0);
@@ -22,6 +30,7 @@ header("Cache-Control: no-cache, must-revalidate");
 header("Content-Language: sv-SE");
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
+
 if (ACCESS_CONTROL_ENABLED) {
   header("Access-Control-Allow-Origin:" . FULL_DOMAIN);
 } else {
@@ -65,7 +74,6 @@ if ($_SERVER["HTTP_AUTHORIZATION"] != API_TOKEN) {
   die();
 }
 
-
 header("Accept: application/json");
 
 $loader = require __DIR__ . '/vendor/autoload.php';
@@ -77,6 +85,14 @@ $router = new \AltoRouter();
 $router->setBasePath('/api');
 Moment::setDefaultTimezone('CET');
 Moment::setLocale('se_SV');
+
+// create a log channel
+$logger = new Logger('main_logger');
+$logger->pushHandler(new RotatingFileHandler(__DIR__ . '/log/monolog.log', 10, Logger::WARNING));
+if (!DEBUG_MODE) {
+  ErrorHandler::register($logger);
+}
+
 
 $response = new Responder;
 
