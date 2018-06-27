@@ -87,12 +87,26 @@ input {
   background-color: white;
 }
 
+select:focus,
+input:focus {
+  outline: 0;
+  box-shadow: 0 0 0 0.19rem rgba(8, 86, 251, 0.25);
+}
+
 input[type=search] {
   background-position: 5px 5px;
   background-repeat: no-repeat;
   background-color: white;
   font-size: 16px;
   padding: 4px 15px 3px 33px;
+}
+
+input:invalid {
+  color: #dc3545;
+}
+
+select:invalid {
+  color: #6e6e6e;
 }
 
 .date-picker-input {
@@ -116,7 +130,7 @@ input[type=search] {
 }
 
 .MainMenu {
-  border-bottom: 1px solid grey;
+  border-bottom: 1px solid #6e6e6e;
 }
 
 .MainMenu button {
@@ -195,7 +209,7 @@ input[type=search] {
 }
 
 .MainView {
-  border-bottom: 1px solid grey;
+  border-bottom: 1px solid #6e6e6e;
 }
 
 .MainView div {
@@ -203,7 +217,7 @@ input[type=search] {
 }
 
 .MainView .custom-border-right {
-  border-right: 1px solid grey;
+  border-right: 1px solid #6e6e6e;
 }
 
 .Loader {

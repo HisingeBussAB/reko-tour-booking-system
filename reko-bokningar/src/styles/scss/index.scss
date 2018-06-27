@@ -82,13 +82,16 @@ input[type=number] {
     -moz-appearance: textfield;
 }
 
-
 select,
 input {
   padding: 6px 8px 5px 8px;
   border: 1px solid $primary-color;
   font-size: 16px;
   background-color: white;
+  &:focus {
+    outline: 0;
+    box-shadow: 0 0 0 0.19rem rgba(8,86,251,.25);
+  }
 }
 
 input[type=search] {
@@ -99,6 +102,15 @@ input[type=search] {
   padding: 4px 15px 3px 33px;
 }
 
+input:invalid {
+  color: $danger-color;
+}
+
+select {
+  &:invalid {
+    color: $secondary-color;
+  }
+}
 
 .date-picker-input {
   width: 125px;
@@ -126,7 +138,7 @@ input[type=search] {
 }
 
 .MainMenu {
-  border-bottom: 1px solid grey;
+  border-bottom: 1px solid $secondary-color;
   
   button {
     width: 10%;
@@ -208,12 +220,12 @@ input[type=search] {
 
 
 .MainView {
-  border-bottom: 1px solid grey;
+  border-bottom: 1px solid $secondary-color;
   div {
   min-height: 500px;
   }
   .custom-border-right {
-    border-right: 1px solid grey;
+    border-right: 1px solid $secondary-color;
   }
 
 

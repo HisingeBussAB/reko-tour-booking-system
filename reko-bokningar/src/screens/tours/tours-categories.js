@@ -49,12 +49,7 @@ class Categories extends Component {
 
   submitToggle = (b) => {
     const {networkAction} = this.props
-    let validatedb
-    try {
-      validatedb = !!b
-    } catch (e) {
-      validatedb = false
-    }
+    const validatedb = !!b
     networkAction(Number(validatedb), 'category update')
     this.setState({isSubmitting: validatedb})
   }
