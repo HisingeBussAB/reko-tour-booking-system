@@ -1,11 +1,11 @@
 import { createStore, applyMiddleware, compose } from 'redux'
-import { routerMiddleware } from 'react-router-redux'
+import { connectRouter, routerMiddleware } from 'connected-react-router'
 import thunk from 'redux-thunk'
-import createHistory from 'history/createBrowserHistory'
+import { createBrowserHistory } from 'history'
 import rootReducer from '../modules'
 import Config from '../config/config'
 
-export const history = createHistory()
+export const history = createBrowserHistory()
 
 const initialState = {
   errorPopup: {
@@ -27,8 +27,8 @@ const initialState = {
 
 const enhancers = []
 const middleware = [
-  thunk,
-  routerMiddleware(history)
+  routerMiddleware(history),
+  thunk
 ]
 
 if (process.env.NODE_ENV === 'development') {
@@ -47,7 +47,7 @@ const composedEnhancers = compose(
 )
 
 const store = createStore(
-  rootReducer,
+  connectRouter(history)(rootReducer),
   initialState,
   composedEnhancers
 )

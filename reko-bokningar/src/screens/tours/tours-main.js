@@ -24,7 +24,7 @@ class TourViewMain extends Component {
             </div>
             <div className="col-lg-4 col-md-12">
               <h4 className="w-75 my-3 mx-auto">Resor</h4>
-              <Link to={'/bokningar/nyresa'} className="btn w-75 btn-primary my-3 mx-auto py-2">Skapa ny resa</Link>
+              <Link to={'/bokningar/resa/ny'} className="btn w-75 btn-primary my-3 mx-auto py-2">Skapa ny resa</Link>
               <Link to={'/bokningar/kategorier'} className="btn w-75 btn-primary my-3 mx-auto py-2">Ändra resekategorier</Link>
               <p className="w-75 my-3 py-2 mx-auto px-1 text-justify d-block">Lista på resor här.</p>
 

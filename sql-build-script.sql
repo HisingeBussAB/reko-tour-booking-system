@@ -130,6 +130,7 @@ CREATE TABLE [Resa] (
     [Resa] varchar(100)  NOT NULL ,
     [AvbskyddPris] bigint  NOT NULL ,
     [AnmavgPris] bigint  NOT NULL ,
+    [Avresa] date NOT NULL,
     CONSTRAINT [PK_Resa] PRIMARY KEY CLUSTERED (
         [ResaID] ASC
     )

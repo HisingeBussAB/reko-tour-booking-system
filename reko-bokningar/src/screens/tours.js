@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import TourViewMain from './tours/tours-main'
 import Categories from './tours/tours-categories'
-import NewTour from './tours/tours-new'
+import NewTour from './tours/tours-edit'
 import { Route } from 'react-router-dom'
 
 class TourView extends Component {
@@ -10,7 +10,7 @@ class TourView extends Component {
     return (
       <div className="TourView text-center pt-3">
         <Route exact path="/bokningar" component={TourViewMain} />
-        <Route exact path="/bokningar/nyresa" component={NewTour} />
+        <Route exact path="/bokningar/resa/:id" component={NewTour} />
         <Route exact path="/bokningar/kategorier" component={Categories} />
       </div>
     )

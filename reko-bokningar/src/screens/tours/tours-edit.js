@@ -7,17 +7,20 @@ import faMinus from '@fortawesome/fontawesome-free-solid/faMinus'
 import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import {getCategories, networkAction} from '../../actions'
+import {apiPost, firebaseSavedTour} from '../../functions'
 import update from 'immutability-helper'
 
 class NewTour extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      isSubmitting: false,
-      tourName    : '',
-      tourDate    : new Date().toLocaleDateString('sv-SE'),
-      tourCategory: '',
-      tourRoomOpt : [
+      isSubmitting   : false,
+      tourName       : '',
+      tourDate       : new Date().toLocaleDateString('sv-SE'),
+      tourCategory   : '',
+      tourInsurance  : 150,
+      tourReservation: 300,
+      tourRoomOpt    : [
         {
           roomType : '',
           roomSize : '',
@@ -38,6 +41,28 @@ class NewTour extends Component {
     }).then(() => { networkAction(0, 'updating categories') })
   }
 
+  componentDidMount () {
+    const {login, match} = this.props
+    let temp = 'all'
+    try {
+      temp = match.params.id
+    } catch (e) {
+      temp = 'all'
+    }
+    const id = temp !== 'ny' && typeof Number(temp) === 'number' ? temp : 'all'
+    apiPost('/tours/tour/get', {
+      user  : login.user,
+      jwt   : login.jwt,
+      tourID: id
+    })
+      .then((response) => {
+        console.log(response)
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+  }
+
   handleChange = (target, i = false) => {
     const {tourRoomOpt} = this.state
     if (i === false && (target.name === 'tourName' || target.name === 'tourDate' || target.name === 'tourCategory')) {
@@ -48,6 +73,33 @@ class NewTour extends Component {
       newtourRoomOpt[i] = update(newtourRoomOpt[i], {[targetKey]: {$set: target.value}})
       this.setState({tourRoomOpt: newtourRoomOpt})
     }
+  }
+
+  handleSave = (e) => {
+    const {login} = this.props
+    const {...state} = this.state
+    networkAction(1, 'save new category')
+    this.submitToggle(true)
+    apiPost('/tours/tour/new', {
+      user           : login.user,
+      jwt            : login.jwt,
+      tourName       : state.tourName,
+      tourDate       : state.tourDate,
+      tourCategory   : state.tourCategory,
+      tourInsurance  : state.tourInsurance,
+      tourReservation: state.tourReservation,
+      tourRoomOpt    : state.tourRoomOpt
+    })
+      .then((response) => {
+        console.log(response)
+        this.submitToggle(false)
+        networkAction(0, 'save new category')
+      })
+      .catch((error) => {
+        console.log(error)
+        this.submitToggle(false)
+        networkAction(0, 'save new category')
+      })
   }
 
   submitToggle = (b) => {
@@ -71,20 +123,24 @@ class NewTour extends Component {
 
   removeRow = () => {
     const {tourRoomOpt} = this.state
-    if (tourRoomOpt.length > 1) { 
+    if (tourRoomOpt.length > 1) {
       const newtourRoomOpt = update(tourRoomOpt, {$splice: [[tourRoomOpt.length - 1, 1]]})
       this.setState({tourRoomOpt: newtourRoomOpt})
     }
   }
 
   render () {
-    const {tourName, tourCategory, tourDate, tourRoomOpt, isSubmitting = false, showStatus = false, showStatusMessage = ''} = this.state
+    const {tourName, tourCategory, tourDate, tourRoomOpt, tourInsurance, tourReservation, isSubmitting = false, showStatus = false, showStatusMessage = ''} = this.state
     const {categories = []} = this.props
 
     let temp
     try {
       temp = categories.map((category) => {
-        return <option key={category.id} value={category.id} style={{color: 'black'}}>{category.category}</option>
+        if (category.active) {
+          return <option key={category.id} value={category.id} style={{color: 'black'}}>{category.category}</option>
+        } else {
+          return null
+        }
       })
     } catch (e) {
       temp = null
@@ -94,10 +150,10 @@ class NewTour extends Component {
 
     const roomRows = tourRoomOpt.map((item, i) => {
       return (<tr key={i}>
-        <td className="p-2 w-50 align-middle"><input value={item.roomType} id={'roomType[' + i + ']'} name={'roomType[' + i + ']'} onChange={(e) => this.handleChange(e.target, i)} className="rounded w-100" placeholder="Rumstyp/Dagsresa" maxLength="99" type="text" /></td>
-        <td className="p-2 align-middle"><input value={item.roomSize} id={'roomSize[' + i + ']'} name={'roomSize[' + i + ']'} onChange={(e) => this.handleChange(e.target, i)} className="text-right rounded" placeholder="0" type="number" min="0" max="99" maxLength="2" step="1" style={{width: '75px'}} /></td>
-        <td className="pl-2 pr-1 text-nowrap align-middle"><input value={item.roomPrice} id={'roomPrice[' + i + ']'} name={'roomPrice[' + i + ']'} onChange={(e) => this.handleChange(e.target, i)} className="text-right rounded mr-1" type="number" placeholder="0" min="0" max="99999" maxLength="5" step="1" style={{width: '75px'}} />kr</td>
-        <td className="p-2 align-middle"><input value={item.roomCount} id={'roomCount[' + i + ']'} name={'roomCount[' + i + ']'} onChange={(e) => this.handleChange(e.target, i)} className="text-right rounded" type="number" placeholder="0" min="0" max="999" maxLength="3" step="1" style={{width: '75px'}} /></td>
+        <td className="p-2 w-50 align-middle"><input value={item.roomType} id={'roomType[' + i + ']'} name={'roomType[' + i + ']'} onChange={(e) => this.handleChange(e.target, i)} className="rounded w-100" placeholder="Rumstyp/Dagsresa" maxLength="99" type="text" required /></td>
+        <td className="p-2 align-middle"><input value={item.roomSize} id={'roomSize[' + i + ']'} name={'roomSize[' + i + ']'} onChange={(e) => this.handleChange(e.target, i)} className="text-right rounded" placeholder="0" type="number" min="0" max="99" maxLength="2" step="1" style={{width: '75px'}} required /></td>
+        <td className="pl-2 pr-1 text-nowrap align-middle"><input value={item.roomPrice} id={'roomPrice[' + i + ']'} name={'roomPrice[' + i + ']'} onChange={(e) => this.handleChange(e.target, i)} className="text-right rounded mr-1" type="number" placeholder="0" min="0" max="99999" maxLength="5" step="1" style={{width: '75px'}} required />kr</td>
+        <td className="p-2 align-middle"><input value={item.roomCount} id={'roomCount[' + i + ']'} name={'roomCount[' + i + ']'} onChange={(e) => this.handleChange(e.target, i)} className="text-right rounded" type="number" placeholder="0" min="0" max="999" maxLength="3" step="1" style={{width: '75px'}} required /></td>
       </tr>)
     })
 
@@ -114,14 +170,22 @@ class NewTour extends Component {
                 </div>
                 <div>
                   <label htmlFor="tourCategory" className="d-block small mt-1 mb-0">Kategori</label>
-                  <select id="tourCategory" name="tourCategory" onChange={e => this.handleChange(e.target)} className="rounded w-100"  value={tourCategory} required>
+                  <select id="tourCategory" name="tourCategory" onChange={e => this.handleChange(e.target)} className="rounded w-100" value={tourCategory} required>
                     <option disabled hidden value="">-Välj-</option>
                     {categoryOptions}
                   </select>
                 </div>
-                <div>
+                <div className="w-50 d-inline">
                   <label htmlFor="tourDate" className="d-block small mt-1 mb-0">Avresedatum (åååå-mm-dd)</label>
-                  <input id="tourDate" name="tourDate" value={tourDate} onChange={e => this.handleChange(e.target)} className="rounded" type="date" style={{width: '166px'}} min="2000-01-01" max="3000-01-01" required />
+                  <input id="tourDate" name="tourDate" value={tourDate} onChange={e => this.handleChange(e.target)} className="rounded" type="date" style={{width: '166px'}} min="2000-01-01" max="3000-01-01" placeholder="0" required />
+                </div>
+                <div className="w-25 d-inline">
+                  <label htmlFor="tourReservation" className="d-block small mt-1 mb-0">Anmälningsavgift</label>
+                  <input id="tourReservation" name="tourReservation" value={tourReservation} onChange={e => this.handleChange(e.target)} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
+                </div>
+                <div className="w-25 d-inline">
+                  <label htmlFor="tourInsurance" className="d-block small mt-1 mb-0">Avbeställningskydd</label>
+                  <input id="tourInsurance" name="tourInsurance" value={tourInsurance} onChange={e => this.handleChange(e.target)} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
                 </div>
               </fieldset>
               <fieldset>
@@ -167,7 +231,8 @@ NewTour.propTypes = {
   networkAction: PropTypes.func,
   getCategories: PropTypes.func,
   categories   : PropTypes.array,
-  login        : PropTypes.object
+  login        : PropTypes.object,
+  match        : PropTypes.object
 }
 
 const mapStateToProps = state => ({
