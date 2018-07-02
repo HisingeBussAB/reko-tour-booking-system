@@ -31,7 +31,8 @@ class Tour {
       }
     }
     try {
-      $sql = "SELECT * FROM Resa LEFT JOIN Boende ON Resa.ResaID = Boende.ResaID GROUP BY ResaID";
+      $sql = "SELECT *, Resa.Aktiv as ResaAktiv FROM Resa INNER JOIN Kategori_Resa ON Resa.ResaID = Kategori_Resa.ResaID 
+        INNER JOIN Kategori ON Kategori_Resa.KategoriID = Kategori.KategoriID INNER JOIN Boende ON Boende.ResaID = Resa.ResaID ORDER BY Avresa ASC, Personer ASC;";
       if ($validID != 'all') {
         $sql .= " WHERE ResaID = :id;";
       } else {$sql .= ";";}
@@ -46,17 +47,43 @@ class Tour {
         return false;
       }
       if (count($result) > 0) {
-        var_dump($result);
+        $tourid = '';
+        $roomOpts = [];
+        $responseArray = [];
         foreach ($result as $tour) {
-          //$active = $tour['aktiv'] ? true : false;
-          $active = true;
-          $response->AddToArrayOnKey('tour', 
-            array('id' => (int)$tour['resaid'], 'tour' => $tour['resa'], 'active' => $active));
+          if ($tourid != $tour['resaid'] && $tourid != '') {
+            $output = $responseArray;
+            $output['roomOpts'] = $roomOpts;
+            $roomOpts = [];
+            $responseArray = [];
+            $response->AddToArrayOnKey('tours', $output);
+          }   
+          $tourid = $tour['resaid'];
+          $active = $tour['resaaktiv'] ? true : false;
+          array_push($roomOpts, array('roomid' => $tour['boendeid'], 'roomtype' => $tour['boendenamn'], 'roomprice' => $tour['pris'], 'roomsize' => $tour['personer'], 'roomcount' => $tour['antaltillg']));
+          if (empty($responseArray)) {
+          $responseArray = array('id' => (int)$tour['resaid'], 'tour' => $tour['resa'], 'active' => $active, 'insurancefee' => $tour['avbskyddpris'], 'reservefee' => $tour['anmavgpris'], 
+              'departure' => date('Y-m-d',strtotime($tour['avresa'])), 'categoryid' => $tour['kategoriid'], 'category' => $tour['kategori'], 'active' => $active,
+              'roomOpts' => []);
+          }
+          
+        }
+        if ($tourid != '') {
+          $output = $responseArray;
+          $output['roomOpts'] = $roomOpts;
+          $response->AddToArrayOnKey('tours', $output);
+          unset($responseArray);
+          unset($roomOpts);
+          unset($output);
+          unset($tourid);
+        } else {
+          $response->AddResponse('response', 'Inga resor hittades');
+          $response->AddResponse('tours', []);
         }
         return true;
       } else {
-        $response->AddResponse('response', 'Inga resor hittades');
-        $response->AddResponse('tour', []);
+          $response->AddResponse('response', 'Inga resor hittades');
+          $response->AddResponse('tours', []);
         return false;
       }
   }
@@ -68,7 +95,7 @@ class Tour {
     } else {
       try {
       $pdo->beginTransaction();
-      $sql = "INSERT INTO Resa (Resa, AvbskyddPris, AnmavgPris, Avresa) OUTPUT INSERTED.ResaID VALUES (:tour, :cancel, :reserve, :departure)";
+      $sql = "INSERT INTO Resa (Resa, AvbskyddPris, AnmavgPris, Avresa, Aktiv) OUTPUT INSERTED.ResaID VALUES (:tour, :cancel, :reserve, :departure, 1)";
       $sth = $pdo->prepare($sql);
       $sth->bindParam(':tour',      $newData['tourName'],        \PDO::PARAM_STR);
       $sth->bindParam(':cancel',    $newData['tourInsurance'],   \PDO::PARAM_INT);

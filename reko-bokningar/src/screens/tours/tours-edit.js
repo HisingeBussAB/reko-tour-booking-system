@@ -169,7 +169,7 @@ class NewTour extends Component {
                   <input id="tourName" name="tourName" value={tourName} onChange={e => this.handleChange(e.target)} className="rounded w-100" placeholder="Resans namn" maxLength="99" type="text" required />
                 </div>
                 <div>
-                  <label htmlFor="tourCategory" className="d-block small mt-1 mb-0">Kategori</label>
+                  <label htmlFor="tourCategory" className="d-block small mt-1 mb-0">Huvudkategori</label>
                   <select id="tourCategory" name="tourCategory" onChange={e => this.handleChange(e.target)} className="rounded w-100" value={tourCategory} required>
                     <option disabled hidden value="">-Välj-</option>
                     {categoryOptions}

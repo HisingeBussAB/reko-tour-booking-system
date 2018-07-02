@@ -37,8 +37,8 @@ CREATE TABLE [HammerGuard] (
 CREATE TABLE [Auth_Once] (
     [userID] bigint  NOT NULL ,
     [tokenid] varchar(255)  NOT NULL ,
-    [token] varchar(255)  NOT NULL,
-    [created] bigint  NOT NULL  
+    [token] varchar(255)  NOT NULL ,
+    [created] bigint  NOT NULL 
 )
 
 CREATE TABLE [Tokens] (
@@ -48,14 +48,14 @@ CREATE TABLE [Tokens] (
     [username] varchar(255)  NULL 
 )
 
--- CREATE TABLE [Auth] (
+--CREATE TABLE [Auth] (
 --    [AuthID] bigint IDENTITY(1,1) NOT NULL ,
 --    [user] varchar(255)  NOT NULL ,
 --    [pwd] varchar(255)  NOT NULL ,
 --    CONSTRAINT [PK_Auth] PRIMARY KEY CLUSTERED (
 --        [AuthID] ASC
 --    )
--- )
+--)
 
 CREATE TABLE [Bokning] (
     [BokningID] bigint IDENTITY(1,1) NOT NULL ,
@@ -63,6 +63,8 @@ CREATE TABLE [Bokning] (
     [ResaID] bigint  NOT NULL ,
     [GruppBokning] bit  NOT NULL ,
     [Makulerad] bit  NOT NULL ,
+    [MakuleradDatumv] date  NULL ,
+    [BokningDatum] date  NOT NULL ,
     [BetalningDatum1] date  NULL ,
     [BetalningDatum2] date  NOT NULL ,
     CONSTRAINT [PK_Bokning] PRIMARY KEY CLUSTERED (
@@ -130,7 +132,8 @@ CREATE TABLE [Resa] (
     [Resa] varchar(100)  NOT NULL ,
     [AvbskyddPris] bigint  NOT NULL ,
     [AnmavgPris] bigint  NOT NULL ,
-    [Avresa] date NOT NULL,
+    [Avresa] date  NOT NULL ,
+    [Aktiv] bit  NOT NULL ,
     CONSTRAINT [PK_Resa] PRIMARY KEY CLUSTERED (
         [ResaID] ASC
     )
