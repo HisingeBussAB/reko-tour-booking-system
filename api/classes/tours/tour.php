@@ -31,11 +31,12 @@ class Tour {
       }
     }
     try {
-      $sql = "SELECT *, Resa.Aktiv as ResaAktiv FROM Resa INNER JOIN Kategori_Resa ON Resa.ResaID = Kategori_Resa.ResaID 
-        INNER JOIN Kategori ON Kategori_Resa.KategoriID = Kategori.KategoriID INNER JOIN Boende ON Boende.ResaID = Resa.ResaID ORDER BY Avresa ASC, Personer ASC;";
+      $sql = "SELECT Resa.ResaID as ResaID, Resa, AvbskyddPris, AnmavgPris, Avresa, Resa.Aktiv as Aktiv, BoendeID, BoendeNamn, Pris, Personer, AntalTillg, Kategori.KategoriID as KategoriID, Kategori FROM Resa INNER JOIN Kategori_Resa ON Resa.ResaID = Kategori_Resa.ResaID 
+        INNER JOIN Kategori ON Kategori_Resa.KategoriID = Kategori.KategoriID INNER JOIN Boende ON Boende.ResaID = Resa.ResaID ";
       if ($validID != 'all') {
-        $sql .= " WHERE ResaID = :id;";
-      } else {$sql .= ";";}
+        $sql .= "WHERE Resa.ResaID = :id ";
+      }
+      $sql .= "ORDER BY Avresa ASC, Personer ASC;";
       $sth = $pdo->prepare($sql);
       if ($validID != 'all') {
         $sth->bindParam(':id', $validID, \PDO::PARAM_INT);
@@ -59,7 +60,7 @@ class Tour {
             $response->AddToArrayOnKey('tours', $output);
           }   
           $tourid = $tour['resaid'];
-          $active = $tour['resaaktiv'] ? true : false;
+          $active = $tour['aktiv'] ? true : false;
           array_push($roomOpts, array('roomid' => $tour['boendeid'], 'roomtype' => $tour['boendenamn'], 'roomprice' => $tour['pris'], 'roomsize' => $tour['personer'], 'roomcount' => $tour['antaltillg']));
           if (empty($responseArray)) {
           $responseArray = array('id' => (int)$tour['resaid'], 'tour' => $tour['resa'], 'active' => $active, 'insurancefee' => $tour['avbskyddpris'], 'reservefee' => $tour['anmavgpris'], 

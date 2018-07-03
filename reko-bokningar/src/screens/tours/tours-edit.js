@@ -6,9 +6,11 @@ import faSave from '@fortawesome/fontawesome-free-solid/faSave'
 import faMinus from '@fortawesome/fontawesome-free-solid/faMinus'
 import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
-import {getCategories, networkAction} from '../../actions'
+import {networkAction} from '../../actions'
+import {onThenTour, onCatchTour} from '../../actions/tours/tours'
 import {apiPost, firebaseSavedTour} from '../../functions'
 import update from 'immutability-helper'
+
 
 class NewTour extends Component {
   constructor (props) {
@@ -65,7 +67,7 @@ class NewTour extends Component {
 
   handleChange = (target, i = false) => {
     const {tourRoomOpt} = this.state
-    if (i === false && (target.name === 'tourName' || target.name === 'tourDate' || target.name === 'tourCategory')) {
+    if (i === false && target.name.includes('tour')) {
       this.setState({[target.name]: target.value})
     } else if (target.name.includes('room')) {
       const targetKey = target.name.substring(0, target.name.indexOf('['))
@@ -78,7 +80,7 @@ class NewTour extends Component {
   handleSave = (e) => {
     const {login} = this.props
     const {...state} = this.state
-    networkAction(1, 'save new category')
+    networkAction(1, 'save new tour')
     this.submitToggle(true)
     apiPost('/tours/tour/new', {
       user           : login.user,
@@ -90,10 +92,34 @@ class NewTour extends Component {
       tourReservation: state.tourReservation,
       tourRoomOpt    : state.tourRoomOpt
     })
-      .then((response) => {
-        console.log(response)
+      .then((response) => {      
+        let temp
+        try { 
+          temp = response.data.modifiedid
+        } catch (e) {
+          temp = 'all'
+        }
+        const modifiedid = temp
+        const {onThenTour, onCatchTour} = this.props
+          networkAction(1, 'update tour redux')
+          apiPost('/tours/tour/get', {
+            user  : login.user,
+            jwt   : login.jwt,
+            tourID: modifiedid
+          })
+            .then((response) => {
+              networkAction(0, 'update tour redux')
+              onThenTour(dispatch, error)
+            })
+            .catch((error) => {
+              networkAction(0, 'update tour redux')
+              onCatchTour(dispatch, error)
+            })
+        
+
+        }
         this.submitToggle(false)
-        networkAction(0, 'save new category')
+        networkAction(0, 'save new tour')
       })
       .catch((error) => {
         console.log(error)

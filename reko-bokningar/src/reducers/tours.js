@@ -8,6 +8,12 @@ export default function tours (state = {}, action) {
       } else {
         return {categories: mergeObjectArrays(state.categories, action.payload.category, 'id')}
       }
+    case 'TOURS_TOUR_SAVE':
+      if (action.payload.id === 'all') {
+        return {tours: action.payload.tour}
+      } else {
+        return {tours: mergeObjectArrays(state.tours, action.payload.tour, 'id')}
+      }
     default:
       return state
   }
