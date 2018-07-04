@@ -14,11 +14,11 @@ class Tour {
 
   public static function Get($jsonData, $response, $pdo) {
     $validID = false;
-    if ($jsonData['tourID'] == 'all') {
+    if ($jsonData['tourid'] == 'all') {
       $validID = 'all';
     } else {
-      if (!empty($jsonData['tourID']) || trim($jsonData['tourID']) == 0) {
-        $temp = filter_var(trim($jsonData['tourID']), FILTER_SANITIZE_NUMBER_INT);
+      if (!empty($jsonData['tourid']) || trim($jsonData['tourid']) == 0) {
+        $temp = filter_var(trim($jsonData['tourid']), FILTER_SANITIZE_NUMBER_INT);
         $temp = filter_var(trim($temp), FILTER_VALIDATE_INT);
         if (!$temp) {
           $response->AddResponse('response', 'Resan hittades inte.');

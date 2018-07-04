@@ -7,10 +7,9 @@ import faMinus from '@fortawesome/fontawesome-free-solid/faMinus'
 import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import {networkAction} from '../../actions'
-import {onThenTour, onCatchTour} from '../../actions/tours/tours'
+import {onThenTour, onCatchTour} from '../../actions/tours/save-item'
 import {apiPost, firebaseSavedTour} from '../../functions'
 import update from 'immutability-helper'
-
 
 class NewTour extends Component {
   constructor (props) {
@@ -92,32 +91,29 @@ class NewTour extends Component {
       tourReservation: state.tourReservation,
       tourRoomOpt    : state.tourRoomOpt
     })
-      .then((response) => {      
+      .then((response) => {
         let temp
-        try { 
+        try {
           temp = response.data.modifiedid
         } catch (e) {
           temp = 'all'
         }
         const modifiedid = temp
-        const {onThenTour, onCatchTour} = this.props
-          networkAction(1, 'update tour redux')
-          apiPost('/tours/tour/get', {
-            user  : login.user,
-            jwt   : login.jwt,
-            tourID: modifiedid
+        const {onThenItem, onCatchItem} = this.props
+        networkAction(1, 'update tour redux')
+        apiPost('/tours/tour/get', {
+          user  : login.user,
+          jwt   : login.jwt,
+          tourID: modifiedid
+        })
+          .then((response) => {
+            networkAction(0, 'update tour redux')
+            onThenItem(dispatch, response)
           })
-            .then((response) => {
-              networkAction(0, 'update tour redux')
-              onThenTour(dispatch, error)
-            })
-            .catch((error) => {
-              networkAction(0, 'update tour redux')
-              onCatchTour(dispatch, error)
-            })
-        
-
-        }
+          .catch((error) => {
+            networkAction(0, 'update tour redux')
+            onCatchItem(dispatch, error)
+          })
         this.submitToggle(false)
         networkAction(0, 'save new tour')
       })
