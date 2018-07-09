@@ -32,13 +32,13 @@ class Category {
     if (count($result) > 0) {
       foreach ($result as $category) {
         $active = $category['aktiv'] ? true : false;
-        $response->AddToArrayOnKey('category', 
+        $response->AddToArrayOnKey('categories', 
           array('id' => (int)$category['kategoriid'], 'category' => $category['kategori'], 'active' => $active));
       }
       return true;
     } else {
       $response->AddResponse('response', 'Inga kategorier hittades');
-      $response->AddResponse('category', []);
+      $response->AddResponse('categories', []);
       return false;
     }
 
@@ -63,7 +63,7 @@ class Category {
 
   public static function Save($jsonData, $response, $pdo) {
 
-
+    
     
     try {
       if ($jsonData['task'] == 'activetoggle') {

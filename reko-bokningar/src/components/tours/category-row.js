@@ -8,8 +8,7 @@ import faTrashAlt from '@fortawesome/fontawesome-free-regular/faTrashAlt'
 import faSpinner from '@fortawesome/fontawesome-free-solid/faSpinner'
 import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
-import {getCategories, errorPopup} from '../../actions'
-import {apiPost, firebaseSavedCategory} from '../../functions'
+import {getItem, saveItem} from '../../actions'
 
 class CategoriesRow extends Component {
   /* NOTICE
@@ -55,144 +54,30 @@ class CategoriesRow extends Component {
 
   saveCategory = (e) => {
     e.preventDefault()
-    const {submitToggle = function () {}, id, login, isActive, remove, index, getCategories, errorPopup} = this.props
+    const {saveItem, isNew, isActive, id = 'new'} = this.props
     const {category} = this.state
-    submitToggle(true)
-    this.setState({updatingSave: true})
-    const action = id === 'new' ? 'new' : 'save'
-    apiPost('/tours/category/' + action, {
-      user      : login.user,
-      jwt       : login.jwt,
-      categoryid: id,
+    console.log(category)
+    const action = isNew ? 'new' : 'save'
+    const data = {
       category  : category,
-      active    : isActive
-    })
-      .then((response) => {
-        if (typeof response !== 'undefined' && response.data.saved) {
-          getCategories({
-            user      : login.user,
-            jwt       : login.jwt,
-            categoryid: response.data.modifiedid
-          }).then(() => {
-            submitToggle(false)
-            if (action === 'new') {
-              remove(index)
-            }
-          })
-            .catch(() => {
-              submitToggle(false)
-            })
-          firebaseSavedCategory(response.data.modifiedid)
-        } else {
-          errorPopup({visible: true, message: 'Kunde inte spara kategori', suppressed: false})
-          submitToggle(false)
-        }
-      })
-      .catch(error => {
-        let message
-        try {
-          message = error.response.data.response
-        } catch (e) {
-          message = 'Ett okänt fel har uppstått i APIn.'
-        }
-        errorPopup({visisble: true, message: message, suppressed: false})
-        submitToggle(false)
-      })
+      active    : isActive,
+      categoryid: isNew ? 'new' : id,
+      task      : 'save'
+    }
+
+    if (saveItem('categories', data, action)) {
+      console.log('success')
+    } else {
+      console.log('fail')
+    }
   }
 
   toggleActive = (e, toggle) => {
     e.preventDefault()
-    const {submitToggle = function () {}, login, id, getCategories, isNew, errorPopup} = this.props
-    const {category} = this.state
-    if (!isNew) {
-      this.setState({updatingActive: true})
-      submitToggle(true)
-      apiPost('/tours/category/save', {
-        task      : 'activetoggle',
-        user      : login.user,
-        jwt       : login.jwt,
-        category  : category,
-        categoryid: id,
-        active    : toggle
-      })
-        .then(response => {
-          if (typeof response !== 'undefined' && response.data.saved) {
-            getCategories({
-              user      : login.user,
-              jwt       : login.jwt,
-              categoryid: response.data.modifiedid
-            }).then(() => {
-              submitToggle(false)
-            })
-              .catch(() => {
-                submitToggle(false)
-              })
-            firebaseSavedCategory(response.data.modifiedid)
-          } else {
-            errorPopup({visible: true, message: 'Kunde inte uppdatera kategori', suppressed: false})
-            submitToggle(false)
-          }
-        })
-        .catch(error => {
-          let message
-          try {
-            message = error.response.data.response
-          } catch (e) {
-            message = 'Ett okänt fel har uppstått i APIn.'
-          }
-          errorPopup({visible: true, message: message, suppressed: false})
-          submitToggle(false)
-        })
-    }
   }
 
   doDelete = (e) => {
     e.preventDefault()
-    const {submitToggle = function () {}, login, id, remove, index, getCategories, isNew, errorPopup} = this.props
-    const {category} = this.state
-    this.setState({deleting: true})
-    submitToggle(true)
-    if (!isNew) {
-      apiPost('/tours/category/delete', {
-        user      : login.user,
-        jwt       : login.jwt,
-        category  : category,
-        categoryid: id,
-        active    : false
-      })
-        .then(response => {
-          if (typeof response !== 'undefined' && response.data.saved) {
-            getCategories({
-              user      : login.user,
-              jwt       : login.jwt,
-              categoryid: 'all'
-            }).then(() => {
-              submitToggle(false)
-            })
-              .catch(() => {
-                submitToggle(false)
-              })
-            firebaseSavedCategory('all')
-          } else {
-            errorPopup({visible: true, message: 'Kunde inte ta bort kategori', suppressed: false})
-            submitToggle(false)
-          }
-        })
-        .catch(error => {
-          console.log(error)
-          let message
-          try {
-            message = error.response.data.response
-          } catch (e) {
-            message = 'Ett okänt fel har uppstått i APIn.'
-          }
-          errorPopup({visible: true, message: message, suppressed: false})
-          submitToggle(false)
-        })
-    } else {
-      submitToggle(false)
-      remove(index)
-    }
   }
 
   render () {
@@ -237,25 +122,20 @@ class CategoriesRow extends Component {
 }
 
 CategoriesRow.propTypes = {
-  category     : PropTypes.string,
-  id           : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  isActive     : PropTypes.bool,
-  isNew        : PropTypes.bool,
-  submitToggle : PropTypes.func,
-  login        : PropTypes.object,
-  getCategories: PropTypes.func,
-  index        : PropTypes.number,
-  remove       : PropTypes.func,
-  errorPopup   : PropTypes.func
+  category    : PropTypes.string,
+  id          : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  isActive    : PropTypes.bool,
+  isNew       : PropTypes.bool,
+  submitToggle: PropTypes.func,
+  getItem     : PropTypes.func,
+  saveItem    : PropTypes.func,
+  index       : PropTypes.number,
+  remove      : PropTypes.func
 }
 
-const mapStateToProps = state => ({
-  login: state.login
-})
-
 const mapDispatchToProps = dispatch => bindActionCreators({
-  getCategories,
-  errorPopup
+  getItem,
+  saveItem
 }, dispatch)
 
-export default connect(mapStateToProps, mapDispatchToProps)(CategoriesRow)
+export default connect(null, mapDispatchToProps)(CategoriesRow)

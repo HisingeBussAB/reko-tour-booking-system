@@ -6,9 +6,7 @@ import faSave from '@fortawesome/fontawesome-free-solid/faSave'
 import faMinus from '@fortawesome/fontawesome-free-solid/faMinus'
 import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
-import {networkAction} from '../../actions'
-import {onThenTour, onCatchTour} from '../../actions/tours/save-item'
-import {apiPost, firebaseSavedTour} from '../../functions'
+import {saveItem, getItem} from '../../actions'
 import update from 'immutability-helper'
 
 class NewTour extends Component {
@@ -43,7 +41,7 @@ class NewTour extends Component {
   }
 
   componentDidMount () {
-    const {login, match} = this.props
+    const {login, match, getItem} = this.props
     let temp = 'all'
     try {
       temp = match.params.id
@@ -51,17 +49,11 @@ class NewTour extends Component {
       temp = 'all'
     }
     const id = temp !== 'ny' && typeof Number(temp) === 'number' ? temp : 'all'
-    apiPost('/tours/tour/get', {
+    getItem('tours', {
       user  : login.user,
       jwt   : login.jwt,
-      tourID: id
+      tourid: id
     })
-      .then((response) => {
-        console.log(response)
-      })
-      .catch((error) => {
-        console.log(error)
-      })
   }
 
   handleChange = (target, i = false) => {
@@ -79,49 +71,7 @@ class NewTour extends Component {
   handleSave = (e) => {
     const {login} = this.props
     const {...state} = this.state
-    networkAction(1, 'save new tour')
     this.submitToggle(true)
-    apiPost('/tours/tour/new', {
-      user           : login.user,
-      jwt            : login.jwt,
-      tourName       : state.tourName,
-      tourDate       : state.tourDate,
-      tourCategory   : state.tourCategory,
-      tourInsurance  : state.tourInsurance,
-      tourReservation: state.tourReservation,
-      tourRoomOpt    : state.tourRoomOpt
-    })
-      .then((response) => {
-        let temp
-        try {
-          temp = response.data.modifiedid
-        } catch (e) {
-          temp = 'all'
-        }
-        const modifiedid = temp
-        const {onThenItem, onCatchItem} = this.props
-        networkAction(1, 'update tour redux')
-        apiPost('/tours/tour/get', {
-          user  : login.user,
-          jwt   : login.jwt,
-          tourID: modifiedid
-        })
-          .then((response) => {
-            networkAction(0, 'update tour redux')
-            onThenItem(dispatch, response)
-          })
-          .catch((error) => {
-            networkAction(0, 'update tour redux')
-            onCatchItem(dispatch, error)
-          })
-        this.submitToggle(false)
-        networkAction(0, 'save new tour')
-      })
-      .catch((error) => {
-        console.log(error)
-        this.submitToggle(false)
-        networkAction(0, 'save new category')
-      })
   }
 
   submitToggle = (b) => {
@@ -250,11 +200,11 @@ class NewTour extends Component {
 }
 
 NewTour.propTypes = {
-  networkAction: PropTypes.func,
-  getCategories: PropTypes.func,
-  categories   : PropTypes.array,
-  login        : PropTypes.object,
-  match        : PropTypes.object
+  getItem   : PropTypes.func,
+  saveItem  : PropTypes.func,
+  categories: PropTypes.array,
+  login     : PropTypes.object,
+  match     : PropTypes.object
 }
 
 const mapStateToProps = state => ({
@@ -265,8 +215,7 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-  networkAction,
-  getCategories
+  getItem
 }, dispatch)
 
 export default connect(mapStateToProps, mapDispatchToProps)(NewTour)

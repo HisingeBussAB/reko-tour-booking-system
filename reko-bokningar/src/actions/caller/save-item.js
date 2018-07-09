@@ -1,64 +1,32 @@
-import {networkAction} from '../'
+import {networkAction, errorPopup} from '../'
 import {apiPost, firebaseSavedItem} from '../../functions'
+import {itemNameTranslation, itemNameHuman} from './valid-calls'
+import {getItem} from './get-item'
 
-export async function saveItem (itemType, data) {
-  const validItems = ['tours', 'categories']
-  if (validItems.includes(itemType)) {
-    networkAction(1, 'save new ' + itemType, dispatch)
-    await apiPost('/tours/' + itemType, data)
-      .then(response => {})
-      .catch(error => {
-        networkAction(0, 'save new ' + itemType)
-      })
-  } else {
-
-  }
-}
-
-handleSave = (e) => {
-  const {login} = this.props
-  const {...state} = this.state
-
-  this.submitToggle(true)
-  apiPost('/tours/tour/new', {
-    user           : login.user,
-    jwt            : login.jwt,
-    tourName       : state.tourName,
-    tourDate       : state.tourDate,
-    tourCategory   : state.tourCategory,
-    tourInsurance  : state.tourInsurance,
-    tourReservation: state.tourReservation,
-    tourRoomOpt    : state.tourRoomOpt
-  })
-    .then((response) => {
-      let temp
+export function saveItem (itemType, data, operation) {
+  return async (dispatch, getState) => {
+    const login = Object.freeze(getState().login)
+    if (itemNameTranslation.hasOwnProperty(itemType)) {
+      dispatch(networkAction(1, 'save new ' + itemType))
       try {
-        temp = response.data.modifiedid
+        data.user = login.user
+        data.jwt = login.jwt
+        const response = await apiPost('/tours/' + itemType + '/' + operation, data)
+        let temp
+        try { temp = response.data.modifiedid } catch (e) { temp = 'all' }
+        const id = temp; temp = undefined
+        dispatch(getItem(itemType, id))
+        firebaseSavedItem(id, itemType)
+        return true
       } catch (e) {
-        temp = 'all'
+        dispatch(errorPopup({visible: true, message: 'Kunde inte spara ' + itemNameHuman[itemType] + '.', suppressed: false}))
+        return false
+      } finally {
+        dispatch(networkAction(0, 'save new ' + itemType))
       }
-      const modifiedid = temp
-      const {onThenItem, onCatchItem} = this.props
-      networkAction(1, 'update tour redux')
-      apiPost('/tours/tour/get', {
-        user  : login.user,
-        jwt   : login.jwt,
-        tourID: modifiedid
-      })
-        .then((response) => {
-          networkAction(0, 'update tour redux')
-          onThenItem(dispatch, response)
-        })
-        .catch((error) => {
-          networkAction(0, 'update tour redux')
-          onCatchItem(dispatch, error)
-        })
-      this.submitToggle(false)
-      networkAction(0, 'save new tour')
-    })
-    .catch((error) => {
-      console.log(error)
-      this.submitToggle(false)
-      networkAction(0, 'save new category')
-    })
+    } else {
+      dispatch(errorPopup({visible: true, message: 'En felaktigt formaterad förfrågan till APIt har blockerats', suppressed: false}))
+      return false
+    }
+  }
 }

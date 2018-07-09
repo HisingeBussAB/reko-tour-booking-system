@@ -1,14 +1,19 @@
 import firebase from '../../config/firebase'
+import {itemNameTranslation} from '../../actions/caller/valid-calls'
 
 export function firebaseSavedItem (id, type) {
-  if (type === 'categories' || type === 'tours') {
-    const itemRef = firebase.database().ref('tours/' + type)
-    const today = Date.now()
-    itemRef.set({
-      updated: today,
-      id     : [id]
-    })
-    return true
+  if (itemNameTranslation.hasOwnProperty(type)) {
+    try {
+      const itemRef = firebase.database().ref('tours/' + type)
+      const today = Date.now()
+      itemRef.set({
+        updated: today,
+        id     : [id]
+      })
+      return true
+    } catch (e) {
+      return false
+    }
   }
   return false
 }

@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux'
 import faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
-import {getCategories, networkAction} from '../../actions'
+import {getItem} from '../../actions'
 import CategoriesRow from '../../components/tours/category-row'
 import update from 'immutability-helper'
 
@@ -26,13 +26,8 @@ class Categories extends Component {
   }
 
   reduxGetAllUpdate = () => {
-    const {networkAction = () => {}, getCategories = () => {}, login = {user: 'anonymous', jwt: 'none'}} = this.props
-    networkAction(0, 'updating categories')
-    getCategories({
-      user      : login.user,
-      jwt       : login.jwt,
-      categoryid: 'all'
-    }).then(() => {networkAction(1, 'updating categories')})
+    const {getItem} = this.props
+    getItem('categories', 'all')
   }
 
   addRow = () => {
@@ -48,9 +43,7 @@ class Categories extends Component {
   }
 
   submitToggle = (b) => {
-    const {networkAction} = this.props
     const validatedb = !!b
-    networkAction(Number(validatedb), 'category update')
     this.setState({isSubmitting: validatedb})
   }
 
@@ -111,22 +104,16 @@ class Categories extends Component {
 }
 
 Categories.propTypes = {
-  login        : PropTypes.object,
-  getCategories: PropTypes.func,
-  categories   : PropTypes.array,
-  networkAction: PropTypes.func
+  getItem   : PropTypes.func,
+  categories: PropTypes.array
 }
 
 const mapStateToProps = state => ({
-  login            : state.login,
-  showStatus       : state.errorPopup.visible,
-  showStatusMessage: state.errorPopup.message,
-  categories       : state.tours.categories
+  categories: state.tours.categories
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-  getCategories,
-  networkAction
+  getItem
 }, dispatch)
 
 export default connect(mapStateToProps, mapDispatchToProps)(Categories)

@@ -10,7 +10,7 @@ import ExpireChecker from './components/global/expire-checker'
 import PropTypes from 'prop-types'
 import Config from './config/config'
 import firebase from './config/firebase'
-import {firebaseCategoriesSub} from './actions/firebase/firebase-categories-sub'
+import {firebaseItemSub} from './actions/firebase/firebase-item-sub'
 import ErrorPopup from './components/global/error-popup'
 
 /* eslint-disable react/display-name */
@@ -42,16 +42,16 @@ class App extends Component {
 
   componentWillReceiveProps (nextProps) {
     // Checks for login change and starts up firebase if login state change and login is detected.
-    const {firebaseCategoriesSub = function () {}, login = {login: {login: false, user: 'none', jwt: 'none'}}} = this.props
+    const {firebaseItemSub = function () {}, login = {login: {login: false, user: 'none', jwt: 'none'}}} = this.props
     const prevLogin = login.login
     if (nextProps.login.login && nextProps.login.login !== prevLogin) {
       firebase.auth().signInWithEmailAndPassword(Config.FirebaseLogin, Config.FirebasePwd)
         .then(() => {
-          firebaseCategoriesSub(nextProps.login.user, nextProps.login.jwt)
+          firebaseItemSub(nextProps.login.user, nextProps.login.jwt)
         })
         .catch(() => {
         // TODO
-        // manuallt download sub data?
+        // manually download sub data?
           this.setState({
             showStatus       : true,
             showStatusMessage: 'Kunde inte ansluta till WebSocket! Programmet går fortfarande att använda men undvik att använda det på flera datorer samtidigt.'
@@ -68,7 +68,7 @@ class App extends Component {
 
   componentDidCatch () {
     /* TODO */
-    // alert('Ett fel har inträffat, ladda om sidan eller nåt');
+    console.log('App Did Catch!!!')
   }
 
   render () {
@@ -98,9 +98,9 @@ class App extends Component {
 }
 
 App.propTypes = {
-  login                : PropTypes.object,
-  firebaseCategoriesSub: PropTypes.func,
-  isSuppressedPopup    : PropTypes.bool
+  login            : PropTypes.object,
+  firebaseItemSub  : PropTypes.func,
+  isSuppressedPopup: PropTypes.bool
 }
 
 const mapStateToProps = state => ({
@@ -109,7 +109,7 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-  firebaseCategoriesSub
+  firebaseItemSub
 }, dispatch)
 
 export default connect(mapStateToProps, mapDispatchToProps)(App)

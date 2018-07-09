@@ -1,6 +1,5 @@
 import firebase from '../../config/firebase'
 import {apiPost} from '../../functions'
-import {onThenItem, onCatchItem} from '../tours/save-item'
 import {networkAction} from '../'
 
 export function firebaseItemSub (user, jwt, itemType) {
@@ -30,11 +29,9 @@ export function firebaseItemSub (user, jwt, itemType) {
             [itemTypeid]: 'all'
           })
             .then(response => {
-              onThenItem(dispatch, response, itemType)
               dispatch(networkAction(0, 'get all ' + itemType))
             })
             .catch(error => {
-              onCatchItem(dispatch, error, itemType)
               dispatch(networkAction(0, 'get all ' + itemType))
             })
         } else {
@@ -47,11 +44,11 @@ export function firebaseItemSub (user, jwt, itemType) {
                 [itemTypeid]: item
               })
                 .then(response => {
-                  onThenItem(dispatch, response, itemType)
+
                   dispatch(networkAction(0, 'get ' + itemType + ' ' + item))
                 })
                 .catch(error => {
-                  onCatchItem(dispatch, error, itemType)
+
                   dispatch(networkAction(0, 'get ' + itemType + ' ' + item))
                 })
             }
