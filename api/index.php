@@ -127,7 +127,10 @@ if( $match && !empty($match['target']) && is_callable( $match['target'] ) ) {
     echo json_encode($a);
     die();
 }
-header( $_SERVER["SERVER_PROTOCOL"] . ' 200 OK');
+
+if(http_response_code() == 200) {
+  header( $_SERVER["SERVER_PROTOCOL"] . ' 200 OK');
+}
 $website = ob_get_clean();
 echo $website;
 

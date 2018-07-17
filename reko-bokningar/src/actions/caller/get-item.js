@@ -4,6 +4,7 @@ import {itemNameTranslation, itemNameHuman} from './valid-calls'
 
 export function getItem (itemType, item = 'all') {
   return async (dispatch, getState) => {
+    console.log('get start')
     const login = Object.freeze(getState().login)
     if (itemNameTranslation.hasOwnProperty(itemType)) {
       dispatch(networkAction(1, 'get items ' + itemType))
@@ -27,6 +28,7 @@ export function getItem (itemType, item = 'all') {
 
 function onThen (response, itemType) {
   return (dispatch) => {
+    console.log('get item then start')
     const itemTypeUpper = itemType.toUpperCase()
     try {
       if (response.data.success !== true) {

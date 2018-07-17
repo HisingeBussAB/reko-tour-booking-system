@@ -14,12 +14,16 @@ export function saveItem (itemType, data, operation) {
         const response = await apiPost('/tours/' + itemType + '/' + operation, data)
         let temp
         try { temp = response.data.modifiedid } catch (e) { temp = 'all' }
-        const id = temp; temp = undefined
-        dispatch(getItem(itemType, id))
+        const id = operation === 'delete' ? 'all' : temp
+        temp = undefined
+        await dispatch(getItem(itemType, id))
         firebaseSavedItem(id, itemType)
         return true
       } catch (e) {
-        dispatch(errorPopup({visible: true, message: 'Kunde inte spara ' + itemNameHuman[itemType] + '.', suppressed: false}))
+        // TODO Add verbose in use response from database
+        const humanAction = operation === 'delete' ? 'ta bort' : 'spara/ändra'
+        const humanDelete = operation === 'delete' ? 'Den här ' + itemNameHuman[itemType] + ' används troligen,\nresor/bokningar måste tas bort först.' : ''
+        dispatch(errorPopup({visible: true, message: 'Kunde inte ' + humanAction + ' ' + itemNameHuman[itemType] + '.\n' + humanDelete, suppressed: false}))
         return false
       } finally {
         dispatch(networkAction(0, 'save new ' + itemType))

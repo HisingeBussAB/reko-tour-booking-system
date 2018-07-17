@@ -52,11 +52,11 @@ class CategoriesRow extends Component {
     this.setState({category: val})
   }
 
-  saveCategory = (e) => {
+  saveCategory = async (e) => {
     e.preventDefault()
-    const {saveItem, isNew, isActive, id = 'new'} = this.props
+    const {saveItem, isNew = false, isActive, id = 'new', remove = () => {}, index = null, submitToggle} = this.props
     const {category} = this.state
-    console.log(category)
+    submitToggle(true)
     const action = isNew ? 'new' : 'save'
     const data = {
       category  : category,
@@ -65,19 +65,55 @@ class CategoriesRow extends Component {
       task      : 'save'
     }
 
-    if (saveItem('categories', data, action)) {
-      console.log('success')
+    if (await saveItem('categories', data, action)) {
+      remove(index)
+      submitToggle(false)
     } else {
-      console.log('fail')
+      submitToggle(false)
     }
   }
 
-  toggleActive = (e, toggle) => {
+  toggleActive = async (e, toggle) => {
     e.preventDefault()
+    const {category} = this.state
+    const {saveItem, isActive, id = 'new', submitToggle} = this.props
+    submitToggle(true)
+    const data = {
+      category  : category,
+      active    : isActive,
+      categoryid: id,
+      task      : 'activetoggle'
+    }
+
+    if (await saveItem('categories', data, 'save')) {
+      submitToggle(false)
+    } else {
+      submitToggle(false)
+    }
   }
 
-  doDelete = (e) => {
+  doDelete = async (e) => {
     e.preventDefault()
+    const {category} = this.state
+    const {saveItem, isNew = false, isActive, id = 'new', submitToggle, index = null, remove = () => {}} = this.props
+    submitToggle(true)
+    if (!isNew) {
+      const data = {
+        category  : category,
+        active    : !isActive,
+        categoryid: id,
+        task      : 'delete'
+      }
+
+      if (await saveItem('categories', data, 'delete')) {
+        submitToggle(false)
+      } else {
+        submitToggle(false)
+      }
+    } else {
+      remove(index)
+      submitToggle(false)
+    }
   }
 
   render () {

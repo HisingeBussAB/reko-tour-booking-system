@@ -42,14 +42,14 @@ class Categories extends Component {
     this.setState({extracategories: newextracategories})
   }
 
-  submitToggle = (b) => {
-    const validatedb = !!b
-    this.setState({isSubmitting: validatedb})
-  }
-
   removeExtraCategory = (i) => {
     const {extracategories} = this.state
     delete extracategories[i]
+  }
+
+  submitToggle = (b) => {
+    const validatedb = !!b
+    this.setState({isSubmitting: validatedb})
   }
 
   render () {
