@@ -1,6 +1,6 @@
 import {networkAction, errorPopup} from '../'
 import {apiPost, firebaseSavedItem} from '../../functions'
-import {itemNameTranslation, itemNameHuman} from './valid-calls'
+import {itemNameTranslation} from './valid-calls'
 import {getItem} from './get-item'
 
 export function saveItem (itemType, data, operation) {
@@ -20,11 +20,17 @@ export function saveItem (itemType, data, operation) {
         firebaseSavedItem(id, itemType)
         return true
       } catch (e) {
-        // TODO Add verbose in use response from database
-        const humanAction = operation === 'delete' ? 'ta bort' : 'spara/ändra'
-        const humanDelete = operation === 'delete' ? 'Den här ' + itemNameHuman[itemType] + ' används troligen,\nresor/bokningar måste tas bort först.' : ''
-        dispatch(errorPopup({visible: true, message: 'Kunde inte ' + humanAction + ' ' + itemNameHuman[itemType] + '.\n' + humanDelete, suppressed: false}))
-        return false
+        try {
+          if (typeof e.response.data.response !== 'undefined' && e.response.data.response.length > 0) {
+            dispatch(errorPopup({visible: true, message: e.response.data.response, suppressed: false}))
+          } else {
+            dispatch(errorPopup({visible: true, message: 'Kunde inte ta bort posten. Okänt svar från API.', suppressed: false}))
+          }
+          return false
+        } catch (e) {
+          dispatch(errorPopup({visible: true, message: 'Kunde inte ta bort posten. Okänt svar från API.', suppressed: false}))
+          return false
+        }
       } finally {
         dispatch(networkAction(0, 'save new ' + itemType))
       }

@@ -30,6 +30,7 @@ class Tour {
         return false;
       }
     }
+    $response->AddResponse('requestedid', $validID);
     try {
       $sql = "SELECT Resa.ResaID as ResaID, Resa, AvbskyddPris, AnmavgPris, Avresa, Resa.Aktiv as Aktiv, BoendeID, BoendeNamn, Pris, Personer, AntalTillg, Kategori.KategoriID as KategoriID, Kategori FROM Resa INNER JOIN Kategori_Resa ON Resa.ResaID = Kategori_Resa.ResaID 
         INNER JOIN Kategori ON Kategori_Resa.KategoriID = Kategori.KategoriID INNER JOIN Boende ON Boende.ResaID = Resa.ResaID ";

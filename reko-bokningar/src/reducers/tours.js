@@ -4,15 +4,15 @@ export default function tours (state = {}, action) {
   switch (action.type) {
     case 'TOURS_CATEGORIES_SAVE':
       if (action.payload.id === 'all') {
-        return {categories: action.payload.categories}
+        return {...state, categories: action.payload.categories}
       } else {
-        return {categories: mergeObjectArrays(state.categories, action.payload.categories, 'id')}
+        return {...state, categories: mergeObjectArrays(state.categories, action.payload.categories, 'id')}
       }
-    case 'TOURS_TOUR_SAVE':
+    case 'TOURS_TOURS_SAVE':
       if (action.payload.id === 'all') {
-        return {tours: action.payload.tour}
+        return {...state, tours: action.payload.tours}
       } else {
-        return {tours: mergeObjectArrays(state.tours, action.payload.tour, 'id')}
+        return {...state, tours: mergeObjectArrays(state.tours, action.payload.tours, 'id')}
       }
     default:
       return state

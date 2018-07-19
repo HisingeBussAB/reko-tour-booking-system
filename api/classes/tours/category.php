@@ -45,7 +45,31 @@ class Category {
   }
 
   public static function Delete($jsonData, $response, $pdo) {
-
+    try {
+      $sql = "SELECT Resa FROM Resa INNER JOIN Kategori_Resa ON Resa.ResaID = Kategori_Resa.ResaID 
+        INNER JOIN Kategori ON Kategori_Resa.KategoriID = Kategori.KategoriID WHERE Kategori.KategoriID = :categoryid GROUP BY Resa.Resa";
+      $sth = $pdo->prepare($sql);
+      $sth->bindParam(':categoryid',   $jsonData['categoryid'],   \PDO::PARAM_INT);
+      $sth->execute(); 
+      $result = $sth->fetchAll(\PDO::FETCH_ASSOC);
+    } catch(\PDOException $e) {
+      DBError::showError($e, __CLASS__, $sql, $response);
+      return false;
+    }
+    $usedin = "";
+    if (count($result) > 0) {
+      foreach ($result as $tour) {
+        $usedin .= $tour['resa'] . ", ";
+      }
+      $usedin = trim($usedin, ", ");
+      header( $_SERVER["SERVER_PROTOCOL"] . ' 409 Conflict');
+      $headers = ob_get_clean();
+      echo $headers;
+      $response->AddResponse('response', "Det går inte att ta bort kategorin.\nKategorin används av följande resor:\n" . $usedin . ".\nDessa måste tas bort permanent först.");
+      $response->AddResponse('conflict', true);
+      return false;
+    } 
+    
     
     try {
       $sql = "DELETE FROM Kategori WHERE KategoriID = :categoryid";
@@ -62,9 +86,7 @@ class Category {
 
 
   public static function Save($jsonData, $response, $pdo) {
-
-    
-    
+   
     try {
       if ($jsonData['task'] == 'activetoggle') {
         $sql = "UPDATE Kategori SET Aktiv = :active WHERE KategoriID = :categoryid";

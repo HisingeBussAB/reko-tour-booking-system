@@ -1,9 +1,31 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
+import { getItem } from '../../actions'
+import PropTypes from 'prop-types'
+import { bindActionCreators } from 'redux'
+import TourRow from '../../components/tours/tour-row'
 
 class TourViewMain extends Component {
+  componentWillMount () {
+    const {getItem} = this.props
+    getItem('tours')
+  }
+
   render () {
+    const {tours = []} = this.props
+
+    let temp
+    try {
+      temp = tours.map((tour) => {
+        return <TourRow key={tour.id} id={tour.id} tour={tour.tour} isActive={tour.active} departure={tour.departure} />
+      })
+    } catch (e) {
+      temp = null
+    }
+    const tourRows = temp
+    temp = undefined
+
     return (
       <div className="TourViewMain">
 
@@ -26,7 +48,9 @@ class TourViewMain extends Component {
               <h4 className="w-75 my-3 mx-auto">Resor</h4>
               <Link to={'/bokningar/resa/ny'} className="btn w-75 btn-primary my-3 mx-auto py-2">Skapa ny resa</Link>
               <Link to={'/bokningar/kategorier'} className="btn w-75 btn-primary my-3 mx-auto py-2">Ändra resekategorier</Link>
-              <p className="w-75 my-3 py-2 mx-auto px-1 text-justify d-block">Lista på resor här.</p>
+              <div className="w-75 my-3 py-2 mx-auto px-1 text-justify d-block">
+                {tourRows}
+              </div>
 
             </div>
           </div>
@@ -36,4 +60,17 @@ class TourViewMain extends Component {
   }
 }
 
-export default connect(null, null)(TourViewMain)
+TourViewMain.propTypes = {
+  getItem: PropTypes.func,
+  tours  : PropTypes.array
+}
+
+const mapStateToProps = state => ({
+  tours: state.tours.tours
+})
+
+const mapDispatchToProps = dispatch => bindActionCreators({
+  getItem
+}, dispatch)
+
+export default connect(mapStateToProps, mapDispatchToProps)(TourViewMain)

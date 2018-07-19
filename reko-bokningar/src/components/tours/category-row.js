@@ -54,6 +54,7 @@ class CategoriesRow extends Component {
 
   saveCategory = async (e) => {
     e.preventDefault()
+    this.setState({updatingSave: true})
     const {saveItem, isNew = false, isActive, id = 'new', remove = () => {}, index = null, submitToggle} = this.props
     const {category} = this.state
     submitToggle(true)
@@ -75,12 +76,13 @@ class CategoriesRow extends Component {
 
   toggleActive = async (e, toggle) => {
     e.preventDefault()
+    this.setState({updatingActive: true})
     const {category} = this.state
     const {saveItem, isActive, id = 'new', submitToggle} = this.props
     submitToggle(true)
     const data = {
       category  : category,
-      active    : isActive,
+      active    : !isActive,
       categoryid: id,
       task      : 'activetoggle'
     }
@@ -94,6 +96,7 @@ class CategoriesRow extends Component {
 
   doDelete = async (e) => {
     e.preventDefault()
+    this.setState({deleting: true})
     const {category} = this.state
     const {saveItem, isNew = false, isActive, id = 'new', submitToggle, index = null, remove = () => {}} = this.props
     submitToggle(true)
@@ -163,7 +166,6 @@ CategoriesRow.propTypes = {
   isActive    : PropTypes.bool,
   isNew       : PropTypes.bool,
   submitToggle: PropTypes.func,
-  getItem     : PropTypes.func,
   saveItem    : PropTypes.func,
   index       : PropTypes.number,
   remove      : PropTypes.func
