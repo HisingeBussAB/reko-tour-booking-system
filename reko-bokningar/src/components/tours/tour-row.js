@@ -61,8 +61,8 @@ class TourRow extends Component {
     }
   }
 
-  doDelete = async (e) => {
-    e.preventDefault()
+  doDelete = async (choice) => {
+    console.log('doing delete')
     this.setState({deleting: true})
     const {category} = this.state
     const {saveItem, isNew = false, isActive, id = 'new', submitToggle, index = null, remove = () => {}} = this.props

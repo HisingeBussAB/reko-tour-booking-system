@@ -35,6 +35,17 @@ body {
     }
 }
 
+.btn-success {
+  background-color: $success-color; 
+  border-color: $success-color; 
+  color: white;
+    &:hover {
+      background-color: #fff;
+      border-color: $success-color;
+      color: $success-color;
+    }
+}
+
 
 .btn-primary {
   background-color: $primary-color; 
@@ -136,6 +147,8 @@ select {
     }
   }
 }
+
+
 
 .MainMenu {
   border-bottom: 1px solid $secondary-color;

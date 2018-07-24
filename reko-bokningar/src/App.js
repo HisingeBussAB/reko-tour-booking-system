@@ -89,7 +89,7 @@ class App extends Component {
           </div>
           : <LoginScreen />
         }
-        {!isSuppressedPopup ? <ErrorPopup /> : null }
+        {!isSuppressedPopup && <ErrorPopup /> }
         <ExpireChecker />
         <NetworkIcon />
       </div>

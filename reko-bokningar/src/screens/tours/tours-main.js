@@ -18,7 +18,7 @@ class TourViewMain extends Component {
     let temp
     try {
       temp = tours.map((tour) => {
-        return <TourRow key={tour.id} id={tour.id} tour={tour.tour} isActive={tour.active} departure={tour.departure} />
+        return <TourRow key={'tour' + tour.id} id={tour.id} tour={tour.tour} isActive={tour.active} departure={tour.departure} />
       })
     } catch (e) {
       temp = null
@@ -48,9 +48,11 @@ class TourViewMain extends Component {
               <h4 className="w-75 my-3 mx-auto">Resor</h4>
               <Link to={'/bokningar/resa/ny'} className="btn w-75 btn-primary my-3 mx-auto py-2">Skapa ny resa</Link>
               <Link to={'/bokningar/kategorier'} className="btn w-75 btn-primary my-3 mx-auto py-2">Ändra resekategorier</Link>
-              <div className="w-75 my-3 py-2 mx-auto px-1 text-justify d-block">
-                {tourRows}
-              </div>
+              <table className="w-75 my-3 py-2 mx-auto px-1 text-justify d-block">
+                <tbody>
+                  {tourRows}
+                </tbody>
+              </table>
 
             </div>
           </div>

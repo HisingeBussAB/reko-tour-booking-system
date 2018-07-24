@@ -33,6 +33,18 @@ body {
   color: #dc3545;
 }
 
+.btn-success {
+  background-color: #28a745;
+  border-color: #28a745;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #fff;
+  border-color: #28a745;
+  color: #28a745;
+}
+
 .btn-primary {
   background-color: #0856fb;
   border-color: #0856fb;

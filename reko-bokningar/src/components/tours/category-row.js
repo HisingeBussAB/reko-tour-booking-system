@@ -9,6 +9,7 @@ import faSpinner from '@fortawesome/fontawesome-free-solid/faSpinner'
 import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import {getItem, saveItem} from '../../actions'
+import ConfirmPopup from '../global/confirm-popup'
 
 class CategoriesRow extends Component {
   /* NOTICE
@@ -24,7 +25,8 @@ class CategoriesRow extends Component {
       updatingSave  : false,
       updatingActive: false,
       deleting      : false,
-      category      : category
+      category      : category,
+      isConfirming  : false
     }
   }
 
@@ -94,29 +96,33 @@ class CategoriesRow extends Component {
     }
   }
 
-  doDelete = async (e) => {
+  deleteConfirm = (e) => {
     e.preventDefault()
-    this.setState({deleting: true})
-    const {category} = this.state
-    const {saveItem, isNew = false, isActive, id = 'new', submitToggle, index = null, remove = () => {}} = this.props
+    const {submitToggle, isNew = false, remove = () => {}, index = null} = this.props
     submitToggle(true)
+    this.setState({deleting: true})
     if (!isNew) {
-      const data = {
-        category  : category,
-        active    : !isActive,
-        categoryid: id,
-        task      : 'delete'
-      }
-
-      if (await saveItem('categories', data, 'delete')) {
-        submitToggle(false)
-      } else {
-        submitToggle(false)
-      }
+      this.setState({isConfirming: true})
     } else {
       remove(index)
       submitToggle(false)
     }
+  }
+
+  doDelete = async (choice) => {
+    this.setState({isConfirming: false})
+    const {category} = this.state
+    const {saveItem, isActive, id = 'new', submitToggle} = this.props
+    const data = {
+      category  : category,
+      active    : !isActive,
+      categoryid: id,
+      task      : 'delete'
+    }
+    if (!await saveItem('categories', data, 'delete')) {
+      this.setState({deleting: false})
+    }
+    submitToggle(false)
   }
 
   render () {
@@ -125,11 +131,14 @@ class CategoriesRow extends Component {
       category: stateCategory = 'new',
       updatingSave = false,
       updatingActive = false,
-      deleting = false
+      deleting = false,
+      isConfirming
     } = this.state
     return (
+
       <tr>
         <td className="align-middle pr-3 py-2 w-50">
+          {isConfirming && <ConfirmPopup doAction={this.doDelete} message={'Vill du verkligen ta bort kategorin:\n' + propsCategory} />}
           <input value={stateCategory} onChange={(e) => this.handleCategoryChange(e.target.value)} placeholder="Kategorinamn" type="text" className="rounded w-100" maxLength="35" style={{minWidth: '200px'}} />
         </td>
         <td className="align-middle px-3 py-2 text-center">
@@ -151,9 +160,9 @@ class CategoriesRow extends Component {
         </td>
         <td className="align-middle pl-3 py-2 text-center">
           {!deleting &&
-          <span title="Ta bord denna kategori permanent" className="danger-color custom-scale"><FontAwesomeIcon icon={faTrashAlt} onClick={(e) => this.doDelete(e)} size="2x" /></span>}
+          <span title="Ta bort denna kategori permanent" className="danger-color custom-scale"><FontAwesomeIcon icon={faTrashAlt} onClick={(e) => this.deleteConfirm(e)} size="2x" /></span>}
           {deleting &&
-            <span title="Inaktivera denna kategori" className="danger-color"><FontAwesomeIcon icon={faSpinner} size="2x" pulse /></span>}
+            <span title="Tar bort denna kategori..." className="danger-color"><FontAwesomeIcon icon={faSpinner} size="2x" pulse /></span>}
         </td>
       </tr>
     )

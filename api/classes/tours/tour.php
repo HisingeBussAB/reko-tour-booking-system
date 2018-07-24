@@ -33,11 +33,13 @@ class Tour {
     $response->AddResponse('requestedid', $validID);
     try {
       $sql = "SELECT Resa.ResaID as ResaID, Resa, AvbskyddPris, AnmavgPris, Avresa, Resa.Aktiv as Aktiv, BoendeID, BoendeNamn, Pris, Personer, AntalTillg, Kategori.KategoriID as KategoriID, Kategori FROM Resa INNER JOIN Kategori_Resa ON Resa.ResaID = Kategori_Resa.ResaID 
-        INNER JOIN Kategori ON Kategori_Resa.KategoriID = Kategori.KategoriID INNER JOIN Boende ON Boende.ResaID = Resa.ResaID ";
+        INNER JOIN Kategori ON Kategori_Resa.KategoriID = Kategori.KategoriID RIGHT JOIN Boende ON Boende.ResaID = Resa.ResaID ";
       if ($validID != 'all') {
         $sql .= "WHERE Resa.ResaID = :id ";
       }
-      $sql .= "ORDER BY Avresa ASC, Personer ASC;";
+      $sql .= "ORDER BY Avresa ASC, ResaID DESC, Personer ASC;";
+
+
       $sth = $pdo->prepare($sql);
       if ($validID != 'all') {
         $sth->bindParam(':id', $validID, \PDO::PARAM_INT);
