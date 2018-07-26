@@ -32,8 +32,10 @@ class Tour {
     }
     $response->AddResponse('requestedid', $validID);
     try {
-      $sql = "SELECT Resa.ResaID as ResaID, Resa, AvbskyddPris, AnmavgPris, Avresa, Resa.Aktiv as Aktiv, BoendeID, BoendeNamn, Pris, Personer, AntalTillg, Kategori.KategoriID as KategoriID, Kategori FROM Resa INNER JOIN Kategori_Resa ON Resa.ResaID = Kategori_Resa.ResaID 
-        INNER JOIN Kategori ON Kategori_Resa.KategoriID = Kategori.KategoriID RIGHT JOIN Boende ON Boende.ResaID = Resa.ResaID ";
+      $sql = "SELECT Resa.ResaID as ResaID, Resa, AvbskyddPris, AnmavgPris, Avresa, Resa.Aktiv as Aktiv, BoendeID, BoendeNamn, Pris, Personer, AntalTillg, Kategori.KategoriID as KategoriID, Kategori FROM Resa 
+        INNER JOIN Kategori_Resa ON Resa.ResaID = Kategori_Resa.ResaID 
+        INNER JOIN Kategori ON Kategori_Resa.KategoriID = Kategori.KategoriID 
+        RIGHT JOIN Boende ON Boende.ResaID = Resa.ResaID ";
       if ($validID != 'all') {
         $sql .= "WHERE Resa.ResaID = :id ";
       }
@@ -93,7 +95,18 @@ class Tour {
   }
 
   public static function Save($jsonData, $response, $pdo) {
-    $newData = self::VerifyTourInput($jsonData, $response, $pdo);
+    
+    if ($jsonData['task'] == 'activetoggle') {
+      $active = (!empty($jsonData['active']) && filter_var($jsonData['active'], FILTER_VALIDATE_BOOLEAN)) ? 1 : 0;
+      
+      $sql = "UPDATE Resa SET Aktiv = :active WHERE KategoriID = :categoryid";
+      return true;
+    } else {
+      $newData = self::VerifyTourInput($jsonData, $response, $pdo);
+    }
+    
+/*
+    
     if (!$newData) {
       return false;
     } else {
@@ -133,7 +146,7 @@ class Tour {
       $response->AddResponse('modifiedid', $newTourID);
       return true;
     }
-
+    */
   }
 
   public static function VerifyTourInput($jsonData, $response, $pdo) {

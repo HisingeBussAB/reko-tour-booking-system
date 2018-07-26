@@ -89,11 +89,10 @@ class CategoriesRow extends Component {
       task      : 'activetoggle'
     }
 
-    if (await saveItem('categories', data, 'save')) {
-      submitToggle(false)
-    } else {
-      submitToggle(false)
+    if (!await saveItem('categories', data, 'save')) {
+      this.setState({updatingActive: false})
     }
+    submitToggle(false)
   }
 
   deleteConfirm = (e) => {
@@ -111,15 +110,18 @@ class CategoriesRow extends Component {
 
   doDelete = async (choice) => {
     this.setState({isConfirming: false})
-    const {category} = this.state
-    const {saveItem, isActive, id = 'new', submitToggle} = this.props
-    const data = {
-      category  : category,
-      active    : !isActive,
-      categoryid: id,
-      task      : 'delete'
-    }
-    if (!await saveItem('categories', data, 'delete')) {
+    const {saveItem, id = 'new', submitToggle} = this.props
+    if (choice === true) {
+      const {category} = this.state
+      const data = {
+        category  : category,
+        categoryid: id,
+        task      : 'delete'
+      }
+      if (!await saveItem('categories', data, 'delete')) {
+        this.setState({deleting: false})
+      }
+    } else {
       this.setState({deleting: false})
     }
     submitToggle(false)
@@ -143,7 +145,7 @@ class CategoriesRow extends Component {
         </td>
         <td className="align-middle px-3 py-2 text-center">
           {(((stateCategory === '' || stateCategory) !== undefined && stateCategory !== propsCategory)) && !updatingSave &&
-            <span title="Spara ändring i kategorin" className="primary-color custom-scale"><FontAwesomeIcon icon={faSave} size="2x" onClick={(e) => this.saveCategory(e)} /></span>}
+            <span title="Spara ändring i kategorin" className="primary-color custom-scale cursor-pointer"><FontAwesomeIcon icon={faSave} size="2x" onClick={(e) => this.saveCategory(e)} /></span>}
           {updatingSave &&
             <span title="Sparar ändring i kategorin..." className="primary-color"><FontAwesomeIcon icon={faSpinner} size="2x" pulse /></span> }
         </td>
@@ -151,16 +153,16 @@ class CategoriesRow extends Component {
           {updatingActive &&
             <span title="Sparar aktiv status..." className="primary-color"><FontAwesomeIcon icon={faSpinner} size="2x" pulse /></span> }
           {!updatingActive && propsActive && !isNew &&
-            <span title="Inaktivera denna kategori" className="primary-color custom-scale"><FontAwesomeIcon icon={faCheckSquare} size="2x" onClick={(e) => this.toggleActive(e, false)} /></span> }
+            <span title="Inaktivera denna kategori" className="primary-color custom-scale cursor-pointer"><FontAwesomeIcon icon={faCheckSquare} size="2x" onClick={(e) => this.toggleActive(e, false)} /></span> }
           {!updatingActive && !propsActive && !isNew &&
-            <span title="Aktivera denna kategori" className="primary-color custom-scale"><FontAwesomeIcon icon={faSquare} onClick={(e) => this.toggleActive(e, true)} size="2x" /></span> }
+            <span title="Aktivera denna kategori" className="primary-color custom-scale cursor-pointer"><FontAwesomeIcon icon={faSquare} onClick={(e) => this.toggleActive(e, true)} size="2x" /></span> }
           {!updatingActive && isNew &&
-            <span title="Spara kategorin först" className="text-secondary custom-scale"><FontAwesomeIcon icon={faCheckSquare} size="2x" onClick={null} /></span> }
+            <span title="Spara kategorin först" className="text-secondary custom-scale cursor-pointer"><FontAwesomeIcon icon={faCheckSquare} size="2x" onClick={null} /></span> }
 
         </td>
         <td className="align-middle pl-3 py-2 text-center">
           {!deleting &&
-          <span title="Ta bort denna kategori permanent" className="danger-color custom-scale"><FontAwesomeIcon icon={faTrashAlt} onClick={(e) => this.deleteConfirm(e)} size="2x" /></span>}
+          <span title="Ta bort denna kategori permanent" className="danger-color custom-scale cursor-pointer"><FontAwesomeIcon icon={faTrashAlt} onClick={(e) => this.deleteConfirm(e)} size="2x" /></span>}
           {deleting &&
             <span title="Tar bort denna kategori..." className="danger-color"><FontAwesomeIcon icon={faSpinner} size="2x" pulse /></span>}
         </td>

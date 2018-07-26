@@ -5,6 +5,10 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+.cursor-pointer {
+  cursor: pointer;
+}
+
 .primary-color {
   color: #0856fb;
 }

@@ -21,7 +21,7 @@ class ErrorPopup extends Component {
 
     const containerstyle = {
       backgroundColor: 'rgba(255,255,255,.7)',
-      position       : 'absolute',
+      position       : 'fixed',
       top            : '0px',
       left           : '0px',
       width          : '100%',

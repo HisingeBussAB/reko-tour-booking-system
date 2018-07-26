@@ -28,7 +28,6 @@ class TourViewMain extends Component {
 
     return (
       <div className="TourViewMain">
-
         <h3 className="my-4">Resor &amp; Bokningar</h3>
         <div className="container-fluid pt-2">
           <div className="row">
@@ -53,7 +52,6 @@ class TourViewMain extends Component {
                   {tourRows}
                 </tbody>
               </table>
-
             </div>
           </div>
         </div>

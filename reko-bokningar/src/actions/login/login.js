@@ -1,7 +1,7 @@
 import myAxios from '../../config/axios'
 import {errorPopup} from '../error-popup'
 import {getToken} from '../get-token'
-import {networkAction} from '../'
+import {networkAction} from '..'
 
 export function Login (logindata) {
   return async (dispatch) => {

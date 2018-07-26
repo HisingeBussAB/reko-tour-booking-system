@@ -1,6 +1,6 @@
-import {networkAction, errorPopup} from '../'
+import {networkAction, errorPopup} from '..'
 import {apiPost} from '../../functions'
-import {itemNameTranslation, itemNameHuman} from './valid-calls'
+import {itemNameTranslation, itemNameHuman} from '../../data/valid-api-calls'
 
 export function getItem (itemType, item = 'all') {
   return async (dispatch, getState) => {

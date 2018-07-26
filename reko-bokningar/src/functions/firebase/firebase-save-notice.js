@@ -1,5 +1,5 @@
 import firebase from '../../config/firebase'
-import {itemNameTranslation} from '../../actions/caller/valid-calls'
+import {itemNameTranslation} from '../../data/valid-api-calls'
 
 export function firebaseSavedItem (id, type) {
   if (itemNameTranslation.hasOwnProperty(type)) {

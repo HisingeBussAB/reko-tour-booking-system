@@ -92,7 +92,6 @@ class Category {
         $sql = "UPDATE Kategori SET Aktiv = :active WHERE KategoriID = :categoryid";
       } else {
         $sql = "UPDATE Kategori SET Kategori = :category, Aktiv = :active WHERE KategoriID = :categoryid";
-        
       }
       
       $sth = $pdo->prepare($sql);

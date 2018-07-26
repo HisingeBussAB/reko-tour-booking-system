@@ -5,16 +5,14 @@ class ConfirmPopup extends Component {
 
   processChoice = (e, choice) => {
     e.preventDefault()
-    console.log('pressed ' + choice)
     const {doAction} = this.props
     doAction(choice)
   }
 
   render () {
-
     const containerstyle = {
       backgroundColor: 'rgba(255,255,255,.7)',
-      position       : 'absolute',
+      position       : 'fixed',
       top            : '0px',
       left           : '0px',
       width          : '100%',
@@ -54,15 +52,17 @@ class ConfirmPopup extends Component {
       <div className="ConfirmPopup" style={containerstyle}>
         <div className="Confirm" style={style}>
           {text}
-          <div disabled={false} className="btn btn-success btn-lg text-uppercase mb-3 mr-5" onClick={(e) => this.processChoice(e, true)}>Ja</div>
-          <div disabled={false} className="btn btn-danger btn-lg text-uppercase mb-3 ml-5" onClick={(e) => this.processChoice(e, false)} >Nej</div>
+          {/* Not buttons because they will be disabled inside the forms sumbit lock */}
+          <div className="btn btn-success btn-lg text-uppercase mb-3 mr-5" onClick={(e) => this.processChoice(e, true)}>Ja</div>
+          <div className="btn btn-danger btn-lg text-uppercase mb-3 ml-5" onClick={(e) => this.processChoice(e, false)} >Nej</div>
         </div>
       </div>)
   }
 }
 
 ConfirmPopup.propTypes = {
-
+  doAction: PropTypes.func,
+  message : PropTypes.string
 }
 
 export default ConfirmPopup

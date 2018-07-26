@@ -10,19 +10,15 @@ import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import { saveItem } from '../../actions'
 import { Link } from 'react-router-dom'
+import ConfirmPopup from '../global/confirm-popup'
 
 class TourRow extends Component {
-  /* NOTICE
-  this.props.id
-  recives -1 for new item
-  output for new item must be id: 'new'
-  */
-
   constructor (props) {
     super(props)
     this.state = {
       updatingActive: false,
-      deleting      : false
+      deleting      : false,
+      isConfirming  : false
     }
   }
 
@@ -44,45 +40,41 @@ class TourRow extends Component {
   toggleActive = async (e, toggle) => {
     e.preventDefault()
     this.setState({updatingActive: true})
-    const {category} = this.state
-    const {saveItem, isActive, id = 'new', submitToggle} = this.props
-    submitToggle(true)
+    const {tour = '', saveItem, isActive, id = 'new'} = this.props
+
     const data = {
-      category  : category,
-      active    : !isActive,
-      categoryid: id,
-      task      : 'activetoggle'
+      tour  : tour,
+      active: !isActive,
+      tourid: id,
+      task  : 'activetoggle'
     }
 
-    if (await saveItem('categories', data, 'save')) {
-      submitToggle(false)
-    } else {
-      submitToggle(false)
+    if (!await saveItem('tours', data, 'save')) {
+      this.setState({updatingActive: false})
     }
   }
 
-  doDelete = async (choice) => {
-    console.log('doing delete')
+  deleteConfirm = (e) => {
+    e.preventDefault()
     this.setState({deleting: true})
-    const {category} = this.state
-    const {saveItem, isNew = false, isActive, id = 'new', submitToggle, index = null, remove = () => {}} = this.props
-    submitToggle(true)
-    if (!isNew) {
-      const data = {
-        category  : category,
-        active    : !isActive,
-        categoryid: id,
-        task      : 'delete'
-      }
+    this.setState({isConfirming: true})
+  }
 
-      if (await saveItem('categories', data, 'delete')) {
-        submitToggle(false)
-      } else {
-        submitToggle(false)
+  doDelete = async (choice) => {
+    this.setState({isConfirming: false})
+    const {tour = '', saveItem, id = 'new'} = this.props
+
+    const data = {
+      tour  : tour,
+      tourid: id,
+      task  : 'delete'
+    }
+    if (choice === true) {
+      if (!await saveItem('tours', data, 'delete')) {
+        this.setState({deleting: false})
       }
     } else {
-      remove(index)
-      submitToggle(false)
+      this.setState({deleting: false})
     }
   }
 
@@ -90,45 +82,45 @@ class TourRow extends Component {
     const {tour, id, isActive} = this.props
     const {
       updatingActive = false,
-      deleting = false
+      deleting = false,
+      isConfirming = false
     } = this.state
+
     return (
       <tr>
         <td className="align-middle pr-3 py-2 w-50">
+          {isConfirming && <ConfirmPopup doAction={this.doDelete} message={'Vill du verkligen ta bort resan:\n' + tour} />}
           <Link to={'/bokningar/resa/' + id} className="">{tour}</Link>
         </td>
         <td className="align-middle px-3 py-2 text-center">
-          <Link to={'/bokningar/resa/' + id} className="primary-color"><FontAwesomeIcon icon={faPencilAlt} size="lg" /></Link>
+          <Link to={'/bokningar/resa/' + id} ><span title="Redigera denna resa" className="primary-color cursor-pointer"><FontAwesomeIcon icon={faPencilAlt} size="lg" /></span></Link>
         </td>
         <td className="align-middle px-3 py-2 text-center">
           {updatingActive &&
             <span title="Sparar aktiv status..." className="primary-color"><FontAwesomeIcon icon={faSpinner} size="lg" pulse /></span> }
           {!updatingActive && isActive &&
-            <span title="Inaktivera denna resa" className="primary-color custom-scale"><FontAwesomeIcon icon={faCheckSquare} size="lg" onClick={(e) => this.toggleActive(e, false)} /></span> }
+            <span title="Inaktivera denna resa" className="primary-color custom-scale cursor-pointer"><FontAwesomeIcon icon={faCheckSquare} size="lg" onClick={(e) => this.toggleActive(e, false)} /></span> }
           {!updatingActive && !isActive &&
-            <span title="Aktivera denna resa" className="primary-color custom-scale"><FontAwesomeIcon icon={faSquare} onClick={(e) => this.toggleActive(e, true)} size="lg" /></span> }
+            <span title="Aktivera denna resa" className="primary-color custom-scale  cursor-pointer"><FontAwesomeIcon icon={faSquare} onClick={(e) => this.toggleActive(e, true)} size="lg" /></span> }
 
         </td>
         <td className="align-middle pl-3 py-2 text-center">
           {!deleting &&
-          <span title="Ta bord denna resa permanent" className="danger-color custom-scale"><FontAwesomeIcon icon={faTrashAlt} onClick={(e) => this.doDelete(e)} size="lg" /></span>}
+            <span title="Ta bort denna resa permanent" className="danger-color custom-scale cursor-pointer"><FontAwesomeIcon icon={faTrashAlt} onClick={(e) => this.deleteConfirm(e)} size="lg" /></span>}
           {deleting &&
             <span title="Tar bort denna resa" className="danger-color"><FontAwesomeIcon icon={faSpinner} size="lg" pulse /></span>}
         </td>
       </tr>
+
     )
   }
 }
 
 TourRow.propTypes = {
-  tour        : PropTypes.string,
-  id          : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  isActive    : PropTypes.bool,
-  isNew       : PropTypes.bool,
-  submitToggle: PropTypes.func,
-  saveItem    : PropTypes.func,
-  index       : PropTypes.number,
-  remove      : PropTypes.func
+  tour    : PropTypes.string,
+  id      : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  isActive: PropTypes.bool,
+  saveItem: PropTypes.func
 }
 
 const mapDispatchToProps = dispatch => bindActionCreators({

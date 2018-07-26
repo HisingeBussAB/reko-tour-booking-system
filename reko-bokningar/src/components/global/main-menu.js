@@ -40,7 +40,7 @@ class MainMenu extends Component {
       <div className="dropdown-wrapper my-2 mx-3 custom-order-sm-10">
         <div className="dropdown">
           <div className="list-group text-uppercase font-weight-bold dropdown-menu custom-dropdown" onMouseEnter={() => this.tourToggler(true)} onMouseLeave={() => this.tourToggler(false)}>
-            <div className="list-group-item dropdown-toggle active custom-wide-text" onClick={() => this.tourToggler(null)}>Bokningsläge</div>
+            <div className="list-group-item dropdown-toggle active custom-wide-text cursor-pointer" onClick={() => this.tourToggler(null)}>Bokningsläge</div>
 
           </div>
         </div>
@@ -64,9 +64,9 @@ class MainMenu extends Component {
             <div className="dropdown-wrapper dropdown-wrapper-smaller my-2 mx-3 custom-order-sm-9">
               <div className="dropdown">
                 <div className="list-group text-uppercase font-weight-bold dropdown-menu dropdown-menu-smaller custom-dropdown" onMouseEnter={() => this.shortcutToggler(true)} onMouseLeave={() => this.shortcutToggler(false)}>
-                  <div className="list-group-item dropdown-toggle active custom-wide-text" onClick={() => this.shortcutToggler(null)} >Genvägar</div>
+                  <div className="list-group-item dropdown-toggle active custom-wide-text cursor-pointer" onClick={() => this.shortcutToggler(null)} >Genvägar</div>
                   {shortcuts.map((shortcut, i) => {
-                    return <div className="list-group-item dropdown-item" key={i}>{shortcut}</div>
+                    return <div className="list-group-item dropdown-item cursor-pointer" key={i}>{shortcut}</div>
                   })
                   }
 
