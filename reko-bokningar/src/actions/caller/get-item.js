@@ -4,7 +4,6 @@ import {itemNameTranslation, itemNameHuman} from '../../data/valid-api-calls'
 
 export function getItem (itemType, item = 'all') {
   return async (dispatch, getState) => {
-    console.log('get start')
     const login = Object.freeze(getState().login)
     if (itemNameTranslation.hasOwnProperty(itemType)) {
       dispatch(networkAction(1, 'get items ' + itemType))
@@ -28,11 +27,11 @@ export function getItem (itemType, item = 'all') {
 
 function onThen (response, itemType) {
   return (dispatch) => {
-    console.log('get item then start')
     const itemTypeUpper = itemType.toUpperCase()
     try {
       if (response.data.success !== true) {
-        const msg = 'Ett fel har uppstått: ' + response.data.response
+        const responseMsg = typeof response.data.response === 'undefined' ? 'Felformaterad data från API.\nKunde inte hämta uppgifter.' : response.data.response
+        const msg = 'Ett fel har uppstått: ' + responseMsg
         dispatch(errorPopup({visible: true, message: msg, suppressed: false}))
       } else {
         dispatch({

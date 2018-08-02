@@ -8,6 +8,7 @@ import FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import {saveItem, getItem} from '../../actions'
 import update from 'immutability-helper'
+import { findByKey } from '../../utils'
 
 class NewTour extends Component {
   constructor (props) {
@@ -30,18 +31,9 @@ class NewTour extends Component {
     }
   }
 
-  componentWillMount () {
-    const {networkAction = () => {}, getCategories = () => {}, login = {user: 'anonymous', jwt: 'none'}} = this.props
-    networkAction(1, 'updating categories')
-    getCategories({
-      user      : login.user,
-      jwt       : login.jwt,
-      categoryid: 'all'
-    }).then(() => { networkAction(0, 'updating categories') })
-  }
-
   componentDidMount () {
-    const {login, match, getItem} = this.props
+    const {match, getItem} = this.props
+    getItem('categories', 'all')
     let temp = 'all'
     try {
       temp = match.params.id
@@ -49,11 +41,30 @@ class NewTour extends Component {
       temp = 'all'
     }
     const id = temp !== 'ny' && typeof Number(temp) === 'number' ? temp : 'all'
-    getItem('tours', {
-      user  : login.user,
-      jwt   : login.jwt,
-      tourid: id
-    })
+    getItem('tours', id)
+  }
+
+  componentWillReceiveProps (nextProps) {
+    const {match, tours} = this.props
+    if (Number(match.params.id) >= 0 && tours !== nextProps.tours && typeof nextProps.tours === 'object' && nextProps.tours.length > 0) {
+      const tour = findByKey(match.params.id, 'id', nextProps.tours)
+      const roomOpts = tour.roomOpts.map(room => {
+        return {
+          roomType : room.roomtype,
+          roomSize : room.roomsize,
+          roomPrice: room.roomsize,
+          roomCount: room.roomcount
+        }
+      })
+      this.setState({
+        tourName       : tour.tour,
+        tourDate       : new Date(tour.departure).toLocaleDateString('sv-SE'),
+        tourCategory   : tour.categoryid,
+        tourInsurance  : tour.insurancefee,
+        tourReservation: tour.reservefee,
+        tourRoomOpt    : roomOpts
+      })
+    }
   }
 
   handleChange = (target, i = false) => {
@@ -69,15 +80,11 @@ class NewTour extends Component {
   }
 
   handleSave = (e) => {
-    const {login} = this.props
-    const {...state} = this.state
     this.submitToggle(true)
   }
 
   submitToggle = (b) => {
-    const {networkAction} = this.props
     const validb = !!b
-    networkAction(Number(validb), 'saving new tour')
     this.setState({isSubmitting: validb})
   }
 
@@ -102,7 +109,7 @@ class NewTour extends Component {
   }
 
   render () {
-    const {tourName, tourCategory, tourDate, tourRoomOpt, tourInsurance, tourReservation, isSubmitting = false, showStatus = false, showStatusMessage = ''} = this.state
+    const {tourName, tourCategory, tourDate, tourRoomOpt, tourInsurance, tourReservation, isSubmitting = false} = this.state
     const {categories = []} = this.props
 
     let temp
@@ -134,7 +141,7 @@ class NewTour extends Component {
         <form>
           <fieldset disabled={isSubmitting}>
             <div className="container text-left" style={{maxWidth: '650px'}}>
-              <h3 className="my-4 w-50 mx-auto text-center">Skapa ny resa</h3>
+              <h3 className="my-4 w-50 mx-auto text-center">{tourName !== '' ? 'Ändra ' + tourName : 'Skapa ny resa'}</h3>
               <fieldset>
                 <div>
                   <label htmlFor="tourName" className="d-block small mt-1 mb-0">Resans namn</label>
@@ -203,19 +210,18 @@ NewTour.propTypes = {
   getItem   : PropTypes.func,
   saveItem  : PropTypes.func,
   categories: PropTypes.array,
-  login     : PropTypes.object,
+  tours     : PropTypes.array,
   match     : PropTypes.object
 }
 
 const mapStateToProps = state => ({
-  login            : state.login,
-  showStatus       : state.errorPopup.visible,
-  showStatusMessage: state.errorPopup.message,
-  categories       : state.tours.categories
+  categories: state.tours.categories,
+  tours     : state.tours.tours
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-  getItem
+  getItem,
+  saveItem
 }, dispatch)
 
 export default connect(mapStateToProps, mapDispatchToProps)(NewTour)
