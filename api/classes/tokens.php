@@ -11,6 +11,12 @@ use \Firebase\JWT\JWT;
 class Tokens
 {
 
+  public static function Test($responder, $groda) {
+    var_dump($responder);
+
+    var_dump($groda);
+  }
+
   public static function createToken($tokentype, $pdo, $user='blindtoken') {
     $bytes     = openssl_random_pseudo_bytes(24);
     $hex       = bin2hex($bytes);

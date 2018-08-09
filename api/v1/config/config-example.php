@@ -40,6 +40,7 @@
   define('ENV_REQUIRE_JWT',             true);
   define('ENV_ACCESS_CONTROL_ENABLED',  false);
   define('ENV_IP_LOCK',                 true);  
+  define('ENV_LOG_PATH',                'C:/logs/');
 
 
   define('ENV_DOMAIN',               'localhost');

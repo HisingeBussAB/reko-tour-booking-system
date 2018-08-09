@@ -30,8 +30,8 @@
   define('AUTH_PWD_PEPPER',              '+-i-v tEZ~.,K+tk+|]%%V(+5U3<*||rf%J%z7o^.uYUDGA(MN!kY9!9.MQTA$1k');
   define('AUTH_JWT_SECRET_PEPPER',       'wJ2cJDrmJd5X5yUaXE67hGC9mVWzZjcGsRsYX3fy');
   define('AUTH_JWT_WATERMARK',           'qAUHDZ78VURAX79a6rXn2Fc4fRpkmsYvsfZVKdCY');
-  define('AUTH_API_TOKEN',               '%{-LY~vkJb#O>#e<%cp%7}I-Rqsg-TCj[kO!GfUCoM>/op<?8FiUjP|+& Za](p7');
-  define('AUTH_RELOGIN_TOKEN',           '+4xbKVh8+RWEPPv8u+');
+  define('AUTH_API_KEY',               '%{-LY~vkJb#O>#e<%cp%7}I-Rqsg-TCj[kO!GfUCoM>/op<?8FiUjP|+& Za](p7');
+  define('AUTH_RELOGIN_KEY',           '+4xbKVh8+RWEPPv8u+');
 
   /* Enviroment */
 
@@ -40,6 +40,7 @@
   define('ENV_REQUIRE_JWT',             true);
   define('ENV_ACCESS_CONTROL_ENABLED',  false);
   define('ENV_IP_LOCK',                 true);  
+  define('ENV_LOG_PATH',                'C:/logs/web/inetpub/');
 
 
   define('ENV_DOMAIN',               'localhost');
