@@ -1,0 +1,76 @@
+{
+	"info": {
+		"_postman_id": "c163b8c0-ccdd-40f5-9a3c-5a8a4f9de119",
+		"name": "Rekå Resor Bokningssystem",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"_postman_id": "c9a02def-bc93-488f-a445-0556fb6729d6",
+			"name": "timestamp",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "1a4e06f1-ace6-485d-b6cd-43e3a94d627a",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"response must be valid and have a body\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"    pm.response.to.not.have.jsonBody(\"error\"); ",
+							"});",
+							"",
+							"pm.test(\"body contains valid timestamp\", function () { ",
+							"    pm.expect(pm.response.json().servertime).to.be.a('number')",
+							"});",
+							"",
+							"",
+							"",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{JWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{BaseURL}}timestamp",
+					"host": [
+						"{{BaseURL}}timestamp"
+					]
+				},
+				"description": "Get servertime"
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer"
+	}
+}

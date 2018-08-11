@@ -1,4 +1,23 @@
 <?php 
+/**
+ * Rekå Resor Bokningssystem - API
+ * index.php
+ * @author    Håkan Arnoldson
+ * 
+ * Squential front controller
+ * 
+ * - Imports config.php global constants
+ * - Sets up error handling and some basic php.ini configuration
+ * - Starts the output cache ob_start
+ * - Sets default headers
+ * - Handles pre-flight (OPTIONS)
+ * - Handles basic 403 request rejection (wrong IP or no API-key)
+ * - Initalize Monolog
+ * - Initalize Moment to CET and se_SV
+ * - Initalize AltoRouter and route request to second controller
+ * - Handles 404 response
+ * - Logs and reports if the program exits naturally - all requests should lead to a explicit exit with die()
+ */
 
 namespace RekoBooking;
 
@@ -40,28 +59,28 @@ if (ENV_LAN_LOCK) {
   if (!preg_match("/^192\.168\.\d{0,3}\.\d{0,3}$/", $_SERVER["REMOTE_ADDR"]) &&
       $_SERVER["REMOTE_ADDR"] != "127.0.0.1" &&
       $_SERVER["REMOTE_ADDR"] != "::1") {
-    header( $_SERVER["SERVER_PROTOCOL"] . ' 403 Forbidden'); 
-    $a = array(
-      'login' => false,
-      'saved' => false,
-      'response' => 'Du har ett externt IP-nummer och får inte komma åt denna resurs.');
-    $headers = ob_get_clean();
-    echo $headers;
-    echo json_encode($a);
-    die();
+        http_response_code(403);
+        $a = array(
+          'login' => false,
+          'saved' => false,
+          'response' => 'Du har ett externt IP-nummer och får inte komma åt denna resurs.');
+          $headers = ob_get_clean();
+          echo $headers;
+          echo json_encode($a);
+          die();
   }
 }
 
 /* Pre-flight handler */
 if ($_SERVER['REQUEST_METHOD'] == "OPTIONS") {
-  header( $_SERVER["SERVER_PROTOCOL"] . ' 200 OK');
+  http_response_code(200);
   $headers = ob_get_clean();
   echo $headers;
   die();
 }
 
 if ($_SERVER["HTTP_X_API_KEY"] != AUTH_API_KEY) {
-  header( $_SERVER["SERVER_PROTOCOL"] . ' 403 Forbidden');
+  http_response_code(403);
   $a = array(
     'login' => false,
     'saved' => false,
@@ -93,13 +112,18 @@ Moment::setLocale('se_SV');
 
 /* NOTE: response can't be passed as route param. Reserved! */
 $router->addRoutes(array(
-  array('GET',            '/token/login',         function()         { $start = new Controller; $start->issueToken('login');    }),
-  array('POST',           '/token/refresh',       function()         { $start = new Controller; $start->issueToken('refresh');  }),
-  array('POST',           '/login',               function()         { $start = new Controller; $start->doLogin();              }),
-  array('GET|PUT|DELETE', '/tours/tours/[i:id]?', function($id = -1) { $start = new Controller; $start->start('tours', $id);    }),
-  array('GET|POST',       '/tours/tours[/]?',     function()         { $start = new Controller; $start->start('tours', '');     }),
+  array('GET',            '/token/login',         function()         { $start = new Controller; echo $start->issueToken('login');    }),
+  array('POST',           '/token/refresh',       function()         { $start = new Controller; echo $start->issueToken('refresh');  }),
+  array('POST',           '/login',               function()         { $start = new Controller; echo $start->doLogin();              }),
+  array('GET|PUT|DELETE', '/tours/tours/[i:id]?', function($id = -1) { $start = new Controller; echo $start->start('tours', $id);    }),
+  array('GET|POST',       '/tours/tours[/]?',     function()         { $start = new Controller; echo $start->start('tours', '');     }),
   
-  array('GET', '/timestamp', function() { echo json_encode(array('servertime' => time())); }),
+  array('GET', '/timestamp', function() { 
+    echo json_encode(array('servertime' => time())); 
+    http_response_code(200); 
+    echo ob_get_clean(); 
+    die();
+  }),
 ));
 
 $match = $router->match();
@@ -108,7 +132,7 @@ if( $match && !empty($match['target']) && is_callable( $match['target'] ) ) {
   
   call_user_func_array( $match['target'], $match['params'] ); 
 } else {
-    header( $_SERVER["SERVER_PROTOCOL"] . ' 404 Not Found');
+    http_response_code(404);
     $a = array(
       'success' => false,
       'saved' => false,
@@ -121,10 +145,5 @@ if( $match && !empty($match['target']) && is_callable( $match['target'] ) ) {
     die();
 }
 
-//Uncontrolled exit!
-header( $_SERVER["SERVER_PROTOCOL"] . ' 500 Internal Server Error');
-http_response_code(500);
 $content = ob_get_clean();
 echo $content;
-echo "Uncontrolled exit! The server behaved unexpectedly, this is a bug please report it to the system administrator!";
-$logger->critical('UNCONTROLLED EXIT!', array('site state' => $content));

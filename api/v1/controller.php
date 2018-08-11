@@ -22,7 +22,6 @@ class Controller {
     $this->response->AddResponse('login',     false);
     $this->response->AddResponse('success',   false);
     $this->response->AddResponse('response',  'Ingen uppgift utförd.');
-    $this->response->AddResponse('error',     '');
     $this->pdo = DB::get($this->response);
     $this->tokens = new Tokens($this->response, $this->pdo);
   }
@@ -61,7 +60,7 @@ class Controller {
         break;
       }
     }
-    $this->end();
+    return $this->response->GetResponse();
   
   }
 
@@ -89,7 +88,7 @@ class Controller {
   public function doLogin() {
     $unvalidatedData = json_decode(trim(file_get_contents('php://input')), true);
     $success = $this->issueToken('login');
-    $this->end();
+    return $this->response->GetResponse();
   }
 
   /**
@@ -100,22 +99,12 @@ class Controller {
     if ($this->tokens->issueToken($tokenType)) {
       $this->response->AddResponse("response", "Token skapad!");
       $this->response->AddResponse("success", true);
+      http_response_code(201); 
     } else {
       $this->response->AddResponse("response", "Kunde inte generera en token. Serverfel!");
+      http_response_code(500); 
     }
-    $this->end();
+    return $this->response->GetResponse();
   }
 
-  /**
-   * Ends the controller, echos responder content to page
-   */
-  private function end() {
-    if(http_response_code() == 200) {
-      header( $_SERVER["SERVER_PROTOCOL"] . ' 200 OK');
-    }
-    echo $this->response->GetResponse();
-    $website = ob_get_clean();
-    echo $website;
-    die();
-  }
 }

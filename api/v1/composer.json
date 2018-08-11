@@ -1,8 +1,20 @@
 {
+    "name": "RekoResor/reko-tour-booking-system",
     "require": {
         "altorouter/altorouter": "1.1.0",
         "firebase/php-jwt": "^5.0",
         "fightbulc/moment": "*",
         "monolog/monolog": "^1.23"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.3"
+    },
+    "scripts": {
+        "test": "vendor\\bin\\phpunit"
+    },
+    "autoload": {
+        "psr-4": {
+            "RekoBooking\\": "./"
+        }   
     }
 }

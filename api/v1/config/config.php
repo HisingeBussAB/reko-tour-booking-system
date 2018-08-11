@@ -46,8 +46,8 @@
   define('ENV_DOMAIN',               'localhost');
 
   if (empty($_SERVER['HTTPS']) || !filter_var($_SERVER['HTTPS'], FILTER_VALIDATE_BOOLEAN)) {
-    define('ENV_FULL_DOMAIN',         'http://' . DOMAIN);
+    define('ENV_FULL_DOMAIN',         'http://' . ENV_DOMAIN);
   } else {
-    define('ENV_FULL_DOMAIN',         'https://' . DOMAIN);
+    define('ENV_FULL_DOMAIN',         'https://' . ENV_DOMAIN);
   }
 ?>
