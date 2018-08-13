@@ -52,6 +52,8 @@ Sync.ffs_batch
 
 vendor
 node_modules
+**/vendor/**
+**/node_modules/**
 config.js
 config.php
 npm-debug.log
