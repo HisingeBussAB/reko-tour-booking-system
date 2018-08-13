@@ -8,7 +8,6 @@ class ComposerStaticInit7000dd7caaed720b7ff4c848acd948d9
 {
     public static $files = array (
         '6124b4c8570aa390c21fafd04a26c69f' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/deep_copy.php',
-        'fe3edbbdf1f9a586b768b80837c5ead4' => __DIR__ . '/..' . '/jimbojsb/pseudo/src/php-sql-parser.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -27,10 +26,6 @@ class ComposerStaticInit7000dd7caaed720b7ff4c848acd948d9
         'P' => 
         array (
             'Psr\\Log\\' => 8,
-        ),
-        'N' => 
-        array (
-            'NyanCat\\' => 8,
         ),
         'M' => 
         array (
@@ -67,10 +62,6 @@ class ComposerStaticInit7000dd7caaed720b7ff4c848acd948d9
         array (
             0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
         ),
-        'NyanCat\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/whatthejeff/nyancat-phpunit-resultprinter/src/NyanCat',
-        ),
         'Monolog\\' => 
         array (
             0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
@@ -96,27 +87,9 @@ class ComposerStaticInit7000dd7caaed720b7ff4c848acd948d9
     public static $prefixesPsr0 = array (
         'P' => 
         array (
-            'Pseudo' => 
-            array (
-                0 => __DIR__ . '/..' . '/jimbojsb/pseudo/src',
-            ),
             'Prophecy\\' => 
             array (
                 0 => __DIR__ . '/..' . '/phpspec/prophecy/src',
-            ),
-        ),
-        'N' => 
-        array (
-            'NyanCat' => 
-            array (
-                0 => __DIR__ . '/..' . '/whatthejeff/nyancat-scoreboard/src',
-            ),
-        ),
-        'F' => 
-        array (
-            'Fab' => 
-            array (
-                0 => __DIR__ . '/..' . '/whatthejeff/fab/src',
             ),
         ),
     );

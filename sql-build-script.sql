@@ -44,8 +44,7 @@ CREATE TABLE [Auth_Once] (
 CREATE TABLE [Tokens] (
     [Token] varchar(255)  NOT NULL ,
     [TokenType] varchar(255)  NOT NULL ,
-    [Created] bigint  NOT NULL ,
-    [username] varchar(255)  NULL 
+    [Created] bigint  NOT NULL
 )
 
 --CREATE TABLE [Auth] (

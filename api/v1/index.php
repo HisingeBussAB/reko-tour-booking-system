@@ -25,10 +25,6 @@ use RekoBooking\Controller;
 
 use \Moment\Moment;
 
-use \Monolog\Logger;
-use \Monolog\Handler\RotatingFileHandler;
-use \Monolog\ErrorHandler;
-
 mb_internal_encoding("UTF-8");
 require __DIR__ . '/config/config.php';
 
@@ -97,13 +93,6 @@ $loader = require __DIR__ . '/vendor/autoload.php';
 $loader->add('RekoBooking', __DIR__);
 $loader->addPsr4('RekoBooking\\', __DIR__);
 
-// create a log channel
-$logger = new Logger('main_logger');
-$logger->pushHandler(new RotatingFileHandler(ENV_LOG_PATH, 10, Logger::WARNING));
-if (!ENV_DEBUG_MODE) {
-  ErrorHandler::register($logger);
-}
-
 $router = new \AltoRouter();
 
 $router->setBasePath('/api/v1');
@@ -112,13 +101,13 @@ Moment::setLocale('se_SV');
 
 /* NOTE: response can't be passed as route param. Reserved! */
 $router->addRoutes(array(
-  array('GET',            '/token/login',         function()         { $start = new Controller; echo $start->issueToken('login');    }),
-  array('POST',           '/token/refresh',       function()         { $start = new Controller; echo $start->issueToken('refresh');  }),
-  array('POST',           '/login',               function()         { $start = new Controller; echo $start->doLogin();              }),
-  array('GET|PUT|DELETE', '/tours/tours/[i:id]?', function($id = -1) { $start = new Controller; echo $start->start('tours', $id);    }),
-  array('GET|POST',       '/tours/tours[/]?',     function()         { $start = new Controller; echo $start->start('tours', '');     }),
+  array('POST',           '/users/auth[/]?',          function()         { $start = new Controller; echo $start->auth('login');    }),
+  array('POST',           '/users/auth/refresh[/]?',  function()         { $start = new Controller; echo $start->auth('refresh');  }),
+  array('POST',           '/users/auth/revoke[/]?',   function()         { $start = new Controller; echo $start->auth('revoke');  }),
+  array('GET|PUT|DELETE', '/tours/tours/[i:id]?[/]?', function($id = -1) { $start = new Controller; echo $start->start('tours', $id);    }),
+  array('GET|POST',       '/tours/tours[/]?',         function()         { $start = new Controller; echo $start->start('tours', '');     }),
   
-  array('GET', '/timestamp', function() { 
+  array('GET', '/timestamp[/]?', function() { 
     echo json_encode(array('servertime' => time())); 
     http_response_code(200); 
     echo ob_get_clean(); 

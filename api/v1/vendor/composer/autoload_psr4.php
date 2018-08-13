@@ -10,7 +10,6 @@ return array(
     'Webmozart\\Assert\\' => array($vendorDir . '/webmozart/assert/src'),
     'RekoBooking\\' => array($baseDir . '/'),
     'Psr\\Log\\' => array($vendorDir . '/psr/log/Psr/Log'),
-    'NyanCat\\' => array($vendorDir . '/whatthejeff/nyancat-phpunit-resultprinter/src/NyanCat'),
     'Monolog\\' => array($vendorDir . '/monolog/monolog/src/Monolog'),
     'Moment\\' => array($vendorDir . '/fightbulc/moment/src'),
     'Firebase\\JWT\\' => array($vendorDir . '/firebase/php-jwt/src'),

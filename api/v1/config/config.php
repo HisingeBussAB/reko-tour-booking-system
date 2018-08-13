@@ -27,11 +27,10 @@
 
   /* Authentication */
 
-  define('AUTH_PWD_PEPPER',              '+-i-v tEZ~.,K+tk+|]%%V(+5U3<*||rf%J%z7o^.uYUDGA(MN!kY9!9.MQTA$1k');
-  define('AUTH_JWT_SECRET_PEPPER',       'wJ2cJDrmJd5X5yUaXE67hGC9mVWzZjcGsRsYX3fy');
-  define('AUTH_JWT_WATERMARK',           'qAUHDZ78VURAX79a6rXn2Fc4fRpkmsYvsfZVKdCY');
+  define('AUTH_PWD_PEPPER',            '+-i-v tEZ~.,K+tk+|]%%V(+5U3<*||rf%J%z7o^.uYUDGA(MN!kY9!9.MQTA$1k');
+  define('AUTH_JWT_SECRET_PEPPER',     'wJ2cJDrmJd5X5yUaXE67hGC9mVWzZjcGsRsYX3fy'); //Provides a way to revoke all tokens including refresh tokens with unique secrets
   define('AUTH_API_KEY',               '%{-LY~vkJb#O>#e<%cp%7}I-Rqsg-TCj[kO!GfUCoM>/op<?8FiUjP|+& Za](p7');
-  define('AUTH_RELOGIN_KEY',           '+4xbKVh8+RWEPPv8u+');
+  define('AUTH_RELOGIN_KEY',           '+4xbKVh8+RWEPPv8u+');asddasdas
 
   /* Enviroment */
 

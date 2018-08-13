@@ -73,6 +73,15 @@ $expires = ($now + 600000);
   if (password_verify($jsonData['pwd'] . PWD_PEPPER, $result['pwd']) || validateOnce($userid, $jsonData['pwd'], $pdo)) {
 
     //Generate JWT
+    try {
+      $sql = "SELECT token FROM Tokens WHERE username = 'server' AND TokenType = 'jwtsecret' ORDER BY Created DESC;";
+      $sth = $pdo->prepare($sql);
+      $sth->bindParam(':user', $user, \PDO::PARAM_STR);
+      $sth->execute(); 
+      $result = $sth->fetch(\PDO::FETCH_ASSOC);
+    } catch(\PDOException $e) {
+      DBError::showError($e, __CLASS__, $sql);
+    }
   
     $token = array(
     "iss"   => DOMAIN,
@@ -89,7 +98,7 @@ $expires = ($now + 600000);
     ),
   );
   $jwtSecret = Tokens::createJWTToken('jwt', $user, $pdo);
-  $jwt = JWT::encode($token, $jwtSecret . JWT_SECRET_PEPPER, 'HS512');
+  $jwt = JWT::encode($token, AUTH_JWT_SECRET . JWT_SECRET_PEPPER, 'HS512');
   $response->AddResponse('login', true);
   $response->AddResponse('saved', false);
   $response->AddResponse('jwt', $jwt);

@@ -7,14 +7,15 @@ namespace RekoBooking;
 
 use RekoBooking\classes\common\Responder;
 use RekoBooking\classes\common\DB;
-use RekoBooking\classes\common\Tokens;
+use RekoBooking\classes\common\Maintenance;
+use RekoBooking\classes\common\Auth;
 use \Firebase\JWT\JWT;
+
 
 class Controller {
 
   private $response;
   private $pdo;
-  private $tokens;
 
   function __construct() {
     $this->response = new Responder;
@@ -23,7 +24,10 @@ class Controller {
     $this->response->AddResponse('success',   false);
     $this->response->AddResponse('response',  'Ingen uppgift utförd.');
     $this->pdo = DB::get($this->response);
-    $this->tokens = new Tokens($this->response, $this->pdo);
+    if ($this->pdo == false) {
+      $this->response->AddResponse('response',  'Kritiskt fel. Databasanslutning misslyckades.');
+      $this->response->Exit();
+    }
   }
 
   /**
@@ -48,20 +52,48 @@ class Controller {
         case "POST":
           $unvalidatedData = json_decode(trim(file_get_contents('php://input')), true);
           $this->post($item, $unvalidatedData);
+          if (!ENV_CRON_JOB) { Maintenance::refreshSecrets($this->response, $this->pdo); }
         break;
 
         case "PUT":
           $unvalidatedData = json_decode(trim(file_get_contents('php://input')), true);
           $this->put($item, $id, $unvalidatedData);
+          if (!ENV_CRON_JOB) { Maintenance::refreshSecrets($this->response, $this->pdo); }
+          
         break;
 
         case "DELETE":
           $this->delete($item, $id);
+          if (!ENV_CRON_JOB) { Maintenance::refreshSecrets($this->response, $this->pdo); }
         break;
       }
     }
     return $this->response->GetResponse();
   
+  }
+
+  public function auth($action) {
+    Maintenance::refreshSecrets($this->response, $this->pdo);
+    switch($action)
+      {
+        case "login":
+          if (Auth::login($this->response, $this->pdo)) {
+            http_response_code(202);
+          } else {
+            header('WWW-Authenticate: Basic"');
+            http_response_code(401);
+          }
+        break;
+      
+        case "refresh":
+          Auth::refresh($this->response, $this->pdo);
+        break;
+
+        case "revoke":
+          Auth::revoke($this->response, $this->pdo);
+        break;
+      }
+      return $this->response->GetResponse();
   }
 
   private function get(string $item, int $id) {
@@ -85,26 +117,5 @@ class Controller {
 
   }
 
-  public function doLogin() {
-    $unvalidatedData = json_decode(trim(file_get_contents('php://input')), true);
-    $success = $this->issueToken('login');
-    return $this->response->GetResponse();
-  }
-
-  /**
-   * Request a new token using common/Tokens
-   * @param string $tokenType Type of the token
-   */
-  public function issueToken(string $tokenType) {
-    if ($this->tokens->issueToken($tokenType)) {
-      $this->response->AddResponse("response", "Token skapad!");
-      $this->response->AddResponse("success", true);
-      http_response_code(201); 
-    } else {
-      $this->response->AddResponse("response", "Kunde inte generera en token. Serverfel!");
-      http_response_code(500); 
-    }
-    return $this->response->GetResponse();
-  }
 
 }
