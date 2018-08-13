@@ -50,15 +50,10 @@ copy.bat
 Sync.ffs_batch
 *.ffs_gui
 
-vendor
-node_modules
-**/vendor/**
-**/node_modules/**
+vendor/
+node_modules/
 config.js
 config.php
 npm-debug.log
 
 /reko-bokningar/build/
-
-api/v1/config/config.php
-api/v1/vendor/**
