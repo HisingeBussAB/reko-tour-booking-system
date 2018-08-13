@@ -26,7 +26,7 @@ class Controller {
     $this->pdo = DB::get($this->response);
     if ($this->pdo == false) {
       $this->response->AddResponse('response',  'Kritiskt fel. Databasanslutning misslyckades.');
-      $this->response->Exit();
+      $this->response->Exit(500);
     }
   }
 
@@ -73,7 +73,9 @@ class Controller {
   }
 
   public function auth($action) {
-    Maintenance::refreshSecrets($this->response, $this->pdo);
+
+    if (!ENV_CRON_JOB) { Maintenance::refreshSecrets($this->response, $this->pdo); }
+
     switch($action)
       {
         case "login":

@@ -8,7 +8,7 @@ use RekoBooking\classes\common\Responder;
 use RekoBooking\tests\PDOMock;
 
 
-class AuthTest extends TestCase {
+class ValidateTest extends TestCase {
 
   /**
    * @test
@@ -16,7 +16,8 @@ class AuthTest extends TestCase {
   public function shortOrEmptyCredentialsAreRejected(): void {
     $pdoMock = new PDOMock;
     $response = new Responder;
-    Auth::login($response, $pdoMock);
+    
+
     
     
 

@@ -13,7 +13,6 @@ final class Maintenance {
       $sth = $pdo->prepare($sql);
       $sth->execute(); 
       $result = $sth->fetchAll(\PDO::FETCH_ASSOC);
-      var_dump($result);
     } catch(\PDOException $e) {
       $response->DBError($e, __CLASS__, $sql);
       return false;

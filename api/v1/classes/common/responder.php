@@ -64,6 +64,10 @@ class Responder {
     }
   }
 
+  public function LogError($message, $class) {
+    $this->logger->error('Fel i ' . $class . ': ' . $message);
+  }
+
   public function Exit($response_code) {
     http_response_code($response_code);
     echo $this->GetResponse();

@@ -55,5 +55,6 @@ node_modules/
 config.js
 config.php
 npm-debug.log
+.env
 
 /reko-bokningar/build/

@@ -99,6 +99,7 @@ $router->setBasePath('/api/v1');
 Moment::setDefaultTimezone('CET');
 Moment::setLocale('se_SV');
 
+
 /* NOTE: response can't be passed as route param. Reserved! */
 $router->addRoutes(array(
   array('POST',           '/users/auth[/]?',          function()         { $start = new Controller; echo $start->auth('login');    }),
@@ -107,7 +108,7 @@ $router->addRoutes(array(
   array('GET|PUT|DELETE', '/tours/tours/[i:id]?[/]?', function($id = -1) { $start = new Controller; echo $start->start('tours', $id);    }),
   array('GET|POST',       '/tours/tours[/]?',         function()         { $start = new Controller; echo $start->start('tours', '');     }),
   
-  array('GET', '/timestamp[/]?', function() { 
+  array('GET',            '/timestamp[/]?', function() { 
     echo json_encode(array('servertime' => time())); 
     http_response_code(200); 
     echo ob_get_clean(); 

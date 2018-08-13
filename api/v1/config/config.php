@@ -5,7 +5,7 @@
 
   define( 'DB_CONNECTION', 'sqlsrv:server = tcp:reko2.database.windows.net,1433; Database = maindb2' );
   define( 'DB_USER',       'rekoresor' );
-  define( 'DB_PASSWORD',   '1qaz!QAZ' );
+  define( 'DB_PASSWORD',   '1qaz!QAZdb' );
 
 
   /* Provide some detals about your company */
@@ -27,10 +27,10 @@
 
   /* Authentication */
 
-  define('AUTH_PWD_PEPPER',            '+-i-v tEZ~.,K+tk+|]%%V(+5U3<*||rf%J%z7o^.uYUDGA(MN!kY9!9.MQTA$1k');
-  define('AUTH_JWT_SECRET_PEPPER',     'wJ2cJDrmJd5X5yUaXE67hGC9mVWzZjcGsRsYX3fy'); //Provides a way to revoke all tokens including refresh tokens with unique secrets
-  define('AUTH_API_KEY',               '%{-LY~vkJb#O>#e<%cp%7}I-Rqsg-TCj[kO!GfUCoM>/op<?8FiUjP|+& Za](p7');
-  define('AUTH_RELOGIN_KEY',           '+4xbKVh8+RWEPPv8u+');asddasdas
+  define('AUTH_PWD_PEPPER',            'T6ZUZmpFwqEDYP6fuZ3tzszJpUhc4NjSUdrd$uxmyAkM6r4zMmtw4TnPMAK5');
+  define('AUTH_JWT_SECRET_PEPPER',     'tnqB!SH3BU$WzfArr*nfY6WDZ!C5YUv!VPYKKUHGk^Nh!528j$4J*3Nq9SGX'); //Provides a way to revoke all tokens including refresh tokens with unique secrets
+  define('AUTH_API_KEY',               'XW%Gke9Dh@Y*^wgSArhSYdyEc3X#p$%j75w$zp!a');
+  define('AUTH_REFRESH_KEY',           'k9!SqB!Eh%TXJ@2x@Q7PsUT^32efkUJ!GPvxCpf3J9DFhJr4Bh@2*7hEC3Je');
 
   /* Enviroment */
 
@@ -41,6 +41,7 @@
   define('ENV_IP_LOCK',                 true);  
   define('ENV_LOG_PATH',                'C:/logs/web/inetpub/');
 
+  define('ENV_CRON_JOB',                false); //Is token refresh operation run by cron
 
   define('ENV_DOMAIN',               'localhost');
 
