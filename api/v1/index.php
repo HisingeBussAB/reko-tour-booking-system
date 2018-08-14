@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] == "OPTIONS") {
   die();
 }
 
-if ($_SERVER["HTTP_X_API_KEY"] != AUTH_API_KEY) {
+if (!empty($_SERVER["HTTP_X_API_KEY"]) && $_SERVER["HTTP_X_API_KEY"] != AUTH_API_KEY) {
   http_response_code(403);
   $a = array(
     'login' => false,

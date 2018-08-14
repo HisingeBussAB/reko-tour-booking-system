@@ -54,6 +54,9 @@ CREATE TABLE [Tokens] (
 --    CONSTRAINT [PK_Auth] PRIMARY KEY CLUSTERED (
 --        [AuthID] ASC
 --    )
+--    CONSTRAINT [UK_Auth_user] UNIQUE (
+--        [user]
+--    )
 --)
 
 CREATE TABLE [Bokning] (

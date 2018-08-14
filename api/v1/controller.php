@@ -82,13 +82,18 @@ class Controller {
           if (Auth::login($this->response, $this->pdo)) {
             http_response_code(202);
           } else {
-            header('WWW-Authenticate: Basic"');
+            header('WWW-Authenticate: Basic');
             http_response_code(401);
           }
         break;
       
         case "refresh":
-          Auth::refresh($this->response, $this->pdo);
+        if ( Auth::refresh($this->response, $this->pdo)) {
+          http_response_code(202);
+        } else {
+          header('WWW-Authenticate: Bearer');
+          http_response_code(401);
+        }
         break;
 
         case "revoke":
