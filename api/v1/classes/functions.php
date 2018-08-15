@@ -102,6 +102,25 @@ final class Functions {
     return (string)$new;
   }
 
+  public static function validatePersonalNumber($pnumb) {
+    if (gettype($pnumb) != "integer" && gettype($pnumb) != "string") { return NULL; }
+    $new = str_replace(['+','-'],'',filter_var(trim($pnumb), FILTER_SANITIZE_NUMBER_INT));
+    if(empty($new)) { return NULL; }
+    return (string)$new;
+  }
 
+  public static function validateTime($time) {
+    if (gettype($time) != "integer" && gettype($time) != "string") { return NULL; }
+    Moment::setDefaultTimezone('CET');
+    Moment::setLocale('se_SV');
+    try {
+      $m = new \Moment\Moment($time);
+    } catch (\Exception $e) {
+      return NULL;
+    }
+    return (string)$m->format('H:i:s');
+  }
 
+  
+  
 }

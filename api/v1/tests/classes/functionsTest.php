@@ -248,6 +248,25 @@ class FunctionsTest extends TestCase {
     $this->assertNull(F::validateEmail("hej@hej@hej"), "invalid e-mail should be null.");
   }
 
+  /**
+   * @test
+   */
+  public function validateTimeAcceptedWithoutSeconds():void {
+    $this->assertEquals(F::validateTime("14:12"), "14:12:00", "11:20 should be valid time.");
+  }
+  /**
+   * @test
+   */
+  public function validateTimeAcceptedWithSeconds():void {
+    $this->assertEquals(F::validateTime("14:12:00"), "14:12:00", "11:20 should be valid time.");
+  }
+  /**
+   * @test
+   */
+  public function validateTimeStringRejected():void {
+    $this->assertNull(F::validateTime("ABC"), "ABC should not be valid time.");
+  }
+
 
 
 
