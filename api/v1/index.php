@@ -102,11 +102,25 @@ Moment::setLocale('se_SV');
 
 /* NOTE: response can't be passed as route param. Reserved! */
 $router->addRoutes(array(
-  array('POST',           '/users/auth[/]?',          function()         { $start = new Controller; echo $start->auth('login');    }),
-  array('POST',           '/users/auth/refresh[/]?',  function()         { $start = new Controller; echo $start->auth('refresh');  }),
-  array('POST',           '/users/auth/revoke[/]?',   function()         { $start = new Controller; echo $start->auth('revoke');  }),
-  array('GET|PUT|DELETE', '/tours/tours/[i:id]?[/]?', function($id = -1) { $start = new Controller; echo $start->start('tours', $id);    }),
-  array('GET|POST',       '/tours/tours[/]?',         function()         { $start = new Controller; echo $start->start('tours', '');     }),
+  array('POST',           '/users/auth[/]?',                function()         { $start = new Controller; echo $start->auth('login');               }),
+  array('POST',           '/users/auth/refresh[/]?',        function()         { $start = new Controller; echo $start->auth('refresh');             }),
+  array('POST',           '/users/auth/revoke[/]?',         function()         { $start = new Controller; echo $start->auth('revoke');              }),
+  array('GET|PUT|DELETE', '/tours/tours/[i:id]?[/]?',       function($id = -1) { $start = new Controller; echo $start->start('tours',       $id);   }),
+  array('GET|POST',       '/tours/tours[/]?',               function()         { $start = new Controller; echo $start->start('tours'           );   }),
+  array('GET|PUT|DELETE', '/tours/categories/[i:id]?[/]?',  function($id = -1) { $start = new Controller; echo $start->start('categories',  $id);   }),
+  array('GET|POST',       '/tours/categories[/]?',          function()         { $start = new Controller; echo $start->start('categories'      );   }),
+  array('GET|PUT|DELETE', '/bookings/[i:id]?[/]?',          function($id = -1) { $start = new Controller; echo $start->start('bookings',    $id);   }),
+  array('GET|POST',       '/bookings[/]?',                  function()         { $start = new Controller; echo $start->start('bookings'        );   }),
+  array('GET|PUT|DELETE', '/customers/[i:id]?[/]?',         function($id = -1) { $start = new Controller; echo $start->start('customers',   $id);   }),
+  array('GET|POST',       '/customers[/]?',                 function()         { $start = new Controller; echo $start->start('customers'       );   }),
+  array('GET|PUT|DELETE', '/leads/[i:id]?[/]?',             function($id = -1) { $start = new Controller; echo $start->start('leads',       $id);   }),
+  array('GET|POST',       '/leads[/]?',                     function()         { $start = new Controller; echo $start->start('leads'           );   }),
+  array('GET|PUT|DELETE', '/payments/[i:id]?[/]?',          function($id = -1) { $start = new Controller; echo $start->start('payments',    $id);   }),
+  array('GET|POST',       '/payments[/]?',                  function()         { $start = new Controller; echo $start->start('payments'        );   }),
+  array('GET|PUT|DELETE', '/budgets/[i:id]?[/]?',           function($id = -1) { $start = new Controller; echo $start->start('budgets',     $id);   }),
+  array('GET|POST',       '/budgets[/]?',                   function()         { $start = new Controller; echo $start->start('budgets'         );   }),
+  array('GET|PUT|DELETE', '/deadlines/[i:id]?[/]?',         function($id = -1) { $start = new Controller; echo $start->start('deadlines',   $id);   }),
+  array('GET|POST',       '/deadlines[/]?',                 function()         { $start = new Controller; echo $start->start('deadlines'       );   }),
   
   array('GET',            '/timestamp[/]?', function() { 
     echo json_encode(array('servertime' => time())); 

@@ -81,6 +81,7 @@ final class Auth {
     if (!empty($_SERVER['HTTP_AUTHORIZATION']) && preg_match('/Bearer\s(.*\..*\..*)/', $_SERVER['HTTP_AUTHORIZATION'], $matches)) {
       $refreshJWT = $matches[1];
     } else {
+      $response->AddResponse('error', 'Felformaterad authorization header.');
       return false;
     }
 
@@ -168,6 +169,19 @@ final class Auth {
   }
 
   public static function revoke(Responder $response, \PDO $pdo) {
+    // Just use the refresh method but dont send the new tokens for now
+    if (self::refresh($response, $pdo)) {
+      $response->AddResponse('login', false);
+      $response->AddResponse('login', true);
+      $response->AddResponse('response', 'Du är utloggad');
+      $response->AddResponse('access', '');
+      $response->AddResponse('refresh', '');
+      $response->AddResponse('servertime', time());
+      return true;
+    } else {
+      $response->AddResponse('error', 'Kunde inte utföra utloggning. Sannolikt är du inte inloggad');
+      return false;
+    }
     
   }
 
@@ -235,7 +249,7 @@ final class Auth {
 
   }
 
-  private static function getSecrets(Responder $response, \PDO $pdo) {
+  public static function getSecrets(Responder $response, \PDO $pdo) {
     try {
       $sql = "SELECT token FROM Tokens WHERE tokentype = 'jwtsecret' ORDER BY created DESC;";
       $sth = $pdo->prepare($sql);
@@ -318,7 +332,7 @@ private static function generateJWT(string $type, Responder $response, \PDO $pdo
   }
   }
 
-  private static function validateJWT(string $jwt, string $secret): array {
+  public static function validateJWT(string $jwt, string $secret): array {
     $returnArray = array('decoded' => false, 'jwt' => null, 'error' => '');
 
     try {
