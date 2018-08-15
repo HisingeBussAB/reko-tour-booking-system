@@ -2,17 +2,18 @@
 
 namespace RekoBooking\classes;
 
+use \Moment\Moment;
+
 final class Functions {
 
 /** 
    * array_map_assoc_recursive
    * Recursivly maps an associative array preserving nestling and keys.
    * 
-   * callback($key, $value, $keytree)
+   * callback($key, $value)
    * return $value
    * 
-   * Keytree will keys to the current sublevel in dot notation. 
-   * This might be usefull if you are doing something like validating user inputted JSON
+   *    * The key will contain all levels of keys using dot annotation comparable to you js if you are using to for instance validate json from front-end
    * 
    * $kt is an array that keeps the keytree and a int that is the lenght of the last array found counting down
    * 
@@ -27,9 +28,80 @@ final class Functions {
       } else {
         if ($kt[1] > 0) { $kt = [$kt[0], $kt[1]-1]; } else { $kt = [substr($kt[0], 0, strrpos( $kt[0], '.')), $kt[1]-1]; }
         $ktout = $kt[0] == '' ? $key : $kt[0] . '.' . $key;
-        return [$key, call_user_func($f, $key, $value, $ktout)];
+        return [$key, call_user_func($f, $ktout, $value)];
       }
     }, array_keys($a), $a), 1, 0);
   }
+
+  /**
+   * Validation/sanitazion functions
+   * These functions return validated/santazited value or NULL if failed
+   * 
+   * Note that they return NULL instead of the standard behaviour FALSE. 
+   * This is because NULL is never a valid user input in our API but false is.  
+   */
+
+  /**
+   * Validates integer 
+   * Checks so type is int or string for trim not to cause exception
+   * Also check so value isnt true because this will be cast to 1 by filter_var
+   */
+  public static function validateInt($int, int $min = PHP_INT_MIN, int $max = PHP_INT_MAX) {
+    if ((gettype($int) != "integer" && gettype($int) != "string") || $int === true) { return NULL; }
+    $new = filter_var(trim($int), FILTER_VALIDATE_INT, array("options" => array("min_range"=>$min, "max_range"=>$max)));
+    if (empty($new)) {return NULL;}
+    return (int)$new;
+  }
+
+  public static function validateBoolToBit($bool) {
+    if (gettype($bool) != "integer" && gettype($bool) != "string" && gettype($bool) != "boolean") { return NULL; }
+    $new = filter_var(trim($bool), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+    if(is_null($new)) { return NULL; }
+    if($new === true) { return 1; } else { return 0; }
+  }
+
+  public static function validateDate($date) {
+    if (gettype($date) != "integer" && gettype($date) != "string") { return NULL; }
+    Moment::setDefaultTimezone('CET');
+    Moment::setLocale('se_SV');
+    try {
+      $m = new \Moment\Moment($date);
+    } catch (\Exception $e) {
+      return NULL;
+    }
+    return (string)$m->format('Y-m-d');
+  }
+
+  public static function sanatizeStringUnsafe($string) {
+    //Just make sure it is a string and casted as such. 
+    //statements should be prepared and htmlspecialchars should be used on output.
+    if (gettype($string) != "integer" && gettype($string) != "string") { return NULL; }
+    $new = filter_var(trim($string), FILTER_UNSAFE_RAW);
+    if(empty($new)) { return NULL; }
+    return (string)$new;
+  }
+
+  public static function validateZIP($zip) {
+    if (gettype($zip) != "integer" && gettype($zip) != "string") { return NULL; }
+    $new = self::validateInt(str_replace(['+','-'],'',filter_var(trim($zip), FILTER_SANITIZE_NUMBER_INT)), 10000, 99999);
+    if (empty($new)) {return NULL;}
+    return (int)$new;
+  }
+
+  public static function validatePhone($phone) {
+    if (gettype($phone) != "integer" && gettype($phone) != "string") { return NULL; }
+    $new = self::validateInt(str_replace(['+','-'],'',filter_var(trim($phone), FILTER_SANITIZE_NUMBER_INT)), 1000);
+    if (empty($new)) {return NULL;}
+    return (int)$new;
+  }
+
+  public static function validateEmail($email) {
+    if (gettype($email) != "integer" && gettype($email) != "string") { return NULL; }
+    $new = filter_var(trim($email), FILTER_VALIDATE_EMAIL);
+    if(empty($new)) { return NULL; }
+    return (string)$new;
+  }
+
+
 
 }
