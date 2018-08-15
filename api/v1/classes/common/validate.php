@@ -41,6 +41,10 @@ class Validate {
    * 
    * Strings are not sanitized just casted and RAW filtered.
    * We need the actual data in the database, just htmlspecialchars on output and prepare statements.
+   * 
+   * This mastodont switch should be split down using action cases.
+   * But the database does not have that many tabled or ambigious keys so this should be sufficient until there is more time.
+   * 
    */
   public function validateItem($key, $value) {
     $newValue = NULL;
@@ -211,9 +215,9 @@ class Validate {
       //BETALNING
         //TODO
       case "anmavgpris":
-      $newValue = $this->validateInt($value);
-      if (is_null($newValue)) {$this->response->AddResponse('error', 'Anmälningsavgift måste anges som ett heltal.');}
-      break;
+        $newValue = $this->validateInt($value);
+        if (is_null($newValue)) {$this->response->AddResponse('error', 'Anmälningsavgift måste anges som ett heltal.');}
+        break;
 
       //PROGRAMBEST
 
