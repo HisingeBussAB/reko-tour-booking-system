@@ -24,6 +24,7 @@ class Controller {
     $this->response->AddResponse('saved',     false);
     $this->response->AddResponse('login',     false);
     $this->response->AddResponse('success',   false);
+    $this->response->AddResponse('validated', false);
     $this->response->AddResponse('response',  'Ingen uppgift utförd.');
     $this->pdo = DB::get($this->response);
     if ($this->pdo == false) {

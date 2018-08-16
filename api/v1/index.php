@@ -16,7 +16,6 @@
  * - Initalize Moment to CET and se_SV
  * - Initalize AltoRouter and route request to second controller
  * - Handles 404 response
- * - Logs and reports if the program exits naturally - all requests should lead to a explicit exit with die()
  */
 
 namespace RekoBooking;
