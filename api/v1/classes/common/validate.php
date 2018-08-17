@@ -40,16 +40,16 @@ class Validate {
 
   /**
    * Validation procedure for all acceptable keys in dot notation.
-   * Note ValidateInt uses PHP_MAX_INT PHP_MIN_INT this equals an SQL bigint when runnoing x64 PHP
+   * Note: ValidateInt uses PHP_MAX_INT PHP_MIN_INT this equals an SQL bigint when runnoing x64 PHP
    * This validation corresponds to the database documentation
    * 
    * Strings are not sanitized just casted and RAW filtered.
-   * We need the actual data in the database, just htmlspecialchars on output and prepare statements.
+   * We need the actual data in the database - prepare statements and sanatize output.
    * 
-   * This mastodont switch should be split down using action cases.
-   * But the database does not have that many tabled or ambigious keys so this should be sufficient until there is more time.
+   * This mastodont switch should be split down using actions and item cases.
+   * But the database does not have that many tables or ambigious keys so this should be sufficient for now.
    * 
-   * This will return a verbose response only for the last validation failure encountered, but a brief list of all failures as well.
+   * Will return a verbose response only for the last validation failure encountered, but a brief list of all failures as well.
    * 
    */
   public function validateItem($key, $value) {
@@ -122,6 +122,7 @@ class Validate {
       case "telefon":
         $newValue = Functions::validatePhone($value);
         if (is_null($newValue)) {$this->response->AddResponse('error', 'Telefonnummer inte angett med tillräckligt många siffror.');}
+        if (strlen($newValue) > 25) {$newValue = NULL; $this->response->AddResponse('error', 'Telefonnummret är för lång. Max 25 tecken.');}
         break;
 
       case "email":

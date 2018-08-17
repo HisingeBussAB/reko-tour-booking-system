@@ -13,11 +13,11 @@ final class Functions {
    * callback($key, $value)
    * return $value
    * 
-   *    * The key will contain all levels of keys using dot annotation comparable to you js if you are using to for instance validate json from front-end
+   *  The key will contain all levels of keys using dot notation comparable to the front-end js
    * 
-   * $kt is an array that keeps the keytree and a int that is the lenght of the last array found counting down
+   * $kt is an array that keeps the keytree and a int that is the lenght of the last array found counting down (keeps track of when to move back up one level)
    * 
-   * From https://stackoverflow.com/questions/13036160/phps-array-map-including-keys
+   * Based on answer in https://stackoverflow.com/questions/13036160/phps-array-map-including-keys
    * Recursivity and key tree tracker added by Håkan Arnoldson
    **/
   public static function array_map_assoc_recursive(callable $f, array $a, array $kt = ['', 0]) {
@@ -35,10 +35,10 @@ final class Functions {
 
   /**
    * Validation/sanitazion functions
-   * These functions return validated/santazited value or NULL if failed
+   * These functions return validated/santazited value or NULL if fail
    * 
    * Note that they return NULL instead of the standard behaviour FALSE. 
-   * This is because NULL is never a valid user input in our API but false is.  
+   * This is because NULL is never a valid user input in but false is.  
    */
 
   /**
@@ -73,7 +73,7 @@ final class Functions {
   }
 
   public static function sanatizeStringUnsafe($string) {
-    //Just make sure it is a string and casted as such. 
+    //Just make sure it is a string, trim and casted as such. 
     //statements should be prepared and htmlspecialchars should be used on output.
     if (gettype($string) != "integer" && gettype($string) != "string") { return NULL; }
     $new = filter_var(trim($string), FILTER_UNSAFE_RAW);
@@ -90,9 +90,9 @@ final class Functions {
 
   public static function validatePhone($phone) {
     if (gettype($phone) != "integer" && gettype($phone) != "string") { return NULL; }
-    $new = self::validateInt(str_replace(['+','-'],'',filter_var(trim($phone), FILTER_SANITIZE_NUMBER_INT)), 1000);
+    $new = str_replace(['-'],'',filter_var(trim($phone), FILTER_SANITIZE_NUMBER_INT));
     if (empty($new)) {return NULL;}
-    return (int)$new;
+    return (string)$new;
   }
 
   public static function validateEmail($email) {
