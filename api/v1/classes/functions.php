@@ -74,7 +74,7 @@ final class Functions {
 
   public static function sanatizeStringUnsafe($string) {
     //Just make sure it is a string, trim and casted as such. 
-    //statements should be prepared and htmlspecialchars should be used on output.
+    //statements should be prepared and the API should not be excplicilty trusted in front-end ie. do not dangerously set innerHTML.
     if (gettype($string) != "integer" && gettype($string) != "string") { return NULL; }
     $new = filter_var(trim($string), FILTER_UNSAFE_RAW);
     if(empty($new)) { return NULL; }
