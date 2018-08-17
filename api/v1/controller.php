@@ -11,6 +11,10 @@ use RekoBooking\classes\common\Maintenance;
 use RekoBooking\classes\common\Auth;
 use RekoBooking\classes\common\Validate;
 use RekoBooking\classes\Functions;
+use RekoBooking\classes\actions\Getter;
+use RekoBooking\classes\actions\Putter;
+use RekoBooking\classes\actions\Poster;
+use RekoBooking\classes\actions\Deleter;
 
 
 class Controller {
@@ -18,8 +22,9 @@ class Controller {
   private $response;
   private $pdo;
   private $userData;
+  private $Validator;
 
-  function __construct() {
+  public function __construct() {
     $this->response = new Responder;
     $this->response->AddResponse('saved',     false);
     $this->response->AddResponse('login',     false);
@@ -31,6 +36,7 @@ class Controller {
       $this->response->AddResponse('response',  'Kritiskt fel. Databasanslutning misslyckades.');
       $this->response->Exit(500);
     }
+    $this->Validator = new Validator($response);
   }
 
   /**
@@ -53,37 +59,55 @@ class Controller {
           $this->response->Exit(404);
         }
       }
-      $Validator = new Validate($this->response);
-      $validatedData = $Validator->ValidateData($unvalidatedData);
-      if ($validatedData == false && ($_SERVER['REQUEST_METHOD'] == "POST" || $_SERVER['REQUEST_METHOD'] == "PUT")) {
-        $this->response->Exit(400);
-      }
 
+      if (gettype($unvalidatedData) !== "array") {
+        if ($_SERVER['REQUEST_METHOD'] == "POST" || $_SERVER['REQUEST_METHOD'] == "PUT") {
+          $this->response->AddResponse('error', 'Ogiltig indata. Ingen indata eller inte korrekt formatterad JSON.');
+          $this->response->Exit(400);
+        } else {
+          $unvalidatedData = array();
+        }
+      }
+      $unvalidatedData['id'] = $id;
       switch($_SERVER['REQUEST_METHOD'])
       {
         case "GET":
-          $this->get($item, $id);
+          $this->modelInvoker($item, 'GET', $unvalidatedData);
         break;
       
         case "POST":
-          $this->post($item, $validatedData);
+          $this->modelInvoker($item, 'POST', $unvalidatedData);
           if (!ENV_CRON_JOB) { Maintenance::refreshSecrets($this->response, $this->pdo); }
         break;
 
         case "PUT":
-          $this->put($item, $id, $validatedData);
+          $this->modelInvoker($item, 'PUT', $id, $unvalidatedData);
           if (!ENV_CRON_JOB) { Maintenance::refreshSecrets($this->response, $this->pdo); }
           
         break;
 
         case "DELETE":
-          $this->delete($item, $id);
+          $this->modelInvoker($item, 'DELETE', $unvalidatedData);
           if (!ENV_CRON_JOB) { Maintenance::refreshSecrets($this->response, $this->pdo); }
         break;
       }
     }
     return $this->response->GetResponse();
   
+  }
+
+  private function modelInvoker(string $item, string $function, $unvalidatedData) {
+    $model = "Try";
+    $function = 'Go';
+    try {
+      $REQUEST = new $model;
+      $data = $REQUEST->$function();
+      $this->response->AddResponse('response', $data);
+    } catch (\Exception $e) {
+      $this->response->AddResponse('response', 'Okänt serverfel. Kunde inte utföra årgärden. Kontakta tekniker om det här felet kvarstår.');
+      $this->response->LogError('Possible routing to unsupported model: ' . $e->getMessage(), __CLASS__);
+      $this->response->Exit(500);
+    }
   }
 
   public function auth($action) {
@@ -102,13 +126,13 @@ class Controller {
         break;
       
         case "refresh":
-        if ( Auth::refresh($this->response, $this->pdo )) {
-          http_response_code(202);
-        } else {
-          header('WWW-Authenticate: Bearer');
-          http_response_code(401);
-        }
-        break;
+          if ( Auth::refresh($this->response, $this->pdo )) {
+            http_response_code(202);
+          } else {
+            header('WWW-Authenticate: Bearer');
+            http_response_code(401);
+          }
+          break;
 
         case "revoke":
           if ( Auth::revoke($this->response, $this->pdo )) {
@@ -126,23 +150,6 @@ class Controller {
     return $this->userData;
   }
 
-  private function get(string $item, int $id) {
-
-  }
-
-  private function post(string $item, $unvalidatedData) {
-
-  }
-
-  private function put(string $item, int $id, $unvalidatedData) {
-
-
-  }
-
-  private function delete(string $item, int $id) {
-
-  }
-
   private function authenticate() {
     if (!empty($_SERVER['HTTP_AUTHORIZATION']) && preg_match('/Bearer\s(.*\..*\..*)/', $_SERVER['HTTP_AUTHORIZATION'], $matches)) {
       $refreshJWT = $matches[1];
@@ -153,17 +160,17 @@ class Controller {
     }
 
     $secrets = Auth::getSecrets($this->response, $this->pdo);
-    $returnArray = array('decoded' => false, 'jwt' => null, 'error' => '');
+    $returnedArray = array('decoded' => false, 'jwt' => null, 'error' => '');
     foreach ($secrets as $secret) {
-      $returnArray = Auth::validateJWT($refreshJWT, $secret['token']);
-      if ($returnArray['decoded']) {
-        $this->userData = $returnArray['jwt'];
-        if ($returnArray['jwt']['client']['agent'] != $_SERVER['HTTP_USER_AGENT']) {
+      $returnedArray = Auth::validateJWT($refreshJWT, $secret['token']);
+      if ($returnedArray['decoded']) {
+        $this->userData = $returedArray['jwt'];
+        if ($returnedArray['jwt']['client']['agent'] != $_SERVER['HTTP_USER_AGENT']) {
           $this->response->AddResponse('error', 'Webbläsaren har ändrats. Logga in igen.');
           header('WWW-Authenticate: Bearer');
           return false;
         }
-        if (ENV_IP_LOCK && $returnArray['jwt']['client']['ip'] != $_SERVER['REMOTE_ADDR']) {
+        if (ENV_IP_LOCK && $returnedArray['jwt']['client']['ip'] != $_SERVER['REMOTE_ADDR']) {
           $this->response->AddResponse('error', 'IP-adress har ändrats. Logga in igen.');
           header('WWW-Authenticate: Bearer');
           return false;
@@ -172,8 +179,8 @@ class Controller {
         return true;
       }
     }
-    if (!empty($returnArray['error'])) {
-      $this->response->AddResponse('error', $returnArray['error']);
+    if (!empty($returnedArray['error'])) {
+      $this->response->AddResponse('error', $returnedArray['error']);
     } else {
       $this->response->AddResponse('error', 'Felformaterad authorization header.');
     }
