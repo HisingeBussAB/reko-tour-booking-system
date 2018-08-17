@@ -50,6 +50,7 @@ copy.bat
 Sync.ffs_batch
 *.ffs_gui
 
+build/
 vendor/
 node_modules/
 config.js
@@ -57,5 +58,3 @@ config.php
 npm-debug.log
 .env
 yarn-error.log
-
-/reko-bokningar/build/
