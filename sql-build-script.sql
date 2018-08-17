@@ -17,7 +17,8 @@ DROP TABLE Kategori_Resa
 DROP TABLE Bokning_Kund
 DROP TABLE HammerGuard
 DROP TABLE Auth_Once
-DROP TABLE Auth
+--DROP TABLE Auth
+DROP TABLE Test
 
 
 -- Exported from QuickDBD: https://www.quickdatatabasediagrams.com/
@@ -48,17 +49,17 @@ CREATE TABLE [Tokens] (
     [username] varchar(255)  NULL 
 )
 
-CREATE TABLE [Auth] (
-    [AuthID] bigint IDENTITY(1,1) NOT NULL ,
-    [user] varchar(255)  NOT NULL ,
-    [pwd] varchar(255)  NOT NULL ,
-    CONSTRAINT [PK_Auth] PRIMARY KEY CLUSTERED (
-        [AuthID] ASC
-    ),
-    CONSTRAINT [UK_Auth_user] UNIQUE (
-        [user]
-    )
-)
+--CREATE TABLE [Auth] (
+--    [AuthID] bigint IDENTITY(1,1) NOT NULL ,
+--    [user] varchar(255)  NOT NULL ,
+--   [pwd] varchar(255)  NOT NULL ,
+--    CONSTRAINT [PK_Auth] PRIMARY KEY CLUSTERED (
+--       [AuthID] ASC
+--    ),
+--    CONSTRAINT [UK_Auth_user] UNIQUE (
+--        [user]
+--    )
+--)
 
 CREATE TABLE [Bokning] (
     [BokningID] bigint IDENTITY(1,1) NOT NULL ,
