@@ -17,7 +17,7 @@ DROP TABLE Kategori_Resa
 DROP TABLE Bokning_Kund
 DROP TABLE HammerGuard
 DROP TABLE Auth_Once
--- DROP TABLE Auth
+DROP TABLE Auth
 
 
 -- Exported from QuickDBD: https://www.quickdatatabasediagrams.com/
@@ -44,20 +44,21 @@ CREATE TABLE [Auth_Once] (
 CREATE TABLE [Tokens] (
     [Token] varchar(255)  NOT NULL ,
     [TokenType] varchar(255)  NOT NULL ,
-    [Created] bigint  NOT NULL
+    [Created] bigint  NOT NULL ,
+    [username] varchar(255)  NULL 
 )
 
---CREATE TABLE [Auth] (
---    [AuthID] bigint IDENTITY(1,1) NOT NULL ,
---    [user] varchar(255)  NOT NULL ,
---    [pwd] varchar(255)  NOT NULL ,
---    CONSTRAINT [PK_Auth] PRIMARY KEY CLUSTERED (
---        [AuthID] ASC
---    )
---    CONSTRAINT [UK_Auth_user] UNIQUE (
---        [user]
---    )
---)
+CREATE TABLE [Auth] (
+    [AuthID] bigint IDENTITY(1,1) NOT NULL ,
+    [user] varchar(255)  NOT NULL ,
+    [pwd] varchar(255)  NOT NULL ,
+    CONSTRAINT [PK_Auth] PRIMARY KEY CLUSTERED (
+        [AuthID] ASC
+    ),
+    CONSTRAINT [UK_Auth_user] UNIQUE (
+        [user]
+    )
+)
 
 CREATE TABLE [Bokning] (
     [BokningID] bigint IDENTITY(1,1) NOT NULL ,
@@ -65,8 +66,7 @@ CREATE TABLE [Bokning] (
     [ResaID] bigint  NOT NULL ,
     [GruppBokning] bit  NOT NULL ,
     [Makulerad] bit  NOT NULL ,
-    [MakuleradDatumv] date  NULL ,
-    [BokningDatum] date  NOT NULL ,
+    [MakuleradDatum] date  NULL ,
     [BetalningDatum1] date  NULL ,
     [BetalningDatum2] date  NOT NULL ,
     CONSTRAINT [PK_Bokning] PRIMARY KEY CLUSTERED (
@@ -91,10 +91,10 @@ CREATE TABLE [Kund] (
     [Gatuadress] varchar(100)  NULL ,
     [Postnr] int  NULL ,
     [Postort] varchar(100)  NULL ,
-    [Telefon] bigint  NULL ,
+    [Telefon] varchar(25)  NULL ,
     [Email] varchar(60)  NULL ,
     [Personnr] varchar(10)  NULL ,
-    [Datum] date  NOT NULL ,
+    [Datum] date NOT NULL ,
     [Kategori] varchar(60)  NULL ,
     [Compare] nvarchar(300)  NOT NULL ,
     CONSTRAINT [PK_Kund] PRIMARY KEY CLUSTERED (
@@ -134,8 +134,6 @@ CREATE TABLE [Resa] (
     [Resa] varchar(100)  NOT NULL ,
     [AvbskyddPris] bigint  NOT NULL ,
     [AnmavgPris] bigint  NOT NULL ,
-    [Avresa] date  NOT NULL ,
-    [Aktiv] bit  NOT NULL ,
     CONSTRAINT [PK_Resa] PRIMARY KEY CLUSTERED (
         [ResaID] ASC
     )
@@ -180,7 +178,7 @@ CREATE TABLE [Programbest] (
     [Gatuadress] varchar(100)  NULL ,
     [Postnr] bigint  NULL ,
     [Postort] varchar(100)  NULL ,
-    [Telefon] varchar(60)  NULL ,
+    [Telefon] varchar(25)  NULL ,
     [Email] varchar(60)  NULL ,
     [Datum] date  NOT NULL ,
     [Compare] nvarchar(300)  NOT NULL ,

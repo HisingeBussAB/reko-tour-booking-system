@@ -56,5 +56,6 @@ config.js
 config.php
 npm-debug.log
 .env
+yarn-error.log
 
 /reko-bokningar/build/

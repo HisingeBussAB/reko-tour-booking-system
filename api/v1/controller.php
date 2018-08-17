@@ -10,6 +10,7 @@ use RekoBooking\classes\common\DB;
 use RekoBooking\classes\common\Maintenance;
 use RekoBooking\classes\common\Auth;
 use RekoBooking\classes\common\Validate;
+use RekoBooking\classes\Functions;
 
 
 class Controller {
@@ -23,6 +24,7 @@ class Controller {
     $this->response->AddResponse('saved',     false);
     $this->response->AddResponse('login',     false);
     $this->response->AddResponse('success',   false);
+    $this->response->AddResponse('validated', false);
     $this->response->AddResponse('response',  'Ingen uppgift utförd.');
     $this->pdo = DB::get($this->response);
     if ($this->pdo == false) {
@@ -44,8 +46,19 @@ class Controller {
     }
     if (!$login || $isAuthenticated) {
       $unvalidatedData = json_decode(trim(file_get_contents('php://input')), true);
+      if ($id !== -1) {
+        $id = Functions::validateInt($id, 0);
+        if (is_null($id)) {
+          $this->response->AddResponse('error', 'Ogiltigt mål ID. Måste vara ett positivt heltal.');
+          $this->response->Exit(404);
+        }
+      }
       $Validator = new Validate($this->response);
       $validatedData = $Validator->ValidateData($unvalidatedData);
+      if ($validatedData == false && ($_SERVER['REQUEST_METHOD'] == "POST" || $_SERVER['REQUEST_METHOD'] == "PUT")) {
+        $this->response->Exit(400);
+      }
+
       switch($_SERVER['REQUEST_METHOD'])
       {
         case "GET":

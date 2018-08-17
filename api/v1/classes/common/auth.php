@@ -24,6 +24,8 @@ final class Auth {
 
     if (!self::HammerGuard($response, $pdo, false)) {
       $response->AddResponse('error', 'För många inloggningsförsök. Prova igen lite senare.');
+      header('WWW-Authenticate: Basic');
+      $response->Exit(429);
       return false;
     }
     
