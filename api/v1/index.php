@@ -99,7 +99,6 @@ Moment::setDefaultTimezone('CET');
 Moment::setLocale('se_SV');
 
 
-/* NOTE: response can't be passed as route param. Reserved! */
 $router->addRoutes(array(
   array('POST',           '/users/auth[/]?',                function()         { $start = new Controller; echo $start->auth('login');               }),
   array('POST',           '/users/auth/refresh[/]?',        function()         { $start = new Controller; echo $start->auth('refresh');             }),
@@ -110,6 +109,8 @@ $router->addRoutes(array(
   array('GET|POST',       '/tours/categories[/]?',          function()         { $start = new Controller; echo $start->start('categories'      );   }),
   array('GET|PUT|DELETE', '/bookings/[i:id]?[/]?',          function($id = -1) { $start = new Controller; echo $start->start('bookings',    $id);   }),
   array('GET|POST',       '/bookings[/]?',                  function()         { $start = new Controller; echo $start->start('bookings'        );   }),
+  array('GET|PUT|DELETE', '/reservations/[i:id]?[/]?',      function($id = -1) { $start = new Controller; echo $start->start('reservations',$id);   }),
+  array('GET|POST',       '/reservations[/]?',              function()         { $start = new Controller; echo $start->start('reservations'    );   }),
   array('GET|PUT|DELETE', '/customers/[i:id]?[/]?',         function($id = -1) { $start = new Controller; echo $start->start('customers',   $id);   }),
   array('GET|POST',       '/customers[/]?',                 function()         { $start = new Controller; echo $start->start('customers'       );   }),
   array('GET|PUT|DELETE', '/leads/[i:id]?[/]?',             function($id = -1) { $start = new Controller; echo $start->start('leads',       $id);   }),
