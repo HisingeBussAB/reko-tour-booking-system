@@ -30,7 +30,7 @@ final class Auth {
     }
     
     try {
-      $sql = "SELECT TOP 1 * FROM Auth WHERE username = :user ORDER BY AuthID;";
+      $sql = "SELECT TOP 1 * FROM Auth WHERE [user] = :user ORDER BY id;";
       $sth = $pdo->prepare($sql);
       $sth->bindParam(':user', $user, \PDO::PARAM_STR);
       $sth->execute(); 
@@ -47,7 +47,7 @@ final class Auth {
 
     if (password_verify(trim($_SERVER['PHP_AUTH_PW']) . AUTH_PWD_PEPPER, $result['pwd'])) {
 
-      $userid = $result['authid'];
+      $userid = $result['id'];
       $now = time();
       $accessExp = $now + 3700; //+1 hour
       $refreshExp = $now + 7776000;//+90 days
@@ -119,7 +119,7 @@ final class Auth {
     //We should validate the user still exist before issuing new credentials
 
     try {
-      $sql = "SELECT TOP 1 AuthID FROM Auth WHERE username = :user ORDER BY AuthID;";
+      $sql = "SELECT TOP 1 id FROM Auth WHERE [user] = :user ORDER BY id;";
       $sth = $pdo->prepare($sql);
       $sth->bindParam(':user', $user, \PDO::PARAM_STR);
       $sth->execute(); 
@@ -136,12 +136,12 @@ final class Auth {
 
 
     if ($decoded['decoded']) {
-      if ($result['authid'] != $decoded['jwt']['sub']) {
+      if ($result['id'] != $decoded['jwt']['sub']) {
         $response->AddResponse('error', 'Refresh token tillhör inte den här användaren.');
         return false;
       }
 
-      $userid = $result['authid'];
+      $userid = $result['id'];
       $now = time();
       $accessExp = $now + 3700; //+1 hour
       $refreshExp = $now + 7776000;//+90 days
