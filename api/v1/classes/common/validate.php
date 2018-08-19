@@ -44,7 +44,7 @@ class Validate {
    * This validation corresponds to the database documentation
    * 
    * Strings are not sanitized just casted and RAW filtered.
-   * We need the actual data in the database - prepare statements and sanatize output.
+   * We need the actual data in the database - prepare statements and API should not be excplicilty trusted in front-end ie. do not dangerously set innerHTML..
    * 
    * This mastodont switch should be split down using actions and item cases.
    * But the database does not have that many tables or ambigious keys so this should be sufficient for now.
@@ -209,16 +209,7 @@ class Validate {
 
       //KATEGORI
 
-      case "kategori":
-        $newValue = Functions::sanatizeStringUnsafe($value);
-        if (is_null($newValue)) {$this->response->AddResponse('error', 'Kategorin måste ha en benämning.');}
-        if (strlen($newValue) > 60) {$newValue = NULL; $this->response->AddResponse('error', 'Kategorinamnet är för långt. Max 60 tecken.');}
-        break;
 
-      case "aktiv":
-        $newValue = Functions::validateBoolToBit($value);
-        if (is_null($newValue)) {$this->response->AddResponse('error', 'Aktiv måste anges som true eller false.');}
-        break;
 
       //BETALNING
       case "betalningnr":
@@ -310,8 +301,8 @@ class Validate {
       //fixed same as in KalkylKostnad
 
       default: 
-        $this->response->AddResponse('error', "Servern kan inte ta emot fältet " . htmlspecialchars($key) . ".");
-        $this->response->AddResponsePushToArray('invalidKey', array(htmlspecialchars($key) => htmlspecialchars($value)));
+        $this->response->AddResponse('error', "Servern kan inte ta emot fältet " . $key . ".");
+        $this->response->AddResponsePushToArray('invalidKey', array($key => $value));
         array_push($this->validationErrors, array($key => "ForbiddenKey"));
         $newValue = "ForbiddenKey";
         break;
@@ -319,7 +310,7 @@ class Validate {
     }
 
     if (is_null($newValue)) {
-      $this->response->AddResponsePushToArray('invalidData', array(htmlspecialchars($key) => htmlspecialchars($value)));
+      $this->response->AddResponsePushToArray('invalidData', array($key => $value));
       array_push($this->validationErrors, array($key => $value));
     }
     return $newValue;

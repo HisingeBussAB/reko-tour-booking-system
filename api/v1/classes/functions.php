@@ -19,6 +19,8 @@ final class Functions {
    * 
    * Based on answer in https://stackoverflow.com/questions/13036160/phps-array-map-including-keys
    * Recursivity and key tree tracker added by Håkan Arnoldson
+   * 
+   * Unused fuction!!!
    **/
   public static function array_map_assoc_recursive(callable $f, array $a, array $kt = ['', 0]) {
     return array_column(array_map(function ($key, $value) use ($f, $kt) {
@@ -74,7 +76,7 @@ final class Functions {
 
   public static function sanatizeStringUnsafe($string) {
     //Just make sure it is a string, trim and casted as such. 
-    //statements should be prepared and htmlspecialchars should be used on output.
+    //statements should be prepared and the API should not be excplicilty trusted in front-end ie. do not dangerously set innerHTML.
     if (gettype($string) != "integer" && gettype($string) != "string") { return NULL; }
     $new = filter_var(trim($string), FILTER_UNSAFE_RAW);
     if(empty($new)) { return NULL; }

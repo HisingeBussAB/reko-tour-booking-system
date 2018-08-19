@@ -36,20 +36,6 @@ class Responder {
     array_push($this->output[$key], $array);
   }
 
-  public function AddResponseToArrayOnKey(string $mainkey, $item) {
-    if (empty($this->output[$mainkey]) || !is_array($this->output[$mainkey])) {
-      $this->output[$mainkey] = array();
-    }
-    $this->output[$mainkey][] = $item;
-  }
-
-  
-  public function AddResponseAddArray(array $a) {
-    foreach ($a as $key => $value) {
-      $this->output[$key] = $value;
-    }
-  }
-
   public function GetResponse() {
     return json_encode($this->output);
   }
