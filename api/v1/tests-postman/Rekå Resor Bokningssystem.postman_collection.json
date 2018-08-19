@@ -6,7 +6,7 @@
 	},
 	"item": [
 		{
-			"_postman_id": "c9a02def-bc93-488f-a445-0556fb6729d6",
+			"_postman_id": "5426bbca-c606-4faf-a353-104186990b5b",
 			"name": "timestamp",
 			"event": [
 				{
@@ -66,6 +66,1554 @@
 					]
 				},
 				"description": "Get servertime"
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "c7148cce-bbe5-4151-99bb-9605d61fb9da",
+			"name": "users/auth Don't send a username",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "cb9e6712-0bf7-413f-8b35-e8dce7da1721",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 401 and body contains error\", function () {",
+							"    pm.response.to.have.status(401);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"    pm.response.to.have.jsonBody(\"error\"); ",
+							"});",
+							"",
+							"pm.test(\"WWW-Authenticate is present\", function () {",
+							"    pm.response.to.have.header(\"WWW-Authenticate\");",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{Pwd}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{BaseURL}}users/auth",
+					"host": [
+						"{{BaseURL}}users"
+					],
+					"path": [
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "8d504658-91af-498e-bfb4-522113d3bf8c",
+			"name": "users/auth Don't send a password",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "cb9e6712-0bf7-413f-8b35-e8dce7da1721",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 401 and body contains error\", function () {",
+							"    pm.response.to.have.status(401);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"    pm.response.to.have.jsonBody(\"error\"); ",
+							"});",
+							"",
+							"pm.test(\"WWW-Authenticate is present\", function () {",
+							"    pm.response.to.have.header(\"WWW-Authenticate\");",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "{{Username}}",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{BaseURL}}users/auth",
+					"host": [
+						"{{BaseURL}}users"
+					],
+					"path": [
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "c022fd26-82c3-47d5-9203-7f9483c0840e",
+			"name": "users/auth Wrong credentials",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "cb9e6712-0bf7-413f-8b35-e8dce7da1721",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 401 and body contains error\", function () {",
+							"    pm.response.to.have.status(401);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"    pm.response.to.have.jsonBody(\"error\"); ",
+							"});",
+							"",
+							"pm.test(\"WWW-Authenticate is present\", function () {",
+							"    pm.response.to.have.header(\"WWW-Authenticate\");",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "fake",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "fake",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{BaseURL}}users/auth",
+					"host": [
+						"{{BaseURL}}users"
+					],
+					"path": [
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "6d3c10c4-8acb-43fe-be94-338e0c4ba7d0",
+			"name": "users/auth AutoUser Login",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "aee6c27a-2d67-4ca6-a629-4fbb3c078835",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 202 and json body returned\", function () {",
+							"    pm.response.to.have.status(202);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"",
+							"postman.setEnvironmentVariable(\"AccessJWT\", jsonData.access.token)",
+							"postman.setEnvironmentVariable(\"RefreshJWT\", jsonData.refresh.token)",
+							"",
+							"",
+							"var schema = {",
+							"\"$schema\": \"http://json-schema.org/draft-04/schema#\",",
+							"\"type\" : \"object\",",
+							"  \"properties\": {",
+							"    \"saved\": { ",
+							"        \"type\": \"boolean\"",
+							"    },",
+							"    \"login\": { ",
+							"        \"type\": \"boolean\",",
+							"        \"enum\": [true]",
+							"    },",
+							"    \"success\": { ",
+							"        \"type\": \"boolean\"",
+							"    },",
+							"    \"response\": { ",
+							"        \"type\": \"string\"",
+							"    },",
+							"    \"access\": { ",
+							"        \"type\": \"object\",",
+							"        \"required\": [ \"token\", \"expires\"],",
+							"        \"properties\": {",
+							"            \"token\": {",
+							"                \"type\": \"string\"",
+							"            },",
+							"            \"expires\": {",
+							"                \"type\": \"number\"",
+							"            }",
+							"        }",
+							"    },",
+							"    \"refresh\": { ",
+							"        \"type\": \"object\",",
+							"        \"required\": [ \"token\", \"expires\"],",
+							"        \"properties\": {",
+							"            \"token\": {",
+							"                \"type\": \"string\"",
+							"            },",
+							"            \"expires\": {",
+							"                \"type\": \"number\"",
+							"            }",
+							"        }",
+							"    }",
+							"  ",
+							"},",
+							"\"required\": [ \"login\", \"refresh\", \"access\", \"response\"]",
+							"};",
+							"",
+							"",
+							"pm.test('Schema is valid', function() {",
+							"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{Pwd}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{Username}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{BaseURL}}users/auth",
+					"host": [
+						"{{BaseURL}}users"
+					],
+					"path": [
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "807637fa-f3a8-4a10-bbfc-9c97f4f303a8",
+			"name": "users/auth/refresh Refresh",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "1a10e414-5934-4f67-95f6-8eeedec81370",
+						"type": "text/javascript",
+						"exec": [
+							"",
+							"",
+							"",
+							"pm.test(\"Status code is 202 and json body returned\", function () {",
+							"    pm.response.to.have.status(202);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"",
+							"postman.setEnvironmentVariable(\"AccessJWT\", jsonData.access.token)",
+							"postman.setEnvironmentVariable(\"RefreshJWT\", jsonData.refresh.token)",
+							"",
+							"",
+							"var schema = {",
+							"\"$schema\": \"http://json-schema.org/draft-04/schema#\",",
+							"\"type\" : \"object\",",
+							"  \"properties\": {",
+							"    \"servertime\": {",
+							"      \"type\": \"number\"  ",
+							"    },",
+							"    \"saved\": { ",
+							"        \"type\": \"boolean\"",
+							"    },",
+							"    \"login\": { ",
+							"        \"type\": \"boolean\",",
+							"        \"enum\": [true]",
+							"    },",
+							"    \"success\": { ",
+							"        \"type\": \"boolean\"",
+							"    },",
+							"    \"response\": { ",
+							"        \"type\": \"string\"",
+							"    },",
+							"    \"access\": { ",
+							"        \"type\": \"object\",",
+							"        \"required\": [ \"token\", \"expires\"],",
+							"        \"properties\": {",
+							"            \"token\": {",
+							"                \"type\": \"string\"",
+							"            },",
+							"            \"expires\": {",
+							"                \"type\": \"number\"",
+							"            }",
+							"        }",
+							"    },",
+							"    \"refresh\": { ",
+							"        \"type\": \"object\",",
+							"        \"required\": [ \"token\", \"expires\"],",
+							"        \"properties\": {",
+							"            \"token\": {",
+							"                \"type\": \"string\"",
+							"            },",
+							"            \"expires\": {",
+							"                \"type\": \"number\"",
+							"            }",
+							"        }",
+							"    }",
+							"  ",
+							"},",
+							"\"required\": [ \"login\", \"refresh\", \"access\", \"response\", \"servertime\"]",
+							"};",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"pm.test('Schema is valid', function() {",
+							"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{RefreshJWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"user\": \"{{Username}}\"\n}"
+				},
+				"url": {
+					"raw": "{{BaseURL}}users/auth/refresh",
+					"host": [
+						"{{BaseURL}}users"
+					],
+					"path": [
+						"auth",
+						"refresh"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "68207e02-34a9-49e4-b1af-481685f4ad72",
+			"name": "users/auth/refresh Refresh invalid",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "3978082a-7da3-4cd3-b681-773cda0a74e2",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 401 and body contains error\", function () {",
+							"    pm.response.to.have.status(401);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"    pm.response.to.have.jsonBody(\"error\"); ",
+							"});",
+							"",
+							"pm.test(\"WWW-Authenticate is present\", function () {",
+							"    pm.response.to.have.header(\"WWW-Authenticate\");",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "invalid",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"user\": \"{{Username}}\"\n}"
+				},
+				"url": {
+					"raw": "{{BaseURL}}users/auth/refresh",
+					"host": [
+						"{{BaseURL}}users"
+					],
+					"path": [
+						"auth",
+						"refresh"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "c2c213f5-428b-4902-a1f3-520dcf964db3",
+			"name": "users/auth/revoke Revoke",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "3978082a-7da3-4cd3-b681-773cda0a74e2",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 401 and body contains error\", function () {",
+							"    pm.response.to.have.status(401);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"    pm.response.to.have.jsonBody(\"error\"); ",
+							"});",
+							"",
+							"pm.test(\"WWW-Authenticate is present\", function () {",
+							"    pm.response.to.have.header(\"WWW-Authenticate\");",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "invalid",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"user\": \"{{Username}}\"\n}"
+				},
+				"url": {
+					"raw": "{{BaseURL}}users/auth/revoke",
+					"host": [
+						"{{BaseURL}}users"
+					],
+					"path": [
+						"auth",
+						"revoke"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "a962d6f1-39f2-48aa-9b9c-2e39eee92767",
+			"name": "tours/tours Check failed request auth",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "f91497e2-cdfb-4a4a-bbb1-f05c8e7f3f1c",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 401\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							"",
+							"pm.test(\"Login is false\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    console.log(jsonData.login)",
+							"    pm.expect(jsonData.login).to.eql(false);",
+							"});",
+							"",
+							"",
+							"",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "none",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{BaseURL}}tours",
+					"host": [
+						"{{BaseURL}}tours"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "f50b8066-0c6e-4795-870a-6529c52c6842",
+			"name": "users/auth AutoUser Log back in after revoke test",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "aee6c27a-2d67-4ca6-a629-4fbb3c078835",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 202 and json body returned\", function () {",
+							"    pm.response.to.have.status(202);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"",
+							"postman.setEnvironmentVariable(\"AccessJWT\", jsonData.access.token)",
+							"postman.setEnvironmentVariable(\"RefreshJWT\", jsonData.refresh.token)",
+							"",
+							"",
+							"var schema = {",
+							"\"$schema\": \"http://json-schema.org/draft-04/schema#\",",
+							"\"type\" : \"object\",",
+							"  \"properties\": {",
+							"    \"saved\": { ",
+							"        \"type\": \"boolean\"",
+							"    },",
+							"    \"login\": { ",
+							"        \"type\": \"boolean\",",
+							"        \"enum\": [true]",
+							"    },",
+							"    \"success\": { ",
+							"        \"type\": \"boolean\"",
+							"    },",
+							"    \"response\": { ",
+							"        \"type\": \"string\"",
+							"    },",
+							"    \"access\": { ",
+							"        \"type\": \"object\",",
+							"        \"required\": [ \"token\", \"expires\"],",
+							"        \"properties\": {",
+							"            \"token\": {",
+							"                \"type\": \"string\"",
+							"            },",
+							"            \"expires\": {",
+							"                \"type\": \"number\"",
+							"            }",
+							"        }",
+							"    },",
+							"    \"refresh\": { ",
+							"        \"type\": \"object\",",
+							"        \"required\": [ \"token\", \"expires\"],",
+							"        \"properties\": {",
+							"            \"token\": {",
+							"                \"type\": \"string\"",
+							"            },",
+							"            \"expires\": {",
+							"                \"type\": \"number\"",
+							"            }",
+							"        }",
+							"    }",
+							"  ",
+							"},",
+							"\"required\": [ \"login\", \"refresh\", \"access\", \"response\"]",
+							"};",
+							"",
+							"",
+							"pm.test('Schema is valid', function() {",
+							"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{Pwd}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{Username}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{BaseURL}}users/auth",
+					"host": [
+						"{{BaseURL}}users"
+					],
+					"path": [
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "bad2fe82-95c1-4fd3-a7dc-06c839ca936c",
+			"name": "tours/tours Check logged in succesfull",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "3a22b319-8d71-4ecf-93b6-29a19eafe794",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AccessJWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"user\": \"{{Username}}\"\n}"
+				},
+				"url": {
+					"raw": "{{BaseURL}}categories",
+					"host": [
+						"{{BaseURL}}categories"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "19743d46-1088-4d2e-9423-5a6db16fab96",
+			"name": "categories Add Category Test",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "10c83c00-6b75-47a3-a0bc-7d3a1bf83f4c",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 201 and json body exists\", function () {",
+							"    pm.response.to.have.status(201);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"});",
+							"",
+							"pm.test(\"login true, success true\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.login).to.eql(true);",
+							"    pm.expect(jsonData.success).to.eql(true);",
+							"});",
+							"",
+							"",
+							"var jsonData = pm.response.json();",
+							"pm.environment.set(\"testIDCategory\", jsonData.response.updatedid);",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AccessJWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"label\": \"PostmanTestCategory\",\n\t\"active\": false\n}"
+				},
+				"url": {
+					"raw": "{{BaseURL}}categories",
+					"host": [
+						"{{BaseURL}}categories"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "ac2f85d6-3e10-48be-9986-c82cc47c4bd1",
+			"name": "categories Get Categories Test",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "7d5ab9bd-efa3-4a39-bf1d-c6416999bebd",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200 and json body exists\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"});",
+							"",
+							"var schema = {",
+							"\"$schema\": \"http://json-schema.org/draft-04/schema#\",",
+							"\"type\" : \"object\",",
+							"  \"properties\": {",
+							"    \"login\": { ",
+							"        \"type\": \"boolean\",",
+							"        \"enum\": [true]",
+							"    },",
+							"    \"success\": { ",
+							"        \"type\": \"boolean\",",
+							"        \"enum\": [true]",
+							"    },",
+							"    \"response\": { ",
+							"        \"type\": \"object\",",
+							"        \"required\": [ \"categories\"],",
+							"        \"properties\": {",
+							"            \"categories\": {",
+							"                \"type\": \"array\"",
+							"            }",
+							"        }",
+							"    }",
+							"},",
+							"\"required\": [ \"login\", \"success\", \"response\"]",
+							"};",
+							"",
+							"var jsonData = pm.response.json();",
+							"",
+							"pm.test('Schema is valid', function() {",
+							"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AccessJWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{BaseURL}}categories/1",
+					"host": [
+						"{{BaseURL}}categories"
+					],
+					"path": [
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "0ebdc61d-1239-4b0d-a6c5-b6ce8199b73c",
+			"name": "categories Edit CategoryName Test",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "310285a0-5af0-41b2-9139-c3ebac40c6d9",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200 and json body exists\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"",
+							"pm.test(\"Updated ID returned\", function () {",
+							"    pm.expect(jsonData.response.updatedid).to.eql(Number(pm.environment.get('testIDCategory')));",
+							"});",
+							"",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AccessJWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"label\": \"ReplacedCategoryLabel\"\n}"
+				},
+				"url": {
+					"raw": "{{BaseURL}}categories/{{testIDCategory}}",
+					"host": [
+						"{{BaseURL}}categories"
+					],
+					"path": [
+						"{{testIDCategory}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "2fbc812a-c6dc-4f81-bf5b-402d63d85592",
+			"name": "categories Edit CategoryName Active",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "a83be21a-d45a-4de0-b268-d2e3a373f94c",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200 and json body exists\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"});",
+							"",
+							"var schema = {",
+							"\"$schema\": \"http://json-schema.org/draft-04/schema#\",",
+							"\"type\" : \"object\",",
+							"  \"properties\": {",
+							"    \"login\": { ",
+							"        \"type\": \"boolean\",",
+							"        \"enum\": [true]",
+							"    },",
+							"    \"success\": { ",
+							"        \"type\": \"boolean\",",
+							"        \"enum\": [true]",
+							"    },",
+							"    \"response\": { ",
+							"        \"type\": \"object\",",
+							"        \"required\": [ \"categories\"],",
+							"        \"properties\": {",
+							"            \"categories\": {",
+							"                \"type\": \"array\"",
+							"            }",
+							"        }",
+							"    }",
+							"},",
+							"\"required\": [ \"login\", \"success\", \"response\"]",
+							"};",
+							"",
+							"var jsonData = pm.response.json();",
+							"",
+							"pm.test('Schema is valid', function() {",
+							"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+							"});",
+							"",
+							"pm.environment.unset(\"variable_key\");"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AccessJWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"label\": \"ReplacedCategoryLabel\",\n\t\"active\": true\n}"
+				},
+				"url": {
+					"raw": "{{BaseURL}}categories/{{testIDCategory}}",
+					"host": [
+						"{{BaseURL}}categories"
+					],
+					"path": [
+						"{{testIDCategory}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "d678e6f8-41c7-4e1a-9cf9-995bfd140140",
+			"name": "categories Get Category Test",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "5a915af0-d57f-4d9d-a6e1-26108ccdd5b7",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200 and json body exists\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"});",
+							"",
+							"var schema = {",
+							"\"$schema\": \"http://json-schema.org/draft-04/schema#\",",
+							"\"type\" : \"object\",",
+							"  \"properties\": {",
+							"    \"login\": { ",
+							"        \"type\": \"boolean\",",
+							"        \"enum\": [true]",
+							"    },",
+							"    \"success\": { ",
+							"        \"type\": \"boolean\",",
+							"        \"enum\": [true]",
+							"    },",
+							"    \"response\": { ",
+							"        \"type\": \"object\",",
+							"        \"required\": [ \"categories\"],",
+							"        \"properties\": {",
+							"            \"categories\": {",
+							"                \"type\": \"array\"",
+							"            }",
+							"        }",
+							"    }",
+							"},",
+							"\"required\": [ \"login\", \"success\", \"response\"]",
+							"};",
+							"",
+							"var jsonData = pm.response.json();",
+							"",
+							"pm.test('Schema is valid', function() {",
+							"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+							"});",
+							"",
+							"",
+							"",
+							"pm.test(\"Category Label was changed\", function () {",
+							"    pm.expect(jsonData.response.categories[0].label).to.eql(\"ReplacedCategoryLabel\");",
+							"});",
+							"",
+							"pm.test(\"Category was changed to active\", function () {",
+							"    pm.expect(jsonData.response.categories[0].active).to.eql(true);",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AccessJWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{BaseURL}}categories/{{testIDCategory}}",
+					"host": [
+						"{{BaseURL}}categories"
+					],
+					"path": [
+						"{{testIDCategory}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "e64e6ff8-9d6a-4133-a7fb-0cbec54ee4f6",
+			"name": "categories Delete Category Test",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "873b7222-8b58-437d-a1de-a16c48bcc8fa",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200 and json body exists\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"});",
+							"",
+							"var schema = {",
+							"\"$schema\": \"http://json-schema.org/draft-04/schema#\",",
+							"\"type\" : \"object\",",
+							"  \"properties\": {",
+							"    \"login\": { ",
+							"        \"type\": \"boolean\",",
+							"        \"enum\": [true]",
+							"    },",
+							"    \"success\": { ",
+							"        \"type\": \"boolean\",",
+							"        \"enum\": [true]",
+							"    },",
+							"    \"response\": { ",
+							"        \"type\": \"object\",",
+							"        \"required\": [ \"categories\"],",
+							"        \"properties\": {",
+							"            \"categories\": {",
+							"                \"type\": \"array\"",
+							"            }",
+							"        }",
+							"    }",
+							"},",
+							"\"required\": [ \"login\", \"success\", \"response\"]",
+							"};",
+							"",
+							"var jsonData = pm.response.json();",
+							"",
+							"pm.test('Schema is valid', function() {",
+							"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+							"});",
+							"",
+							"",
+							"",
+							"pm.test(\"Category Label was changed\", function () {",
+							"    pm.expect(jsonData.response.categories[0].label).to.eql(\"ReplacedCategoryLabel\");",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AccessJWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{BaseURL}}categories/{{testIDCategory}}",
+					"host": [
+						"{{BaseURL}}categories"
+					],
+					"path": [
+						"{{testIDCategory}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"_postman_id": "24c0beb1-523f-4777-a4f9-b92f0f91275d",
+			"name": "categories Delete Category Test Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "873b7222-8b58-437d-a1de-a16c48bcc8fa",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200 and json body exists\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"});",
+							"",
+							"var schema = {",
+							"\"$schema\": \"http://json-schema.org/draft-04/schema#\",",
+							"\"type\" : \"object\",",
+							"  \"properties\": {",
+							"    \"login\": { ",
+							"        \"type\": \"boolean\",",
+							"        \"enum\": [true]",
+							"    },",
+							"    \"success\": { ",
+							"        \"type\": \"boolean\",",
+							"        \"enum\": [true]",
+							"    },",
+							"    \"response\": { ",
+							"        \"type\": \"object\",",
+							"        \"required\": [ \"categories\"],",
+							"        \"properties\": {",
+							"            \"categories\": {",
+							"                \"type\": \"array\"",
+							"            }",
+							"        }",
+							"    }",
+							"},",
+							"\"required\": [ \"login\", \"success\", \"response\"]",
+							"};",
+							"",
+							"var jsonData = pm.response.json();",
+							"",
+							"pm.test('Schema is valid', function() {",
+							"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+							"});",
+							"",
+							"",
+							"",
+							"pm.test(\"Category Label was changed\", function () {",
+							"    pm.expect(jsonData.response.categories[0].label).to.eql(\"ReplacedCategoryLabel\");",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AccessJWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{BaseURL}}categories/{{testIDCategory}}",
+					"host": [
+						"{{BaseURL}}categories"
+					],
+					"path": [
+						"{{testIDCategory}}"
+					]
+				}
 			},
 			"response": []
 		}
