@@ -209,16 +209,7 @@ class Validate {
 
       //KATEGORI
 
-      case "kategori":
-        $newValue = Functions::sanatizeStringUnsafe($value);
-        if (is_null($newValue)) {$this->response->AddResponse('error', 'Kategorin måste ha en benämning.');}
-        if (strlen($newValue) > 60) {$newValue = NULL; $this->response->AddResponse('error', 'Kategorinamnet är för långt. Max 60 tecken.');}
-        break;
 
-      case "aktiv":
-        $newValue = Functions::validateBoolToBit($value);
-        if (is_null($newValue)) {$this->response->AddResponse('error', 'Aktiv måste anges som true eller false.');}
-        break;
 
       //BETALNING
       case "betalningnr":
