@@ -14,13 +14,13 @@ abstract class Model {
     $this->pdo = $pdo;
   }
 
-  abstract public function get($_params);
+  abstract public function get(array $_params);
 
-  abstract public function post($_params);
+  abstract public function post(array $_params, bool $trash = false);
 
-  abstract public function put($_params);
+  abstract public function put(array $_params);
 
-  abstract public function delete($_params);
+  abstract public function delete(array $_params);
 
 
 }
