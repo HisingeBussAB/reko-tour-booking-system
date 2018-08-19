@@ -44,7 +44,7 @@ class Controller {
     }
     if (!$login || $isAuthenticated) {
       $unvalidatedData = json_decode(trim(file_get_contents('php://input')), true);
-      if ($id !== -1) {
+      if ($id != -1) {
         $id = Functions::validateInt($id, 0);
         if (is_null($id)) {
           $this->response->AddResponse('error', 'Ogiltigt mål ID. Måste vara ett positivt heltal.');
@@ -73,7 +73,7 @@ class Controller {
         break;
 
         case "PUT":
-          $this->modelInvoker($item, 'put', $id, $unvalidatedData);
+          $this->modelInvoker($item, 'put', $unvalidatedData);
           if (!ENV_CRON_JOB) { Maintenance::refreshSecrets($this->response, $this->pdo); }
           
         break;
@@ -94,15 +94,18 @@ class Controller {
       $REQUEST = new $model($this->response, $this->pdo);
       $data = $REQUEST->$function($unvalidatedData);
       if ($function == 'post' && $data != false) {
-        $this->response->AddResponse('response', 'OK');
+        $this->response->AddResponse('response', $data);
+        $this->response->AddResponse('success', true);
         http_response_code(201);
       } 
       if ($function == 'get' && $data != false) {
         $this->response->AddResponse('response', $data);
+        $this->response->AddResponse('success', true);
         http_response_code(200);
       }
       if (($function == 'delete' ||  $function == 'put') && $data != false) {
-        $this->response->AddResponse('response', 'OK');
+        $this->response->AddResponse('response', $data);
+        $this->response->AddResponse('success', true);
         http_response_code(200);
       }
          
