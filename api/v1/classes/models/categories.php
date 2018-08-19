@@ -6,90 +6,124 @@ use RekoBooking\classes\Functions;
 
 class Categories extends Model {
 
-  public function get($_param) {
-   
-  }
-
-  public function post($_params) {
-    $params = $this->paramsValidationWithExit($_params);
-    if ($params['active'] == -1) {
-      $params['active'] = 1;
-    } 
-    try {
-      $sql = "INSERT INTO Kategori (Kategori, Aktiv) VALUES (:cat, :act);";
-      $sth = $this->pdo->prepare($sql);
-      $sth->bindParam(':cat', $params['category'],   \PDO::PARAM_STR);
-      $sth->bindParam(':act', $params['active'],     \PDO::PARAM_INT);
-      $sth->execute(); 
-    } catch(\PDOException $e) {
-      $this->response->DBError($e, __CLASS__, $sql);
-      $this->response->Exit(500);
-    }
-    $this->response->AddResponse('success', true);
-    return true;    
-  }
-
-  public function put($param) {
-    $id = $param['id'];
-    if ($id > 0) {
+  public function get(array $params) {
+    if ($params['id'] > 0 || $params['id'] == -1) {
       try {
-        $sql = "SELECT kategoriid FROM Kategori WHERE kategoriid = :id;";
+        if ($params['id'] == -1) {
+          $sql = "SELECT * FROM Categories;";
+        } else {
+          $sql = "SELECT * FROM Categories WHERE id = :id;";
+        }
         $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':id', $id,     \PDO::PARAM_INT);
+        if ($params['id'] != -1) { $sth->bindParam(':id', $params['id'], \PDO::PARAM_INT); }
         $sth->execute(); 
-        $result = $sth->fetch(\PDO::FETCH_ASSOC);
+        $result = $sth->fetchAll(\PDO::FETCH_ASSOC); 
       } catch(\PDOException $e) {
         $this->response->DBError($e, __CLASS__, $sql);
         $this->response->Exit(500);
       }
-      if (!$result) {
-        $this->response->AddResponse('error', 'Kategorin som skall uppdateras hittades inte.');
+      if (count($result) < 1) {
+        $this->response->AddResponse('error', 'Kategorin hittades inte.');
         $this->response->Exit(404);
+      } else {
+        $i = 0;
+        foreach ($result as $item) {
+          $result[$i]['active'] = filter_var($result[$i]['active'], FILTER_VALIDATE_BOOLEAN);
+          $i++;
+        }
+        return array('categories' => $result);
       }
     } else {
-      $this->response->AddResponse('error', 'Kategori id måste anges med positivt heltal.');
+      $this->response->AddResponse('error', 'Kategori id kan bara anges som ett positivt heltal, eller inte anges alls för alla kategorier.');
       $this->response->AddResponse('response', 'Begäran avbruten felaktigt id.');
       $this->response->Exit(400);
     }
-    $kategori = $this->validateCategory($param['category']);
-    $aktiv = 1;
-    if (isset($param['active'])) {
-      $aktiv = $this->validateActive($param['active']);
+    return false;
+  }
+
+  public function post(array $_params, bool $trash = false) {
+    
+    if (!$trash) {
+      $params = $this->paramsValidationWithExit($_params);
+      if ($params['active'] == -1) {
+        $params['active'] = 1;
+      } 
+      $sql = "INSERT INTO Categories (label, active) OUTPUT INSERTED.id VALUES (:cat, :act);";
+    } else {
+      $params = $_params;
+      $sql = "INSERT INTO [trashCategories] (id, label, active) VALUES (:id, :cat, :act);";
     }
-    if (is_null($aktiv) || $kategori == false) { 
-      $this->response->AddResponse('response', 'Ogiltig data skickad. Begäran avbruten.');
-      $this->response->Exit(400);
-    }
-    try {
-      $sql = "UPDATE Kategori SET kategori = :cat, aktiv = :act WHERE kategoriid = :id;";
+    //SET IDENTITY_INSERT [trashCategories] ON
+    //TODO Transaction for trash archiving;
+    var_dump($params);
+    try {     
       $sth = $this->pdo->prepare($sql);
-      $sth->bindParam(':id', $id,     \PDO::PARAM_INT);
-      $sth->bindParam(':cat', $kategori,  \PDO::PARAM_STR);
-      $sth->bindParam(':act', $aktiv,     \PDO::PARAM_INT);
+      $sth->bindParam(':cat', $params['label'],   \PDO::PARAM_STR);
+      $sth->bindParam(':act', $params['active'],     \PDO::PARAM_INT);
+      if ($trash) { $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT); }
       $sth->execute(); 
-      $result = $sth->fetch(\PDO::FETCH_ASSOC);
+      $result = $sth->fetch(\PDO::FETCH_ASSOC); 
     } catch(\PDOException $e) {
       $this->response->DBError($e, __CLASS__, $sql);
       $this->response->Exit(500);
     }
-        
+    return array('updatedid' => $result['id']);   
   }
 
-  public function delete($param) {
+  public function put(array $_params) {
+    $params = $this->paramsValidationWithExit($_params);
+
+    if ($this->get(array('id' => $params['id'])) !== false) {
+      try {
+        if ($params['active'] == -1) {
+          $sql = "UPDATE Categories SET label = :cat WHERE id = :id;";
+        } else {
+          $sql = "UPDATE Categories SET label = :cat, active = :act WHERE id = :id;";
+        }
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
+        $sth->bindParam(':cat', $params['label'],  \PDO::PARAM_STR);
+        if ($params['active'] != -1) { $sth->bindParam(':act', $params['active'],     \PDO::PARAM_INT); }
+        $sth->execute(); 
+      } catch(\PDOException $e) {
+        $this->response->DBError($e, __CLASS__, $sql);
+        $this->response->Exit(500);
+      }
+      return array('updatedid' => $params['id']);
+    }
+    return false;    
+  }
+
+  public function delete(array $params) {
+    $originalData = $this->get(array('id' => $params['id']));
+    if ($originalData !== false) {
+      try {
+        $sql = "DELETE FROM Categories WHERE id = :id;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
+        $sth->execute(); 
+      } catch(\PDOException $e) {
+        $this->response->DBError($e, __CLASS__, $sql);
+        $this->response->Exit(500);
+      }
+      $this->post($originalData['categories'], true);
+      return array('updatedid' => $params['id']);
+    }
+    return false;    
     
   }
 
   private function paramsValidationWithExit($params) {
     $passed = true;
     $result = array();
-    if (isset($params['category'])) {
-      $result['category'] = Functions::sanatizeStringUnsafe($params['category']);
+    if (isset($params['label'])) {
+      $result['label'] = Functions::sanatizeStringUnsafe($params['label']);
     } else {
-      $result['category'] = '';
+      $result['label'] = '';
     }
-    if (empty($result['category'])) {
+    if (empty($result['label'])) {
       $this->response->AddResponse('error', 'Kategorin måste ha en benämning.');
-      $this->response->AddResponsePushToArray('invalidFields', array('category'));
+      $this->response->AddResponsePushToArray('invalidFields', array('label'));
       $passed = false;
     }
 
