@@ -19,6 +19,8 @@ final class Functions {
    * 
    * Based on answer in https://stackoverflow.com/questions/13036160/phps-array-map-including-keys
    * Recursivity and key tree tracker added by Håkan Arnoldson
+   * 
+   * Unused fuction!!!
    **/
   public static function array_map_assoc_recursive(callable $f, array $a, array $kt = ['', 0]) {
     return array_column(array_map(function ($key, $value) use ($f, $kt) {
