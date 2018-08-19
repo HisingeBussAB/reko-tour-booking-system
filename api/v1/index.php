@@ -128,6 +128,15 @@ $router->addRoutes(array(
     echo ob_get_clean(); 
     die();
   }),
+
+  //Temporary route for manual user creation
+  array('POST',            '/hashpwd[/]?', function() { 
+    $data = json_decode(trim(file_get_contents('php://input')), true);
+    echo json_encode(array('pwd' => password_hash($data['pwd'] . AUTH_PWD_PEPPER, PASSWORD_DEFAULT))); 
+    http_response_code(200); 
+    echo ob_get_clean(); 
+    die();
+  }),
 ));
 
 $match = $router->match();
