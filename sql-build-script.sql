@@ -1,4 +1,38 @@
-﻿-- Exported from QuickDBD: https://www.quickdatatabasediagrams.com/
+﻿DROP TABLE [HammerGuard]
+DROP TABLE [Tokens]
+--DROP TABLE [Auth]
+DROP TABLE [Bookings]
+DROP TABLE [Reservations]
+DROP TABLE [Customers]
+DROP TABLE [Bookings_Customers]
+DROP TABLE [Rooms]
+DROP TABLE [Tours]
+DROP TABLE [Categories_Tours] 
+DROP TABLE [Categories]
+DROP TABLE [Payments]
+DROP TABLE [Leads]
+DROP TABLE [Categories_Leads]
+DROP TABLE [Deadlines]
+DROP TABLE [Budgets]
+DROP TABLE [Budgets_Costs]
+DROP TABLE [Budgets_Earnings]
+DROP TABLE [trashBookings]
+DROP TABLE [trashReservations]
+DROP TABLE [trashCustomers]
+DROP TABLE [trashBookings_Customers]
+DROP TABLE [trashRooms]
+DROP TABLE [trashTours]
+DROP TABLE [trashCategories_Tours] 
+DROP TABLE [trashCategories]
+DROP TABLE [trashPayments]
+DROP TABLE [trashLeads]
+DROP TABLE [trashCategories_Leads]
+DROP TABLE [trashDeadlines]
+DROP TABLE [trashBudgets]
+DROP TABLE [trashBudgets_Costs]
+DROP TABLE [trashBudgets_Earnings]
+
+-- Exported from QuickDBD: https://www.quickdatatabasediagrams.com/
 -- Link to schema: https://app.quickdatabasediagrams.com/#/schema/w9zPqM6P8UOAWzy4IzSEkQ
 -- NOTE! If you have used non-SQL datatypes in your design, you will have to change these here.
 
@@ -19,17 +53,17 @@ CREATE TABLE [Tokens] (
     [username] varchar(255)  NULL 
 )
 
-CREATE TABLE [Auth] (
-    [id] bigint IDENTITY(1,1) NOT NULL ,
-    [user] varchar(255)  NOT NULL ,
-    [pwd] varchar(255)  NOT NULL ,
-    CONSTRAINT [PK_Auth] PRIMARY KEY CLUSTERED (
-        [id] ASC
-    ),
-    CONSTRAINT [UK_Auth_user] UNIQUE (
-        [user]
-    )
-)
+--CREATE TABLE [Auth] (
+--    [id] bigint IDENTITY(1,1) NOT NULL ,
+--    [user] varchar(255)  NOT NULL ,
+--    [pwd] varchar(255)  NOT NULL ,
+--    CONSTRAINT [PK_Auth] PRIMARY KEY CLUSTERED (
+--        [id] ASC
+--    ),
+--    CONSTRAINT [UK_Auth_user] UNIQUE (
+--        [user]
+--    )
+--)
 
 CREATE TABLE [Bookings] (
     [id] bigint IDENTITY(1,1) NOT NULL ,
@@ -105,6 +139,7 @@ CREATE TABLE [Tours] (
     [label] varchar(100)  NOT NULL ,
     [insuranceprice] bigint  NOT NULL ,
     [reservationfeeprice] bigint  NOT NULL ,
+    [departuredate] date NOT NULL ,
     CONSTRAINT [PK_Tours] PRIMARY KEY CLUSTERED (
         [id] ASC
     )
@@ -284,6 +319,7 @@ CREATE TABLE [trashTours] (
     [label] varchar(100)  NOT NULL ,
     [insuranceprice] bigint  NOT NULL ,
     [reservationfeeprice] bigint  NOT NULL ,
+    [departuredate] date NOT NULL ,
     CONSTRAINT [PK_trashTours] PRIMARY KEY CLUSTERED (
         [id] ASC
     )
