@@ -36,31 +36,23 @@ class Categories extends Model {
     } else {
       $this->response->AddResponse('error', 'Kategori id kan bara anges som ett positivt heltal, eller inte anges alls för alla kategorier.');
       $this->response->AddResponse('response', 'Begäran avbruten felaktigt id.');
-      $this->response->Exit(400);
+      $this->response->Exit(404);
     }
     return false;
   }
 
-  public function post(array $_params, bool $trash = false) {
+  public function post(array $_params) {
     
-    if (!$trash) {
-      $params = $this->paramsValidationWithExit($_params);
-      if ($params['active'] == -1) {
-        $params['active'] = 1;
-      } 
-      $sql = "INSERT INTO Categories (label, active) OUTPUT INSERTED.id VALUES (:cat, :act);";
-    } else {
-      $params = $_params;
-      $sql = "INSERT INTO [trashCategories] (id, label, active) VALUES (:id, :cat, :act);";
-    }
-    //SET IDENTITY_INSERT [trashCategories] ON
-    //TODO Transaction for trash archiving;
-    var_dump($params);
+    $params = $this->paramsValidationWithExit($_params);
+    if ($params['active'] == -1) {
+      $params['active'] = 1;
+    } 
+    $sql = "INSERT INTO Categories (label, active) OUTPUT INSERTED.id VALUES (:cat, :act);";
+
     try {     
       $sth = $this->pdo->prepare($sql);
       $sth->bindParam(':cat', $params['label'],   \PDO::PARAM_STR);
       $sth->bindParam(':act', $params['active'],     \PDO::PARAM_INT);
-      if ($trash) { $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT); }
       $sth->execute(); 
       $result = $sth->fetch(\PDO::FETCH_ASSOC); 
     } catch(\PDOException $e) {
@@ -95,20 +87,31 @@ class Categories extends Model {
   }
 
   public function delete(array $params) {
-    $originalData = $this->get(array('id' => $params['id']));
-    if ($originalData !== false) {
+    if ($this->get(array('id' => $params['id'])) !== false) {
       try {
-        $sql = "DELETE FROM Categories WHERE id = :id;";
+        $this->pdo->beginTransaction();
+        $sql = "DELETE FROM Categories OUTPUT DELETED.* WHERE id = :id;";
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
-        $sth->execute(); 
+        $sth->execute();
+        $result = $sth->fetch(\PDO::FETCH_ASSOC); 
+        $sql = "SET IDENTITY_INSERT [trashCategories] ON; 
+          INSERT INTO [trashCategories] (id, label, active) VALUES (:id, :cat, :act);
+          SET IDENTITY_INSERT [trashCategories] OFF;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $result['id'],     \PDO::PARAM_INT);
+        $sth->bindParam(':cat', $result['label'],     \PDO::PARAM_STR);
+        $sth->bindParam(':act', $result['active'],     \PDO::PARAM_STR);
+        $sth->execute();
+        $this->pdo->commit();
       } catch(\PDOException $e) {
         $this->response->DBError($e, __CLASS__, $sql);
+        $this->pdo->rollBack();
         $this->response->Exit(500);
       }
-      $this->post($originalData['categories'], true);
       return array('updatedid' => $params['id']);
     }
+    
     return false;    
     
   }
