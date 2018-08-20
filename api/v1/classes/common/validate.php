@@ -171,41 +171,7 @@ class Validate {
         if (is_null($newValue)) {$this->response->AddResponse('error', 'Avbeställningskydd betalt skall anges som true eller false.');}
         break;
 
-      //BOENDE
-
-      case "boende.boendenamn":
-        $newValue = Functions::sanatizeStringUnsafe($value);
-        if (is_null($newValue)) {$this->response->AddResponse('error', 'Rumstyp måste anges.');}
-        if (strlen($newValue) > 100) {$newValue = NULL; $this->response->AddResponse('error', 'Rumstyp är för långt. Max 100 tecken.');}
-        break;
-
-      case "boende.pris":
-        $newValue = Functions::validateInt($value, -2147483648, 2147483647);
-        if (is_null($newValue)) {$this->response->AddResponse('error', 'Priset måste anges som ett heltal och får inte vara orimligt stort.');}
-        break;
-
-      case "boende.antaltillg":
-        $newValue = Functions::validateInt($value, -2147483648, 2147483647);
-        if (is_null($newValue)) {$this->response->AddResponse('error', 'Tilläggspriset måste anges som ett heltal och får inte vara orimligt stort.');}
-        break;
-
-      //RESA
-
-      case "resa":
-        $newValue = Functions::sanatizeStringUnsafe($value);
-        if (is_null($newValue)) {$this->response->AddResponse('error', 'Resan måste ha ett namn.');}
-        if (strlen($newValue) > 100) {$newValue = NULL; $this->response->AddResponse('error', 'Namnet på resan är för långt. Max 100 tecken.');}
-        break;
-
-      case "avbskyddpris":
-        $newValue = Functions::validateInt($value);
-        if (is_null($newValue)) {$this->response->AddResponse('error', 'Priset för avbeställningsskydd måste anges som ett heltal.');}
-        break;
-
-      case "anmavgpris":
-        $newValue = Functions::validateInt($value);
-        if (is_null($newValue)) {$this->response->AddResponse('error', 'Anmälningsavgift måste anges som ett heltal.');}
-        break;
+      
 
       //KATEGORI
 
