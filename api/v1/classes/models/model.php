@@ -16,7 +16,7 @@ abstract class Model {
 
   abstract public function get(array $_params);
 
-  abstract public function post(array $_params, bool $trash = false);
+  abstract public function post(array $_params);
 
   abstract public function put(array $_params);
 
