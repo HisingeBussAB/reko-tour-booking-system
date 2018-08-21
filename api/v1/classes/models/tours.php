@@ -2,9 +2,8 @@
 namespace RekoBooking\classes\models;
 
 use RekoBooking\classes\models\Model;
+use RekoBooking\classes\models\Categories;
 use RekoBooking\classes\Functions;
-
-//TODO Add Category!!
 
 class Tours extends Model {
 
@@ -39,7 +38,18 @@ class Tours extends Model {
             $this->response->DBError($e, __CLASS__, $sql);
             $this->response->Exit(500);
           }
+          try {
+            $sql = "SELECT Categories.id as id, label FROM Categories INNER JOIN Categories_Tours ON Categories_Tours.categoryid = Categories.id WHERE Categories_Tours.tourid = :id;";
+            $sth = $this->pdo->prepare($sql);
+            $sth->bindParam(':id', $tour['id'], \PDO::PARAM_INT);
+            $sth->execute();
+            $categoryresult = $sth->fetchAll(\PDO::FETCH_ASSOC); 
+          } catch(\PDOException $e) {
+            $this->response->DBError($e, __CLASS__, $sql);
+            $this->response->Exit(500);
+          }
           $result[$key]['rooms'] = $roomresult;
+          $result[$key]['categories'] = $categoryresult;
         }
         return array('tours' => $result);
       }
@@ -53,6 +63,31 @@ class Tours extends Model {
 
   public function post(array $_params) {
     $params = $this->paramsValidationWithExit($_params);
+    
+    try {
+      $sql = "SELECT * FROM Rooms WHERE tourid = :id;";
+      $sth = $this->pdo->prepare($sql);
+      $sth->bindParam(':id', $tour['id'], \PDO::PARAM_INT);
+      $sth->execute();
+      $roomresult = $sth->fetchAll(\PDO::FETCH_ASSOC); 
+    } catch(\PDOException $e) {
+      $this->response->DBError($e, __CLASS__, $sql);
+      $this->response->Exit(500);
+    }
+
+    try {
+      $sql = "SELECT Categories.id as id, label FROM Categories INNER JOIN Categories_Tours ON Categories_Tours.categoryid = Categories.id WHERE Categories_Tours.tourid = :id;";
+      $sth = $this->pdo->prepare($sql);
+      $sth->bindParam(':id', $tour['id'], \PDO::PARAM_INT);
+      $sth->execute();
+      $categoryresult = $sth->fetchAll(\PDO::FETCH_ASSOC); 
+    } catch(\PDOException $e) {
+      $this->response->DBError($e, __CLASS__, $sql);
+      $this->response->Exit(500);
+    }
+
+    
+
     $sql = "INSERT INTO Tours (label, insuranceprice, reservationfeeprice, departuredate) OUTPUT INSERTED.id VALUES (:lab, :ins, :res, :dep);";
     try {     
       $this->pdo->beginTransaction();
@@ -73,6 +108,13 @@ class Tours extends Model {
         $sth->bindParam(':num', $room['numberavaliable'],       \PDO::PARAM_STR);
         $sth->execute(); 
       }
+      foreach ($params['categories'] as $category) {
+        $sql = "INSERT INTO Categories_Tours (tourid, categoryid) VALUES (:tid, :cid);";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':tid', $result['id'],                  \PDO::PARAM_INT);
+        $sth->bindParam(':cid', $category['id'],                \PDO::PARAM_INT);
+        $sth->execute();
+      } 
       $this->pdo->commit();
     } catch(\PDOException $e) {
       $this->response->DBError($e, __CLASS__, $sql);
@@ -83,6 +125,7 @@ class Tours extends Model {
   }
 
   public function put(array $_params) {
+    $params = $this->paramsValidationWithExit($_params);
 
   }
 
@@ -138,51 +181,79 @@ class Tours extends Model {
       $passed = false;
     }
 
-    foreach($params['rooms'] as $key=>$room) {
-      if (isset($room['label'])) {
-        $result['rooms'][$key]['label'] = Functions::sanatizeStringUnsafe($room['label']);
-      } else {
-        $result['rooms'][$key]['label'] = '';
+    if (isset($params['categories']) && is_array($params['categories'])) {
+      foreach($params['categories'] as $key=>$category) {
+        if (isset($category['id'])) {
+          $result['categories'][$key]['id'] = Functions::sanatizeStringUnsafe($category['id']);
+        } else {
+          $result['categories'][$key]['id'] = '';
+        }
+        $Categories = new Categories($this->response, $this->pdo);
+        if (empty($result['categories'][$key]['id']) || $Categories->get(array('id' => $category['id'])) == false) {
+          $this->response->AddResponse('error', 'Kategori id är ogiltigt.');
+          $this->response->AddResponsePushToArray('invalidFields', array('categories.' . $key . '.id'));
+          $passed = false;
+        }
       }
-      if (empty($result['rooms'][$key]['label'])) {
-        $this->response->AddResponse('error', 'Rumstypen måste ha en benämning.');
-        $this->response->AddResponsePushToArray('invalidFields', array('rooms.' . [$key] . '.label'));
-        $passed = false;
-      }
-      
-      if (isset($room['price'])) {
-        $result['rooms'][$key]['price'] = Functions::validateInt($room['price']);
-      } else {
-        $result['rooms'][$key]['price'] = NULL;
-      }
-      if (is_null($result['rooms'][$key])) {
-        $this->response->AddResponse('error', 'Rumspris måste anges som ett heltal.');
-        $this->response->AddResponsePushToArray('invalidFields', array('rooms.' . [$key] . '.price'));
-        $passed = false;
-      }
-  
-      if (isset($room['size'])) {
-        $result['rooms'][$key]['size'] = Functions::validateInt($room['size'], -2147483648, 2147483647);
-      } else {
-        $result['rooms'][$key]['size'] = NULL;
-      }
-      if (is_null($result['rooms'][$key]['size'])) {
-        $this->response->AddResponse('error', 'Antal personer per rum måste anges som ett heltal.');
-        $this->response->AddResponsePushToArray('invalidFields', array('rooms.' . [$key] . '.size'));
-        $passed = false;
-      }
-
-      if (isset($room['numberavaliable'])) {
-        $result['rooms'][$key]['numberavaliable'] = Functions::validateInt($room['numberavaliable'], -2147483648, 2147483647);
-      } else {
-        $result['rooms'][$key]['numberavaliable'] = NULL;
-      }
-      if (is_null($result['rooms'][$key]['numberavaliable'])) {
-        $this->response->AddResponse('error', 'Antal tillgängliga rum måste anges som ett heltal.');
-        $this->response->AddResponsePushToArray('invalidFields', array('rooms.' . [$key] . '.numberavaliable'));
-        $passed = false;
-      }
+    } else {
+      $this->response->AddResponse('error', 'Minst en kategori måste anges för resan.');
+      $this->response->AddResponsePushToArray('invalidFields', array('categories'));
+      $passed = false;
     }
+    
+    
+    if (isset($params['categories']) && is_array($params['categories'])) {
+      foreach($params['rooms'] as $key=>$room) {
+        if (isset($room['label'])) {
+          $result['rooms'][$key]['label'] = Functions::sanatizeStringUnsafe($room['label']);
+        } else {
+          $result['rooms'][$key]['label'] = '';
+        }
+        if (empty($result['rooms'][$key]['label'])) {
+          $this->response->AddResponse('error', 'Rumstypen måste ha en benämning.');
+          $this->response->AddResponsePushToArray('invalidFields', array('rooms.' . $key . '.label'));
+          $passed = false;
+        }
+        
+        if (isset($room['price'])) {
+          $result['rooms'][$key]['price'] = Functions::validateInt($room['price']);
+        } else {
+          $result['rooms'][$key]['price'] = NULL;
+        }
+        if (is_null($result['rooms'][$key])) {
+          $this->response->AddResponse('error', 'Rumspris måste anges som ett heltal.');
+          $this->response->AddResponsePushToArray('invalidFields', array('rooms.' . $key . '.price'));
+          $passed = false;
+        }
+    
+        if (isset($room['size'])) {
+          $result['rooms'][$key]['size'] = Functions::validateInt($room['size'], -2147483648, 2147483647);
+        } else {
+          $result['rooms'][$key]['size'] = NULL;
+        }
+        if (is_null($result['rooms'][$key]['size'])) {
+          $this->response->AddResponse('error', 'Antal personer per rum måste anges som ett heltal.');
+          $this->response->AddResponsePushToArray('invalidFields', array('rooms.' . $key . '.size'));
+          $passed = false;
+        }
+
+        if (isset($room['numberavaliable'])) {
+          $result['rooms'][$key]['numberavaliable'] = Functions::validateInt($room['numberavaliable'], -2147483648, 2147483647);
+        } else {
+          $result['rooms'][$key]['numberavaliable'] = NULL;
+        }
+        if (is_null($result['rooms'][$key]['numberavaliable'])) {
+          $this->response->AddResponse('error', 'Antal tillgängliga rum måste anges som ett heltal.');
+          $this->response->AddResponsePushToArray('invalidFields', array('rooms.' . $key . '.numberavaliable'));
+          $passed = false;
+        }
+      }
+    } else {
+      $this->response->AddResponse('error', 'Minst en rumstyp måste anges för resan. För dagsresa lägg till ett rum av typen Dagsresa');
+      $this->response->AddResponsePushToArray('invalidFields', array('rooms'));
+      $passed = false;
+    }
+    
 
     $result['id'] = $params['id'];
     if ($passed) {
