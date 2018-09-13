@@ -64,29 +64,6 @@ class Tours extends Model {
   public function post(array $_params) {
     $params = $this->paramsValidationWithExit($_params);
     
-    try {
-      $sql = "SELECT * FROM Rooms WHERE tourid = :id;";
-      $sth = $this->pdo->prepare($sql);
-      $sth->bindParam(':id', $tour['id'], \PDO::PARAM_INT);
-      $sth->execute();
-      $roomresult = $sth->fetchAll(\PDO::FETCH_ASSOC); 
-    } catch(\PDOException $e) {
-      $this->response->DBError($e, __CLASS__, $sql);
-      $this->response->Exit(500);
-    }
-
-    try {
-      $sql = "SELECT Categories.id as id, label FROM Categories INNER JOIN Categories_Tours ON Categories_Tours.categoryid = Categories.id WHERE Categories_Tours.tourid = :id;";
-      $sth = $this->pdo->prepare($sql);
-      $sth->bindParam(':id', $tour['id'], \PDO::PARAM_INT);
-      $sth->execute();
-      $categoryresult = $sth->fetchAll(\PDO::FETCH_ASSOC); 
-    } catch(\PDOException $e) {
-      $this->response->DBError($e, __CLASS__, $sql);
-      $this->response->Exit(500);
-    }
-
-    
 
     $sql = "INSERT INTO Tours (label, insuranceprice, reservationfeeprice, departuredate) OUTPUT INSERTED.id VALUES (:lab, :ins, :res, :dep);";
     try {     
@@ -126,6 +103,7 @@ class Tours extends Model {
 
   public function put(array $_params) {
     $params = $this->paramsValidationWithExit($_params);
+
 
   }
 
