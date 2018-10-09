@@ -73,7 +73,7 @@ CREATE TABLE [Bookings] (
     [cancelled] bit  NOT NULL ,
     [cancelleddate] date  NULL ,
     [paydate1] date  NULL ,
-    [paydat2] date  NOT NULL ,
+    [paydate2] date  NOT NULL ,
     CONSTRAINT [PK_Bookings] PRIMARY KEY CLUSTERED (
         [id] ASC
     )
