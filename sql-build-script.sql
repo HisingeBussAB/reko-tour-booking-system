@@ -140,6 +140,7 @@ CREATE TABLE [Tours] (
     [insuranceprice] bigint  NOT NULL ,
     [reservationfeeprice] bigint  NOT NULL ,
     [departuredate] date NOT NULL ,
+    [active] bit  NOT NULL ,
     CONSTRAINT [PK_Tours] PRIMARY KEY CLUSTERED (
         [id] ASC
     )
@@ -320,6 +321,7 @@ CREATE TABLE [trashTours] (
     [insuranceprice] bigint  NOT NULL ,
     [reservationfeeprice] bigint  NOT NULL ,
     [departuredate] date NOT NULL ,
+    [active] bit NOT NULL,
     CONSTRAINT [PK_trashTours] PRIMARY KEY CLUSTERED (
         [id] ASC
     )
