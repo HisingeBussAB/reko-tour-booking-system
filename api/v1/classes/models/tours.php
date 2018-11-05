@@ -11,9 +11,9 @@ class Tours extends Model {
     if ($params['id'] > 0 || $params['id'] == -1) {
       try {
         if ($params['id'] == -1) {
-          $sql = "SELECT * FROM Tours;";
+          $sql = "SELECT id, label, insuranceprice, reservationfeeprice, departuredate, active FROM Tours;";
         } else {
-          $sql = "SELECT * FROM Tours WHERE id = :id;";
+          $sql = "SELECT id, label, insuranceprice, reservationfeeprice, departuredate, active FROM Tours WHERE id = :id;";
         }
         $sth = $this->pdo->prepare($sql);
         if ($params['id'] != -1) { $sth->bindParam(':id', $params['id'], \PDO::PARAM_INT); }
@@ -29,7 +29,7 @@ class Tours extends Model {
       } else {
         foreach ($result as $key=>$tour) {
           try {
-            $sql = "SELECT * FROM Rooms WHERE tourid = :id;";
+            $sql = "SELECT id, label, price, size, numberavaliable FROM Rooms WHERE tourid = :id;";
             $sth = $this->pdo->prepare($sql);
             $sth->bindParam(':id', $tour['id'], \PDO::PARAM_INT);
             $sth->execute();
@@ -39,7 +39,8 @@ class Tours extends Model {
             $this->response->Exit(500);
           }
           try {
-            $sql = "SELECT Categories.id as id, label FROM Categories INNER JOIN Categories_Tours ON Categories_Tours.categoryid = Categories.id WHERE Categories_Tours.tourid = :id;";
+            $sql = "SELECT Categories.id as id, label FROM Categories INNER JOIN Categories_Tours ON Categories_Tours.categoryid = Categories.id WHERE Categories_Tours.tourid = :id
+              GROUP BY Categories.id, label;";
             $sth = $this->pdo->prepare($sql);
             $sth->bindParam(':id', $tour['id'], \PDO::PARAM_INT);
             $sth->execute();
@@ -65,7 +66,7 @@ class Tours extends Model {
     $params = $this->paramsValidationWithExit($_params);
     
 
-    $sql = "INSERT INTO Tours (label, insuranceprice, reservationfeeprice, departuredate) OUTPUT INSERTED.id VALUES (:lab, :ins, :res, :dep);";
+    $sql = "INSERT INTO Tours (label, insuranceprice, reservationfeeprice, departuredate, active) OUTPUT INSERTED.id VALUES (:lab, :ins, :res, :dep, 1);";
     try {     
       $this->pdo->beginTransaction();
       $sth = $this->pdo->prepare($sql);
@@ -103,7 +104,30 @@ class Tours extends Model {
 
   public function put(array $_params) {
     $params = $this->paramsValidationWithExit($_params);
-
+    $sql = "UPDATE Tours SET 
+        label = :lab, 
+        insuranceprice = :ins, 
+        reservationfeeprice = :res, 
+        departuredate = :dep, 
+        active = :act
+        WHERE id=:id;";
+    try {     
+      $this->pdo->beginTransaction();
+      $sth = $this->pdo->prepare($sql);
+      $sth->bindParam(':id',  $params['id'],                  \PDO::PARAM_INT);
+      $sth->bindParam(':lab', $params['label'],               \PDO::PARAM_STR);
+      $sth->bindParam(':ins', $params['insuranceprice'],      \PDO::PARAM_INT);
+      $sth->bindParam(':res', $params['reservationfeeprice'], \PDO::PARAM_INT);
+      $sth->bindParam(':dep', $params['departuredate'],       \PDO::PARAM_STR);
+      $sth->bindParam(':act', $params['active'],              \PDO::PARAM_INT);
+      $sth->execute(); 
+      $this->pdo->commit();
+    } catch(\PDOException $e) {
+      $this->response->DBError($e, __CLASS__, $sql);
+      $this->pdo->rollBack();
+      $this->response->Exit(500);
+    }
+    return array('updatedid' => $params['id']);   
 
   }
 
@@ -159,6 +183,13 @@ class Tours extends Model {
       $passed = false;
     }
 
+    if (isset($params['active'])) {
+      $result['active'] = Functions::validateBoolToBit($params['active']);
+    } else {
+      //default to 1
+      $result['active'] = 1;
+    }
+    
     if (isset($params['categories']) && is_array($params['categories'])) {
       foreach($params['categories'] as $key=>$category) {
         if (isset($category['id'])) {
