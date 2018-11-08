@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
-import fontawesome from '@fortawesome/fontawesome'
-import faSpinner from '@fortawesome/fontawesome-free-solid/faSpinner'
-import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import {faSpinner} from '@fortawesome/free-solid-svg-icons'
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import {connect} from 'react-redux'
 import {bindActionCreators} from 'redux'
@@ -10,23 +9,19 @@ import Config from '../config/config'
 import Logo from '../img/logo.gif'
 import {getServerTime} from '../functions'
 
-fontawesome.library.add(faSpinner)
-
 class LoginScreen extends Component {
   constructor (props) {
     super(props)
     const {login = {autoAttempt: false}} = this.props
     this.state = {
-      issending : true,
-      servertime: false,
-      first     : true,
-      logindata : {
-        pwd        : Config.AutoLoginPwd,
-        user       : Config.AutoUsername,
-        auto       : login.autoAttempt,
-        isOnce     : false,
-        onceExpires: 0,
-        blockError : false
+      isSending: true,
+      triedAuto: false,
+      loginData: {
+        pwd           : Config.AutoLoginPwd,
+        user          : Config.AutoUsername,
+        auto          : login.autoAttempt,
+        refreshToken  : false,
+        refreshExpires: 0
       }
     }
   }
@@ -45,21 +40,6 @@ class LoginScreen extends Component {
     }
   }
 
-  getUnixTime = () => {
-    const {networkAction} = this.props
-    networkAction(1, 'login get time')
-    getServerTime()
-      .then(response => {
-        this.setState({servertime: Number(response)}, () => this.runAutoLoginFirst(Number(response)))
-        networkAction(0, 'login get time')
-      })
-      .catch(() => {
-        const time = Math.round(+new Date() / 1000)
-        this.setState({servertime: Number(time)}, () => this.runAutoLoginFirst(Number(time)))
-        networkAction(0, 'login get time')
-      })
-  }
-
   getLocalStorageToState = () => {
     const {login = {autoAttempt: false}} = this.props
     let userObject = null
@@ -68,16 +48,15 @@ class LoginScreen extends Component {
     } catch (e) {
       userObject = null
     }
+    console.log(userObject)
     if (userObject !== null) {
-      if (typeof userObject.user === 'string' && typeof userObject.tokenid === 'string' &&
-        typeof userObject.token === 'string' && typeof userObject.expires === 'number') {
-        this.setState({logindata: {
-          pwd        : userObject.tokenid + Config.OnceLoginToken + userObject.token,
-          user       : userObject.user,
-          auto       : login.autoAttempt,
-          isOnce     : true,
-          onceExpires: userObject.expires,
-          blockError : login.autoAttempt // block error output if auto login is active (auto login is fired directly after failed once)
+      if (typeof userObject.user === 'string' && typeof userObject.refreshToken === 'string' && typeof userObject.refreshExpires === 'number') {
+        this.setState({loginData: {
+          pwd           : Config.AutoLoginPwd,
+          user          : userObject.user,
+          auto          : login.autoAttempt,
+          refreshToken  : userObject.refreshToken,
+          refreshExpires: userObject.refreshExpires
         }}, () => { this.getUnixTime() })
         return true
       }
@@ -86,128 +65,98 @@ class LoginScreen extends Component {
     return false
   }
 
-  runAutoLoginFirst = (servertime, blockonce = false) => {
-    const {first = false} = this.state
-    const {networkAction, login = {autoAttempt: false}} = this.props
-    const {logindata = {
-      pwd        : Config.AutoLoginPwd,
-      user       : Config.AutoUsername,
-      auto       : login.autoAttempt,
-      isOnce     : false,
-      onceExpires: 0,
-      blockError : false
-    }} = this.state
-    const {Login = function () {}} = this.props
+  getUnixTime = () => {
+    const {networkAction} = this.props
+    networkAction(1, 'login get time')
+    getServerTime()
+      .then(response => {
+        this.autoSequenceLauncher(Number(response))
+        networkAction(0, 'login get time')
+      })
+      .catch(() => {
+        // use client time if server is not sending timestamp
+        this.autoSequenceLauncher(Number(Math.round(+new Date() / 1000)))
+        networkAction(0, 'login get time')
+      })
+  }
 
-    // Check if servertime is set. Run autosequence if found.
-    if (servertime !== false && typeof servertime === 'number') {
-      if (!blockonce && logindata.isOnce && logindata.onceExpires > servertime - 120) {
-        this.setState({issending: true})
-        networkAction(1, 'trying login')
-        Login(logindata)
-          .then(() => {
-            networkAction(0, 'trying login')
-            // Component will unmount
-          })
-          .catch(() => {
-            logindata.isOnce = false
-            networkAction(0, 'trying login')
-            this.setState({issending: false, logindata: logindata})
-            this.runAutoLoginFirst(servertime, true)
-          })
-      } else if (logindata.auto && typeof Config.AutoUsername === 'string' && typeof Config.AutoLoginPwd === 'string') {
-        this.setState({issending: true})
-        const newlogin = {
-          pwd        : Config.AutoLoginPwd,
-          user       : Config.AutoUsername,
-          auto       : true,
-          isOnce     : false,
-          onceExpires: 0,
-          blockError : false
-        }
-        networkAction(1, 'trying login')
-        Login(newlogin)
-          .then(() => {
-            networkAction(0, 'trying login')
-            // Component will unmount
-          })
-          .catch(() => {
-            logindata.user = ''
-            logindata.pwd = ''
-            logindata.isOnce = false
-            logindata.auto = false
-            logindata.blockError = false
-            networkAction(0, 'trying login')
-            this.setState({issending: false, logindata: logindata})
-          })
-      } else if (first) {
-        // no autos or first try. reset and unlock
-        this.setState({
-          first    : false,
-          issending: false,
-          logindata: {
-            pwd        : '',
-            user       : '',
-            auto       : false,
-            isOnce     : false,
-            onceExpires: 0,
-            blockError : false
-          }
-        })
-      } else {
-        this.setState({issending: false})
-      }
-    } else {
-      this.setState({issending: false})
+  autoSequenceLauncher = (serverTime) => {
+    const {login = {autoAttempt: false}} = this.props
+    const {
+      triedAuto = true,
+      loginData = {
+        pwd           : Config.AutoLoginPwd,
+        user          : Config.AutoUsername,
+        auto          : login.autoAttempt,
+        refreshToken  : false,
+        refreshExpires: 0
+      }} = this.state
+
+    if (typeof loginData.refreshToken === 'string' && loginData.refreshToken.length > 1 && serverTime > (loginData.refreshExpires - 600)) {
+      // Try refresh with 10 minutes margin
+      this.tryLogin()
+    } else if (triedAuto === false && loginData.auto && typeof loginData.user === 'string' && typeof loginData.pwd === 'string' &&
+        loginData.user.length > 0 && loginData.pwd.length > 0) {
+      // Use auto credentials if they exist
+      this.setState({triedAuto: true}, () => this.tryLogin())
     }
   }
 
+  tryLogin = () => {
+    const {networkAction, Login = function () {}} = this.props
+    const {loginData} = this.state
+    this.setState({isSending: true})
+    networkAction(1, 'trying login')
+    Login(loginData)
+      .then(() => {
+        networkAction(0, 'trying login')
+        // Component will unmount here
+      })
+      .catch(() => {
+        networkAction(0, 'trying login')
+        this.setState(prevState => ({isSending: false,
+          loginData: {
+            ...prevState.loginData,
+            pwd: ''
+          }}))
+      })
+  }
+
   handleUserChange = (event) => {
-    const {logindata} = this.state
-    this.setState({logindata: {...logindata, user: event.target.value}})
+    const {loginData} = this.state
+    this.setState({loginData: {...loginData, user: event.target.value}})
   }
 
   handlePwdChange = (event) => {
-    const {logindata} = this.state
-    this.setState({logindata: {...logindata, pwd: event.target.value}})
+    const {loginData} = this.state
+    this.setState({loginData: {...loginData, pwd: event.target.value}})
   }
 
   clearPwd = () => {
-    const {logindata} = this.state
-    this.setState({logindata: {...logindata, pwd: ''}})
+    const {loginData} = this.state
+    this.setState({loginData: {...loginData, pwd: ''}})
   }
 
   clearUser = () => {
-    const {logindata} = this.state
-    this.setState({logindata: {...logindata, user: ''}})
+    const {loginData} = this.state
+    this.setState({loginData: {...loginData, user: ''}})
   }
 
   handleSubmit = (event) => {
     event.preventDefault()
-    const {Login} = this.props
-    const {logindata} = this.state
-    this.setState({issending: true})
-    Login(logindata)
-      .then(() => {
-        // Component will unmount
-      })
-      .catch(() => {
-        this.setState({issending: false})
-      })
+    this.tryLogin()
   }
 
   render () {
     // Destructors, defaults to App initialization state
-    const {servertime = false} = this.state
-    const {issending = false} = this.state
-    const {logindata = {
-      pwd        : '',
-      user       : '',
-      auto       : false,
-      isOnce     : false,
-      onceExpires: 0,
-      blockError : false
-    }} = this.state
+    const {serverTime = false, triedAuto = true, isSending = false,
+      loginData = {
+        pwd           : '',
+        user          : '',
+        auto          : false,
+        refreshToken  : false,
+        refreshExpires: 0
+      }} = this.state
     const {error = {message: ''}} = this.props
 
     const style = {
@@ -225,18 +174,19 @@ class LoginScreen extends Component {
       <div className="Login" style={style}>
         <p><img src={Logo} alt="Logo" className="rounded my-4" title="Till Startsida" id="mainLogo" /></p>
         <h1 className="my-4">Resesystem</h1>
-        {(logindata.isOnce && logindata.onceExpires > servertime - 120) || (logindata.auto && typeof logindata.pwd === 'string' && typeof logindata.user === 'string')
+        {(typeof loginData.refreshToken === 'string' && loginData.refreshToken.length > 1 && serverTime > (loginData.refreshExpires - 600))
+        || (triedAuto === false && loginData.auto && typeof loginData.user === 'string' && typeof loginData.pwd === 'string' && loginData.user.length > 0 && loginData.pwd.length > 0)
           ? <div>
             <h3 className="mb-4">Försöker automatisk inloggning...</h3>
-            <span className="my-4"><FontAwesomeIcon icon="spinner" pulse size="4x" /></span>
+            <span className="my-4"><FontAwesomeIcon icon={faSpinner} pulse size="4x" /></span>
           </div>
           : <div>
-            <h5 className="w-50 mx-auto my-3" style={{color: 'red'}}>{logindata.blockerror ? null : error.message}</h5>
+            <h5 className="w-50 mx-auto my-3" style={{color: 'red'}}>{loginData.blockerror ? null : error.message}</h5>
             <h4 className="w-50 mx-auto mt-5 mb-3">Logga in</h4>
             <form onSubmit={this.handleSubmit}>
-              <fieldset disabled={issending}>
-                <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Användarnamn:</label><input className="w-100 rounded" type="text" placeholder="Användarnamn" value={logindata.user} onFocus={this.clearUser} onChange={this.handleUserChange} /></div>
-                <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Lösenord:</label><input className="w-100 rounded" type="password" placeholder="Lösenord" value={logindata.pwd} onFocus={this.clearPwd} onChange={this.handlePwdChange} /></div>
+              <fieldset disabled={isSending}>
+                <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Användarnamn:</label><input className="w-100 rounded" type="text" placeholder="Användarnamn" value={loginData.user} onFocus={this.clearUser} onChange={this.handleUserChange} /></div>
+                <div className="my-2 w-50 mx-auto"><label className="small d-block text-left pt-2 pl-3">Lösenord:</label><input className="w-100 rounded" type="password" placeholder="Lösenord" value={loginData.pwd} onFocus={this.clearPwd} onChange={this.handlePwdChange} /></div>
                 <div className="my-2 w-50 mx-auto"><input className="w-100 mt-4 rounded text-uppercase font-weight-bold btn btn-primary custom-wide-text" type="submit" value="Logga in" /></div>
               </fieldset>
             </form>

@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
-import faSyncAlt from '@fortawesome/fontawesome-free-solid/faSyncAlt'
-import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import {faSyncAlt} from '@fortawesome/free-solid-svg-icons'
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 
@@ -35,7 +35,7 @@ class NetworkIcon extends Component {
     }
 
     return (
-      <div className="SaveIcon text-center" style={isNetworkActive ? styleShow : style}>
+      <div className="NetworkIcon text-center" style={isNetworkActive ? styleShow : style}>
         <FontAwesomeIcon icon={faSyncAlt} size="1x" spin />
       </div>)
   }

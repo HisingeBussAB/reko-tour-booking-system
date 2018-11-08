@@ -1,31 +1,23 @@
 import myAxios from '../../config/axios'
 import {errorPopup} from '../error-popup'
-import {getToken} from '../get-token'
 import {networkAction} from '..'
 
-export function Login (logindata) {
+export function Login (usr) {
+  console.log(usr)
   return async (dispatch) => {
     dispatch(networkAction(1, 'login action'))
-    const errprep = logindata.auto ? 'Automatisk inlogging misslyckades!\n' : ''
+    const errprep = 'Inloggningsförsök misslyckades!'
+    const isBearer = (typeof usr.refreshToken === 'string' && usr.refreshToken.length > 5)
+    const auth = isBearer
+      ? 'Bearer ' + usr.refreshToken
+      : 'Basic ' + btoa(usr.user + ':' + usr.pwd)
+    const url = isBearer ? 'auth/refresh' : 'auth'
+    const data = isBearer ? {user: usr.user} : null
+
+    myAxios.defaults.headers.common['Authorization'] = auth
     try {
-      const token = await getToken('login')
-      const response = await myAxios.post('/auth', {
-        user      : logindata.user,
-        pwd       : logindata.pwd,
-        logintoken: token.data.logintoken
-      })
-      let payload
-      if (logindata.isOnce) {
-        payload = {
-          login      : false,
-          autoAttempt: true
-        }
-      } else {
-        payload = {
-          login      : false,
-          autoAttempt: false
-        }
-      }
+      const response = await myAxios.post('/users/' + url, data)
+      let payload = {login: false}
       try {
         if (typeof response.data.login !== 'undefined') {
           payload = {...payload, ...response.data}
@@ -33,17 +25,36 @@ export function Login (logindata) {
       } catch (e) {
         dispatch(errorPopup({visible: true, message: errprep + 'Okänt svar från API.', suppressed: true}))
         dispatch(networkAction(0, 'login action'))
+        localStorage.setObject('user', {
+          user          : usr.user,
+          refreshToken  : false,
+          refreshExpires: 0
+        })
       }
+      console.log(payload)
       localStorage.setObject('user', {
-        user   : payload.once.user,
-        tokenid: payload.once.tokenid,
-        token  : payload.once.token,
-        expires: payload.once.expires
+        user          : usr.user,
+        refreshToken  : payload.refresh.token,
+        refreshExpires: payload.refresh.expires
       })
-      payload.once = null // clean once login before redux
-      dispatch({type: 'LOGIN', payload: payload})
+      const reduxUser = {
+        login         : payload.login,
+        user          : usr.user,
+        accessToken   : payload.access.token,
+        refreshToken  : payload.refresh.token,
+        accessExpires : payload.access.expires,
+        refreshExpires: payload.refresh.expires
+      }
+      myAxios.defaults.headers.common['Authorization'] = 'Bearer ' + payload.access.token
+
+      dispatch({type: 'LOGIN', payload: reduxUser})
       dispatch(networkAction(0, 'login action'))
     } catch (error) {
+      localStorage.setObject('user', {
+        user          : usr.user,
+        refreshToken  : false,
+        refreshExpires: 0
+      })
       let errormsg = errprep + 'Ett fel har uppstått i inloggningen.'
       try {
         if (error.response.data.response !== undefined) {
@@ -55,7 +66,6 @@ export function Login (logindata) {
         errormsg = errprep + 'Felformaterat eller inget svar från server.'
       }
       dispatch(errorPopup({visible: true, message: errormsg, suppressed: true}))
-      dispatch({type: 'LOGIN', payload: {autoAttempt: false}})
       dispatch(networkAction(0, 'login action', dispatch))
       throw error
     }

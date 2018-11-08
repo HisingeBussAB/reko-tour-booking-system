@@ -14,10 +14,13 @@ const initialState = {
     suppressed: false
   },
   login: {
-    login      : false,
-    user       : 'anonymous',
-    jwt        : '',
-    autoAttempt: Config.AutoLogin
+    login         : false,
+    user          : 'anonymous',
+    accessToken   : '',
+    refreshToken  : '',
+    autoAttempt   : Config.AutoLogin,
+    accessExpires : 0,
+    refreshExpires: 0
   },
   tours: {
     categories: []

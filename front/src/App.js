@@ -54,7 +54,7 @@ class App extends Component {
         // manually download sub data?
           this.setState({
             showStatus       : true,
-            showStatusMessage: 'Kunde inte ansluta till WebSocket! Programmet går fortfarande att använda men undvik att använda det på flera datorer samtidigt.'
+            showStatusMessage: 'Kunde inte ansluta till WebSocket för klientsynkronisering! Programmet går fortfarande att använda men undvik att använda det på flera datorer samtidigt.'
           })
           setTimeout(() => {
             this.setState({
@@ -68,12 +68,12 @@ class App extends Component {
 
   componentDidCatch () {
     /* TODO */
-    console.log('App Did Catch!!!')
+    console.log('App Did Catch!!! Fatal Error, reload and contact support.')
   }
 
   render () {
     const {isSuppressedPopup = true, login = {login: {login: false}}} = this.props
-    const {showStatus = true, showStatusMessage = 'Okänt fel, inget state'} = this.state
+    const {showStatus = true, showStatusMessage = ''} = this.state
     return (
       <div className="App h-100">
         {login.login

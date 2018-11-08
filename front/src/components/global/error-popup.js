@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
-import faTimes from '@fortawesome/fontawesome-free-solid/faTimes'
-import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import { errorPopup } from '../../actions'
 import { bindActionCreators } from 'redux'
