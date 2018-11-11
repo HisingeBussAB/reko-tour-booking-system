@@ -1,22 +1,17 @@
 import {networkAction, errorPopup} from '..'
-import {apiPost, firebaseSavedItem} from '../../functions'
-import {itemNameTranslation} from '../../data/valid-api-calls'
+import {firebaseSavedItem} from '../../functions'
+import myAxios from '../../config/axios'
+import {itemNameHuman} from '../../data/valid-api-calls'
 import {getItem} from './get-item'
 
-export function saveItem (itemType, data, operation) {
+export function postItem (itemType, data) {
   return async (dispatch, getState) => {
-    const login = Object.freeze(getState().login)
-    if (itemNameTranslation.hasOwnProperty(itemType)) {
-      dispatch(networkAction(1, 'save new ' + itemType))
+    if (itemNameHuman.hasOwnProperty(itemType)) {
+      dispatch(networkAction(1, 'post new ' + itemType))
       try {
-        data.user = login.user
-        data.jwt = login.jwt
-        const response = await apiPost('/tours/' + itemType + '/' + operation, data)
-        let temp
-        try { temp = response.data.modifiedid } catch (e) { temp = 'all' }
-        const id = operation === 'delete' ? 'all' : temp
-        temp = undefined
-        await dispatch(getItem(itemType, id))
+        const response = await myAxios.post('/' + itemType, data)
+        const id = response.data.response.updatedid
+        dispatch(getItem(itemType, id))
         firebaseSavedItem(id, itemType)
         return true
       } catch (e) {
@@ -32,7 +27,7 @@ export function saveItem (itemType, data, operation) {
           return false
         }
       } finally {
-        dispatch(networkAction(0, 'save new ' + itemType))
+        dispatch(networkAction(0, 'post new ' + itemType))
       }
     } else {
       dispatch(errorPopup({visible: true, message: 'En felaktigt formaterad förfrågan till APIt har blockerats', suppressed: false}))

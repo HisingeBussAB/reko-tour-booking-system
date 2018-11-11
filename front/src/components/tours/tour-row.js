@@ -5,7 +5,7 @@ import {faPencilAlt, faSpinner} from '@fortawesome/free-solid-svg-icons'
 import {faSquare, faCheckSquare, faTrashAlt} from '@fortawesome/free-regular-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
-import { saveItem } from '../../actions'
+import { postItem } from '../../actions'
 import { Link } from 'react-router-dom'
 import ConfirmPopup from '../global/confirm-popup'
 
@@ -45,10 +45,10 @@ class TourRow extends Component {
       tourid: id,
       task  : 'activetoggle'
     }
-
+/*
     if (!await saveItem('tours', data, 'save')) {
       this.setState({updatingActive: false})
-    }
+    }*/
   }
 
   deleteConfirm = (e) => {
@@ -67,7 +67,7 @@ class TourRow extends Component {
       task  : 'delete'
     }
     if (choice === true) {
-      if (!await saveItem('tours', data, 'delete')) {
+      if (/*!await saveItem('tours', data, 'delete')*/true) {
         this.setState({deleting: false})
       }
     } else {
@@ -117,11 +117,11 @@ TourRow.propTypes = {
   tour    : PropTypes.string,
   id      : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   isActive: PropTypes.bool,
-  saveItem: PropTypes.func
+  postItem: PropTypes.func
 }
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-  saveItem
+  postItem
 }, dispatch)
 
 export default connect(null, mapDispatchToProps)(TourRow)

@@ -6,12 +6,12 @@ import MyLoadable from './components/loader/myloadable'
 import { Route } from 'react-router'
 import LoginScreen from './screens/login'
 import NetworkIcon from './components/global/network-icon'
-import ExpireChecker from './components/global/expire-checker'
 import PropTypes from 'prop-types'
 import Config from './config/config'
 import firebase from './config/firebase'
 import {firebaseItemSub} from './actions/firebase/firebase-item-sub'
 import ErrorPopup from './components/global/error-popup'
+import {LoginRefresh} from './actions'
 
 /* eslint-disable react/display-name */
 const MainView = MyLoadable({
@@ -34,6 +34,7 @@ const ListView = MyLoadable({
 class App extends Component {
   constructor (props) {
     super(props)
+    this.refreshLogin = setInterval(() => {}, 10000)
     this.state = {
       showStatus       : false,
       showStatusMessage: ''
@@ -41,17 +42,21 @@ class App extends Component {
   }
 
   componentWillReceiveProps (nextProps) {
-    // Checks for login change and starts up firebase if login state change and login is detected.
-    const {firebaseItemSub = function () {}, login = {login: {login: false, user: 'none', jwt: 'none'}}} = this.props
+    // Checks for login change and starts up firebase and refresh timer if login state change and login is detected.
+    const {LoginRefresh = function () {}, firebaseItemSub = function () {}, login = {login: {login: false, user: 'none', jwt: 'none'}}} = this.props
     const prevLogin = login.login
     if (nextProps.login.login && nextProps.login.login !== prevLogin) {
+      // Refresh login
+      clearInterval(this.refreshLogin)
+      this.refreshLogin = setInterval(() => {
+        LoginRefresh(true)
+      }, 40 * 60 * 1000)
+      // Firebase
       firebase.auth().signInWithEmailAndPassword(Config.FirebaseLogin, Config.FirebasePwd)
         .then(() => {
           firebaseItemSub(nextProps.login.user, nextProps.login.jwt)
         })
         .catch(() => {
-        // TODO
-        // manually download sub data?
           this.setState({
             showStatus       : true,
             showStatusMessage: 'Kunde inte ansluta till WebSocket för klientsynkronisering! Programmet går fortfarande att använda men undvik att använda det på flera datorer samtidigt.'
@@ -67,8 +72,13 @@ class App extends Component {
   }
 
   componentDidCatch () {
-    /* TODO */
-    console.log('App Did Catch!!! Fatal Error, reload and contact support.')
+    /* TODO log */
+    window.alert('Kritiskt fel! Applikationen har krashat.')
+    clearInterval(this.refreshLogin)
+  }
+
+  componentWillUnmount () {
+    clearInterval(this.refreshLogin)
   }
 
   render () {
@@ -90,7 +100,6 @@ class App extends Component {
           : <LoginScreen />
         }
         {!isSuppressedPopup && <ErrorPopup /> }
-        <ExpireChecker />
         <NetworkIcon />
       </div>
     )
@@ -98,6 +107,7 @@ class App extends Component {
 }
 
 App.propTypes = {
+  LoginRefresh     : PropTypes.func,
   login            : PropTypes.object,
   firebaseItemSub  : PropTypes.func,
   isSuppressedPopup: PropTypes.bool
@@ -109,7 +119,8 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-  firebaseItemSub
+  firebaseItemSub,
+  LoginRefresh
 }, dispatch)
 
 export default connect(mapStateToProps, mapDispatchToProps)(App)

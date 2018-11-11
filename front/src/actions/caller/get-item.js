@@ -1,16 +1,15 @@
 import {networkAction, errorPopup} from '..'
-import {apiPost} from '../../functions'
-import {itemNameTranslation, itemNameHuman} from '../../data/valid-api-calls'
+import myAxios from '../../config/axios'
+import {itemNameHuman} from '../../data/valid-api-calls'
 
 export function getItem (itemType, item = 'all') {
-  return async (dispatch, getState) => {
-    const login = Object.freeze(getState().login)
-    if (itemNameTranslation.hasOwnProperty(itemType)) {
+  return async (dispatch) => {
+    if (itemNameHuman.hasOwnProperty(itemType)) {
       dispatch(networkAction(1, 'get items ' + itemType))
+      const itemString = typeof item === 'number' ? '/' + item : ''
       try {
-        const data = {user: login.user, jwt: login.jwt, [itemNameTranslation[itemType]]: item}
-        const response = await apiPost('/tours/' + itemType + '/get', data)
-        dispatch(onThen(response, itemType))
+        const response = await myAxios.get('/' + itemType + itemString)
+        dispatch(onThen(response, itemType, item))
         return true
       } catch (e) {
         dispatch(onCatch(e, itemType))
@@ -25,7 +24,7 @@ export function getItem (itemType, item = 'all') {
   }
 }
 
-function onThen (response, itemType) {
+function onThen (response, itemType, item) {
   return (dispatch) => {
     const itemTypeUpper = itemType.toUpperCase()
     try {
@@ -35,8 +34,8 @@ function onThen (response, itemType) {
         dispatch(errorPopup({visible: true, message: msg, suppressed: false}))
       } else {
         dispatch({
-          type   : 'TOURS_' + itemTypeUpper + '_SAVE',
-          payload: {id: response.data.requestedid, [itemType]: response.data[itemType]}
+          type   : 'DATA_' + itemTypeUpper + '_SAVE',
+          payload: {id: item, [itemType]: response.data.response[itemType]}
         })
       }
     } catch (e) {

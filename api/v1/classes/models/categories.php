@@ -10,9 +10,9 @@ class Categories extends Model {
     if ($params['id'] > 0 || $params['id'] == -1) {
       try {
         if ($params['id'] == -1) {
-          $sql = "SELECT * FROM Categories;";
+          $sql = "SELECT id, label, isDisabled FROM Categories WHERE isDeleted = 0 ORDER BY label ASC;";
         } else {
-          $sql = "SELECT * FROM Categories WHERE id = :id;";
+          $sql = "SELECT id, label, isDisabled FROM Categories WHERE id = :id;";
         }
         $sth = $this->pdo->prepare($sql);
         if ($params['id'] != -1) { $sth->bindParam(':id', $params['id'], \PDO::PARAM_INT); }
@@ -22,13 +22,13 @@ class Categories extends Model {
         $this->response->DBError($e, __CLASS__, $sql);
         $this->response->Exit(500);
       }
-      if (count($result) < 1) {
+      if (count($result) < 1 && $params['id'] != -1) {
         $this->response->AddResponse('error', 'Kategorin hittades inte.');
         $this->response->Exit(404);
       } else {
         $i = 0;
         foreach ($result as $item) {
-          $result[$i]['active'] = filter_var($result[$i]['active'], FILTER_VALIDATE_BOOLEAN);
+          $result[$i]['isDisabled'] = filter_var($result[$i]['isDisabled'], FILTER_VALIDATE_BOOLEAN);
           $i++;
         }
         return array('categories' => $result);
@@ -44,15 +44,15 @@ class Categories extends Model {
   public function post(array $_params) {
     
     $params = $this->paramsValidationWithExit($_params);
-    if ($params['active'] == -1) {
-      $params['active'] = 1;
+    if ($params['isDisabled'] == -1) {
+      $params['isDisabled'] = 0;
     } 
-    $sql = "INSERT INTO Categories (label, active) OUTPUT INSERTED.id VALUES (:cat, :act);";
+    $sql = "INSERT INTO Categories (label, isDisabled, isDeleted) OUTPUT INSERTED.id VALUES (:cat, :act, 0);";
 
     try {     
       $sth = $this->pdo->prepare($sql);
-      $sth->bindParam(':cat', $params['label'],   \PDO::PARAM_STR);
-      $sth->bindParam(':act', $params['active'],     \PDO::PARAM_INT);
+      $sth->bindParam(':cat', $params['label'],          \PDO::PARAM_STR);
+      $sth->bindParam(':act', $params['isDisabled'],     \PDO::PARAM_INT);
       $sth->execute(); 
       $result = $sth->fetch(\PDO::FETCH_ASSOC); 
     } catch(\PDOException $e) {
@@ -67,15 +67,15 @@ class Categories extends Model {
 
     if ($this->get(array('id' => $params['id'])) !== false) {
       try {
-        if ($params['active'] == -1) {
+        if ($params['isDisabled'] == -1) {
           $sql = "UPDATE Categories SET label = :cat WHERE id = :id;";
         } else {
-          $sql = "UPDATE Categories SET label = :cat, active = :act WHERE id = :id;";
+          $sql = "UPDATE Categories SET label = :cat, isDisabled = :act WHERE id = :id;";
         }
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
         $sth->bindParam(':cat', $params['label'],  \PDO::PARAM_STR);
-        if ($params['active'] != -1) { $sth->bindParam(':act', $params['active'],     \PDO::PARAM_INT); }
+        if ($params['isDisabled'] != -1) { $sth->bindParam(':act', $params['isDisabled'],     \PDO::PARAM_INT); }
         $sth->execute(); 
       } catch(\PDOException $e) {
         $this->response->DBError($e, __CLASS__, $sql);
@@ -89,24 +89,12 @@ class Categories extends Model {
   public function delete(array $params) {
     if ($this->get(array('id' => $params['id'])) !== false) {
       try {
-        $this->pdo->beginTransaction();
-        $sql = "DELETE FROM Categories OUTPUT DELETED.* WHERE id = :id;";
+        $sql = "UPDATE Categories SET isDeleted = 1 WHERE id = :id;";
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
         $sth->execute();
-        $result = $sth->fetch(\PDO::FETCH_ASSOC); 
-        $sql = "SET IDENTITY_INSERT [trashCategories] ON; 
-          INSERT INTO [trashCategories] (id, label, active) VALUES (:id, :cat, :act);
-          SET IDENTITY_INSERT [trashCategories] OFF;";
-        $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':id', $result['id'],     \PDO::PARAM_INT);
-        $sth->bindParam(':cat', $result['label'],     \PDO::PARAM_STR);
-        $sth->bindParam(':act', $result['active'],     \PDO::PARAM_STR);
-        $sth->execute();
-        $this->pdo->commit();
       } catch(\PDOException $e) {
         $this->response->DBError($e, __CLASS__, $sql);
-        $this->pdo->rollBack();
         $this->response->Exit(500);
       }
       return array('updatedid' => $params['id']);
@@ -130,14 +118,14 @@ class Categories extends Model {
       $passed = false;
     }
 
-    if (isset($params['active'])) {
-      $result['active'] = Functions::validateBoolToBit($params['active']);
+    if (isset($params['isDisabled'])) {
+      $result['isDisabled'] = Functions::validateBoolToBit($params['isDisabled']);
     } else {
-      $result['active'] = -1;
+      $result['isDisabled'] = -1;
     }
-    if (is_null($result['active'])) {
-      $this->response->AddResponse('error', 'Aktiv måste anges som true eller false.');
-      $this->response->AddResponsePushToArray('invalidFields', array('active'));
+    if (is_null($result['isDisabled'])) {
+      $this->response->AddResponse('error', 'Avaktiverad måste anges som true eller false.');
+      $this->response->AddResponsePushToArray('invalidFields', array('isDisabled'));
       $passed = false;
     }
 

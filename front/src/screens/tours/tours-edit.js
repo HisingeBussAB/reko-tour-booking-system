@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux'
 import {faPlus, faSave, faMinus} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
-import {saveItem, getItem} from '../../actions'
+import {postItem, getItem} from '../../actions'
 import update from 'immutability-helper'
 import { findByKey } from '../../utils'
 
@@ -206,7 +206,7 @@ class NewTour extends Component {
 
 NewTour.propTypes = {
   getItem   : PropTypes.func,
-  saveItem  : PropTypes.func,
+  postItem  : PropTypes.func,
   categories: PropTypes.array,
   tours     : PropTypes.array,
   match     : PropTypes.object
@@ -219,7 +219,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => bindActionCreators({
   getItem,
-  saveItem
+  postItem
 }, dispatch)
 
 export default connect(mapStateToProps, mapDispatchToProps)(NewTour)

@@ -35,7 +35,7 @@ class Categories extends Component {
     const newcategory = {
       id      : 'new',
       category: '',
-      active  : true
+      isDisabled  : false
     }
     const newextracategories = update(extracategories, {$push: [newcategory]})
 
@@ -59,13 +59,13 @@ class Categories extends Component {
     let categoryRows
     try {
       categoryRows = categories.map((category) => {
-        return <CategoriesRow key={category.id} isNew={false} id={category.id} category={category.category} isActive={category.active} submitToggle={this.submitToggle} />
+        return <CategoriesRow key={category.id} isNew={false} id={category.id} category={category.label} isDisabled={category.isDisabled} submitToggle={this.submitToggle} />
       })
     } catch (e) {
       categoryRows = null
     }
     extracategories.forEach((item, i) => {
-      categoryRows.push(<CategoriesRow key={('new' + i)} isNew index={i} id={item.id} remove={this.removeExtraCategory} category={item.category} isActive={item.active} submitToggle={this.submitToggle} />)
+      categoryRows.push(<CategoriesRow key={('new' + i)} isNew index={i} id={item.id} remove={this.removeExtraCategory} category={item.label} isDisabled={item.isDisabled} submitToggle={this.submitToggle} />)
     })
 
     return (

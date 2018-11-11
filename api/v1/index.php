@@ -43,6 +43,9 @@ header("Accept-Charset: utf-8");
 header("Cache-Control: no-cache, must-revalidate");
 header("Content-Language: sv-SE");
 header('Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-API-Key');
+header('Allow: OPTIONS, GET, HEAD, POST, PUT, DELETE');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT');
+header('Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-API-Key');
 
 if (ENV_ACCESS_CONTROL_ENABLED) {
   header("Access-Control-Allow-Origin:" . ENV_FULL_DOMAIN);

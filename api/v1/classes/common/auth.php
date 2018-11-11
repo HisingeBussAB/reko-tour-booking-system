@@ -50,7 +50,7 @@ final class Auth {
       $userid = $result['id'];
       $now = time();
       $accessExp = $now + 3700; //+1 hour
-      $refreshExp = $now + 7776000;//+90 days
+      $refreshExp = $now + 2592000;//+30 days
       
       $refreshToken = '';
       //Generate Access Token

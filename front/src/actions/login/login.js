@@ -3,11 +3,10 @@ import {errorPopup} from '../error-popup'
 import {networkAction} from '..'
 
 export function Login (usr) {
-  console.log(usr)
   return async (dispatch) => {
     dispatch(networkAction(1, 'login action'))
     const errprep = 'Inloggningsförsök misslyckades!'
-    const isBearer = (typeof usr.refreshToken === 'string' && usr.refreshToken.length > 5)
+    const isBearer = typeof usr.refreshToken === 'string' && usr.refreshToken.length > 5
     const auth = isBearer
       ? 'Bearer ' + usr.refreshToken
       : 'Basic ' + btoa(usr.user + ':' + usr.pwd)
@@ -31,7 +30,6 @@ export function Login (usr) {
           refreshExpires: 0
         })
       }
-      console.log(payload)
       localStorage.setObject('user', {
         user          : usr.user,
         refreshToken  : payload.refresh.token,

@@ -4,7 +4,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import {connect} from 'react-redux'
 import {bindActionCreators} from 'redux'
-import {Login, errorPopup, networkAction} from '../actions'
+import {Login, networkAction} from '../actions'
 import Config from '../config/config'
 import Logo from '../img/logo.gif'
 import {getServerTime} from '../functions'
@@ -14,9 +14,10 @@ class LoginScreen extends Component {
     super(props)
     const {login = {autoAttempt: false}} = this.props
     this.state = {
-      isSending: true,
-      triedAuto: false,
-      loginData: {
+      serverTime: false,
+      isSending : true,
+      triedAuto : false,
+      loginData : {
         pwd           : Config.AutoLoginPwd,
         user          : Config.AutoUsername,
         auto          : login.autoAttempt,
@@ -34,6 +35,7 @@ class LoginScreen extends Component {
   }
 
   componentWillReceiveProps (nextProps) {
+    // Will activate on logout and try loggin back in
     const {login = {login: false}} = this.props
     if (nextProps.login.login !== login.login && !nextProps.login.login) {
       this.getLocalStorageToState()
@@ -48,7 +50,6 @@ class LoginScreen extends Component {
     } catch (e) {
       userObject = null
     }
-    console.log(userObject)
     if (userObject !== null) {
       if (typeof userObject.user === 'string' && typeof userObject.refreshToken === 'string' && typeof userObject.refreshExpires === 'number') {
         this.setState({loginData: {
@@ -61,7 +62,13 @@ class LoginScreen extends Component {
         return true
       }
     }
-    this.getUnixTime()
+    this.setState({loginData: {
+      pwd           : Config.AutoLoginPwd,
+      user          : Config.AutoUsername,
+      auto          : login.autoAttempt,
+      refreshToken  : false,
+      refreshExpires: 0
+    }}, () => { this.getUnixTime() })
     return false
   }
 
@@ -70,12 +77,15 @@ class LoginScreen extends Component {
     networkAction(1, 'login get time')
     getServerTime()
       .then(response => {
+        this.setState({serverTime: Number(response)})
         this.autoSequenceLauncher(Number(response))
         networkAction(0, 'login get time')
       })
       .catch(() => {
         // use client time if server is not sending timestamp
-        this.autoSequenceLauncher(Number(Math.round(+new Date() / 1000)))
+        const time = Number(Math.round(+new Date() / 1000))
+        this.setState({serverTime: Number(time)})
+        this.autoSequenceLauncher(time)
         networkAction(0, 'login get time')
       })
   }
@@ -91,34 +101,44 @@ class LoginScreen extends Component {
         refreshToken  : false,
         refreshExpires: 0
       }} = this.state
-
-    if (typeof loginData.refreshToken === 'string' && loginData.refreshToken.length > 1 && serverTime > (loginData.refreshExpires - 600)) {
+    if (typeof loginData.refreshToken === 'string' && loginData.refreshToken.length > 1 && serverTime < (loginData.refreshExpires - 600)) {
       // Try refresh with 10 minutes margin
-      this.tryLogin()
+      this.tryLogin('refresh')
     } else if (triedAuto === false && loginData.auto && typeof loginData.user === 'string' && typeof loginData.pwd === 'string' &&
         loginData.user.length > 0 && loginData.pwd.length > 0) {
       // Use auto credentials if they exist
-      this.setState({triedAuto: true}, () => this.tryLogin())
+      this.tryLogin('auto')
     }
   }
 
-  tryLogin = () => {
+  tryLogin = (auto = false) => {
     const {networkAction, Login = function () {}} = this.props
     const {loginData} = this.state
     this.setState({isSending: true})
     networkAction(1, 'trying login')
     Login(loginData)
       .then(() => {
-        networkAction(0, 'trying login')
         // Component will unmount here
       })
       .catch(() => {
-        networkAction(0, 'trying login')
+        if (auto === 'auto') { this.setState({triedAuto: true}) }
+        if (auto === 'refresh') {
+          localStorage.setObject('user', {
+            user          : loginData.user,
+            refreshToken  : false,
+            refreshExpires: 0
+          })
+          this.getLocalStorageToState()
+          return false
+        }
         this.setState(prevState => ({isSending: false,
           loginData: {
             ...prevState.loginData,
             pwd: ''
           }}))
+      })
+      .finally(() => {
+        networkAction(0, 'trying login')
       })
   }
 
@@ -174,8 +194,8 @@ class LoginScreen extends Component {
       <div className="Login" style={style}>
         <p><img src={Logo} alt="Logo" className="rounded my-4" title="Till Startsida" id="mainLogo" /></p>
         <h1 className="my-4">Resesystem</h1>
-        {(typeof loginData.refreshToken === 'string' && loginData.refreshToken.length > 1 && serverTime > (loginData.refreshExpires - 600))
-        || (triedAuto === false && loginData.auto && typeof loginData.user === 'string' && typeof loginData.pwd === 'string' && loginData.user.length > 0 && loginData.pwd.length > 0)
+        {(typeof loginData.refreshToken === 'string' && loginData.refreshToken.length > 1 && serverTime < (loginData.refreshExpires - 600)) ||
+        (triedAuto === false && loginData.auto && typeof loginData.user === 'string' && typeof loginData.pwd === 'string' && loginData.user.length > 0 && loginData.pwd.length > 0)
           ? <div>
             <h3 className="mb-4">Försöker automatisk inloggning...</h3>
             <span className="my-4"><FontAwesomeIcon icon={faSpinner} pulse size="4x" /></span>
@@ -210,7 +230,6 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => bindActionCreators({
   Login,
-  errorPopup,
   networkAction
 }, dispatch)
 

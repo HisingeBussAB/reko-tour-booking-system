@@ -5,7 +5,7 @@ import {faSave, faSpinner} from '@fortawesome/free-solid-svg-icons'
 import {faSquare, faCheckSquare, faTrashAlt} from '@fortawesome/free-regular-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
-import {getItem, saveItem} from '../../actions'
+import {getItem, putItem, postItem, deleteItem} from '../../actions'
 import ConfirmPopup from '../global/confirm-popup'
 
 class CategoriesRow extends Component {
@@ -54,39 +54,46 @@ class CategoriesRow extends Component {
   saveCategory = async (e) => {
     e.preventDefault()
     this.setState({updatingSave: true})
-    const {saveItem, isNew = false, isActive, id = 'new', remove = () => {}, index = null, submitToggle} = this.props
+    const {putItem, postItem, isNew = false, isDisabled, id = 'new', remove = () => {}, index = null, submitToggle} = this.props
     const {category} = this.state
     submitToggle(true)
-    const action = isNew ? 'new' : 'save'
     const data = {
-      category  : category,
-      active    : isActive,
-      categoryid: isNew ? 'new' : id,
-      task      : 'save'
+      label  : category,
+      isDisabled    : isDisabled,
     }
 
-    if (await saveItem('categories', data, action)) {
-      remove(index)
-      submitToggle(false)
-    } else {
-      submitToggle(false)
+    if (isNew) {
+      if (await postItem('categories', data)) {
+        remove(index)
+        submitToggle(false)
+      } else {
+        submitToggle(false)
+      }
+    } 
+
+    if (!isNew) {
+      if (await putItem('categories', id, data)) {
+        remove(index)
+        submitToggle(false)
+      } else {
+        submitToggle(false)
+      }
     }
+
   }
 
   toggleActive = async (e, toggle) => {
     e.preventDefault()
     this.setState({updatingActive: true})
     const {category} = this.state
-    const {saveItem, isActive, id = 'new', submitToggle} = this.props
+    const {putItem, isDisabled, id = 'new', submitToggle} = this.props
     submitToggle(true)
     const data = {
-      category  : category,
-      active    : !isActive,
-      categoryid: id,
-      task      : 'activetoggle'
+      label  : category,
+      isDisabled    : !isDisabled
     }
 
-    if (!await saveItem('categories', data, 'save')) {
+    if (!await putItem('categories', id, data)) {
       this.setState({updatingActive: false})
     }
     submitToggle(false)
@@ -107,15 +114,13 @@ class CategoriesRow extends Component {
 
   doDelete = async (choice) => {
     this.setState({isConfirming: false})
-    const {saveItem, id = 'new', submitToggle} = this.props
+    const {postItem, id = 'new', submitToggle} = this.props
     if (choice === true) {
       const {category} = this.state
       const data = {
-        category  : category,
-        categoryid: id,
-        task      : 'delete'
+        label: category
       }
-      if (!await saveItem('categories', data, 'delete')) {
+      if (!await deleteItem('categories', id, data)) {
         this.setState({deleting: false})
       }
     } else {
@@ -125,7 +130,8 @@ class CategoriesRow extends Component {
   }
 
   render () {
-    const {category: propsCategory = 'new', isActive: propsActive = false, isNew} = this.props
+    const {category: propsCategory = 'new', isDisabled: propsActiveReversed = false, isNew} = this.props
+    const propsActive = !propsActiveReversed
     const {
       category: stateCategory = 'new',
       updatingSave = false,
@@ -174,14 +180,18 @@ CategoriesRow.propTypes = {
   isActive    : PropTypes.bool,
   isNew       : PropTypes.bool,
   submitToggle: PropTypes.func,
-  saveItem    : PropTypes.func,
+  putItem    : PropTypes.func,
+  postItem    : PropTypes.func,
+  deleteItem    : PropTypes.func,
   index       : PropTypes.number,
   remove      : PropTypes.func
 }
 
 const mapDispatchToProps = dispatch => bindActionCreators({
   getItem,
-  saveItem
+  putItem,
+  postItem,
+  deleteItem
 }, dispatch)
 
 export default connect(null, mapDispatchToProps)(CategoriesRow)

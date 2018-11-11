@@ -1,8 +1,8 @@
 import firebase from '../../config/firebase'
-import {itemNameTranslation} from '../../data/valid-api-calls'
+import {itemNameHuman} from '../../data/valid-api-calls'
 
 export function firebaseSavedItem (id, type) {
-  if (itemNameTranslation.hasOwnProperty(type)) {
+  if (itemNameHuman.hasOwnProperty(type)) {
     try {
       const itemRef = firebase.database().ref('tours/' + type)
       const today = Date.now()
