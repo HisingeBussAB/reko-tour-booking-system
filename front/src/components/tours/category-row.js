@@ -28,21 +28,22 @@ class CategoriesRow extends Component {
   }
 
   componentWillReceiveProps (nextProps) {
-    const {id = 'new', category = 'new', isActive = true} = this.props
+    const {id = 'new', category = 'new', isDisabled = false} = this.props
     if (nextProps.id !== id) {
       // for some reason id changed, component state needs reset.
       this.setState({
         category      : nextProps.category,
         updatingSave  : false,
         updatingActive: false,
-        deleting      : false
+        deleting      : false,
+        isConfirming  : false
       })
     }
     // cancel loaders on changes recived
     if (nextProps.category !== category) {
       this.setState({updatingSave: false})
     }
-    if (nextProps.isActive !== isActive) {
+    if (nextProps.isDisabled !== isDisabled) {
       this.setState({updatingActive: false})
     }
   }
@@ -176,7 +177,6 @@ class CategoriesRow extends Component {
 CategoriesRow.propTypes = {
   category    : PropTypes.string,
   id          : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  isActive    : PropTypes.bool,
   isNew       : PropTypes.bool,
   submitToggle: PropTypes.func,
   putItem     : PropTypes.func,

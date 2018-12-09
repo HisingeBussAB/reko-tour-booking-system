@@ -33,9 +33,9 @@ class Categories extends Component {
   addRow = () => {
     const {extracategories = []} = this.state
     const newcategory = {
-      id      : 'new',
-      category: '',
-      isDisabled  : false
+      id        : 'new',
+      category  : '',
+      isDisabled: false
     }
     const newextracategories = update(extracategories, {$push: [newcategory]})
 

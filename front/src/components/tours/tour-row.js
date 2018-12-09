@@ -5,50 +5,70 @@ import {faPencilAlt, faSpinner} from '@fortawesome/free-solid-svg-icons'
 import {faSquare, faCheckSquare, faTrashAlt} from '@fortawesome/free-regular-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
-import { postItem } from '../../actions'
+import { getItem, putItem, postItem, deleteItem } from '../../actions'
 import { Link } from 'react-router-dom'
 import ConfirmPopup from '../global/confirm-popup'
 
 class TourRow extends Component {
   constructor (props) {
     super(props)
+    const {label = ''} = this.props
     this.state = {
-      updatingActive: false,
-      deleting      : false,
-      isConfirming  : false
+      updatingDisabled: false,
+      deleting        : false,
+      label           : label,
+      isConfirming    : false
     }
   }
 
+  // key={'tour' + tour.id} id={tour.id} tour={tour.tour} isActive={tour.active} departure={tour.departure}
+
   componentWillReceiveProps (nextProps) {
-    const {id = 'new', isActive = true} = this.props
+    const {id = 'new', label = 'new', isDisabled = false} = this.props
     if (nextProps.id !== id) {
       // for some reason id changed, component state needs reset.
       this.setState({
-        updatingActive: false,
-        deleting      : false
+        updatingDisabled: false,
+        deleting        : false,
+        label           : label,
+        isConfirming    : false
       })
     }
     // cancel loaders on changes recived
-    if (nextProps.isActive !== isActive) {
-      this.setState({updatingActive: false})
+    if (nextProps.isActive !== isDisabled) {
+      this.setState({updatingDisabled: false})
     }
   }
 
-  toggleActive = async (e, toggle) => {
+  toggleDisabled = async (e, toggle) => {
     e.preventDefault()
-    this.setState({updatingActive: true})
+    this.setState({updatingDisabled: true})
+    const {label} = this.state
+    const {putItem, isDisabled, id = 'new', submitToggle} = this.props
+    submitToggle(true, 'tour')
+    const data = {
+      label     : category,
+      isDisabled: !isDisabled
+    }
+
+    if (!await putItem('categories', id, data)) {
+      this.setState({updatingActive: false})
+    }
+    submitToggle(false)
+
+
+    e.preventDefault()
+    this.setState({updatingDisabled: true})
     const {tour = '', saveItem, isActive, id = 'new'} = this.props
 
     const data = {
-      tour  : tour,
-      active: !isActive,
-      tourid: id,
-      task  : 'activetoggle'
+      label     : category,
+      isDisabled: !isDisabled
     }
-/*
+    /*
     if (!await saveItem('tours', data, 'save')) {
       this.setState({updatingActive: false})
-    }*/
+    } */
   }
 
   deleteConfirm = (e) => {
@@ -67,7 +87,7 @@ class TourRow extends Component {
       task  : 'delete'
     }
     if (choice === true) {
-      if (/*!await saveItem('tours', data, 'delete')*/true) {
+      if (/*! await saveItem('tours', data, 'delete') */true) {
         this.setState({deleting: false})
       }
     } else {
@@ -114,10 +134,12 @@ class TourRow extends Component {
 }
 
 TourRow.propTypes = {
-  tour    : PropTypes.string,
-  id      : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  isActive: PropTypes.bool,
-  postItem: PropTypes.func
+  label     : PropTypes.string,
+  id        : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  putItem   : PropTypes.func,
+  postItem  : PropTypes.func,
+  deleteItem: PropTypes.func,
+  isDisabled: PropTypes.bool
 }
 
 const mapDispatchToProps = dispatch => bindActionCreators({
