@@ -17,7 +17,7 @@ export function firebaseItemSub (user, itemType) {
       return false
     }
 
-//TODO broken!
+    // TODO broken!
 
     const toursCategories = firebase.database().ref('tours/' + itemType)
     toursCategories.on('value', function (snapshot) {
@@ -35,7 +35,6 @@ export function firebaseItemSub (user, itemType) {
             .catch(error => {
               dispatch(networkAction(0, 'get all ' + itemType))
             })
-            
         } else {
           snap.id.forEach((item) => {
             if (Number.isInteger(item)) {
@@ -45,11 +44,9 @@ export function firebaseItemSub (user, itemType) {
                 [itemTypeid]: item
               })
                 .then(response => {
-
                   dispatch(networkAction(0, 'get ' + itemType + ' ' + item))
                 })
                 .catch(error => {
-
                   dispatch(networkAction(0, 'get ' + itemType + ' ' + item))
                 })
             }

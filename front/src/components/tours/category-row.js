@@ -58,8 +58,8 @@ class CategoriesRow extends Component {
     const {category} = this.state
     submitToggle(true)
     const data = {
-      label  : category,
-      isDisabled    : isDisabled,
+      label     : category,
+      isDisabled: isDisabled
     }
 
     if (isNew) {
@@ -69,7 +69,7 @@ class CategoriesRow extends Component {
       } else {
         submitToggle(false)
       }
-    } 
+    }
 
     if (!isNew) {
       if (await putItem('categories', id, data)) {
@@ -79,7 +79,6 @@ class CategoriesRow extends Component {
         submitToggle(false)
       }
     }
-
   }
 
   toggleActive = async (e, toggle) => {
@@ -89,8 +88,8 @@ class CategoriesRow extends Component {
     const {putItem, isDisabled, id = 'new', submitToggle} = this.props
     submitToggle(true)
     const data = {
-      label  : category,
-      isDisabled    : !isDisabled
+      label     : category,
+      isDisabled: !isDisabled
     }
 
     if (!await putItem('categories', id, data)) {
@@ -114,7 +113,7 @@ class CategoriesRow extends Component {
 
   doDelete = async (choice) => {
     this.setState({isConfirming: false})
-    const {postItem, id = 'new', submitToggle} = this.props
+    const {deleteItem, id = 'new', submitToggle} = this.props
     if (choice === true) {
       const {category} = this.state
       const data = {
@@ -180,9 +179,10 @@ CategoriesRow.propTypes = {
   isActive    : PropTypes.bool,
   isNew       : PropTypes.bool,
   submitToggle: PropTypes.func,
-  putItem    : PropTypes.func,
+  putItem     : PropTypes.func,
   postItem    : PropTypes.func,
-  deleteItem    : PropTypes.func,
+  deleteItem  : PropTypes.func,
+  isDisabled  : PropTypes.bool,
   index       : PropTypes.number,
   remove      : PropTypes.func
 }

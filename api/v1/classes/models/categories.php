@@ -7,12 +7,13 @@ use RekoBooking\classes\Functions;
 class Categories extends Model {
 
   public function get(array $params) {
+
     if ($params['id'] > 0 || $params['id'] == -1) {
       try {
         if ($params['id'] == -1) {
-          $sql = "SELECT id, label, isDisabled FROM Categories WHERE isDeleted = 0 ORDER BY label ASC;";
+          $sql = "SELECT id, label, isDisabled, isDeleted FROM Categories WHERE isDeleted = 0 ORDER BY label ASC;";
         } else {
-          $sql = "SELECT id, label, isDisabled FROM Categories WHERE id = :id;";
+          $sql = "SELECT id, label, isDisabled, isDeleted FROM Categories WHERE id = :id AND isDeleted = 0;";
         }
         $sth = $this->pdo->prepare($sql);
         if ($params['id'] != -1) { $sth->bindParam(':id', $params['id'], \PDO::PARAM_INT); }
@@ -68,9 +69,9 @@ class Categories extends Model {
     if ($this->get(array('id' => $params['id'])) !== false) {
       try {
         if ($params['isDisabled'] == -1) {
-          $sql = "UPDATE Categories SET label = :cat WHERE id = :id;";
+          $sql = "UPDATE Categories SET label = :cat WHERE id = :id AND isDeleted = 0;";
         } else {
-          $sql = "UPDATE Categories SET label = :cat, isDisabled = :act WHERE id = :id;";
+          $sql = "UPDATE Categories SET label = :cat, isDisabled = :act WHERE id = :id AND isDeleted = 0;";
         }
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
@@ -87,6 +88,18 @@ class Categories extends Model {
   }
 
   public function delete(array $params) {
+    if (ENV_DEBUG_MODE && !empty($_GET["forceReal"]) && Functions::validateBoolToBit($_GET["forceReal"])) {
+      //Allows true deletes while running tests or after debugging, does not validate exiting ID
+      try {
+        $sql = "DELETE FROM Categories WHERE id = :id;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
+        $sth->execute();
+      } catch(\PDOException $e) {
+        $this->response->DBError($e, __CLASS__, $sql);
+        $this->response->Exit(500);
+      }
+    }
     if ($this->get(array('id' => $params['id'])) !== false) {
       try {
         $sql = "UPDATE Categories SET isDeleted = 1 WHERE id = :id;";

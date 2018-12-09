@@ -11,9 +11,9 @@ class Tours extends Model {
     if ($params['id'] > 0 || $params['id'] == -1) {
       try {
         if ($params['id'] == -1) {
-          $sql = "SELECT id, label, insuranceprice, reservationfeeprice, departuredate, active FROM Tours;";
+          $sql = "SELECT id, label, insuranceprice, reservationfeeprice, departuredate, isDisabled FROM Tours;";
         } else {
-          $sql = "SELECT id, label, insuranceprice, reservationfeeprice, departuredate, active FROM Tours WHERE id = :id;";
+          $sql = "SELECT id, label, insuranceprice, reservationfeeprice, departuredate, isDisabled FROM Tours WHERE id = :id;";
         }
         $sth = $this->pdo->prepare($sql);
         if ($params['id'] != -1) { $sth->bindParam(':id', $params['id'], \PDO::PARAM_INT); }
@@ -66,7 +66,7 @@ class Tours extends Model {
     $params = $this->paramsValidationWithExit($_params);
     
 
-    $sql = "INSERT INTO Tours (label, insuranceprice, reservationfeeprice, departuredate, active) OUTPUT INSERTED.id VALUES (:lab, :ins, :res, :dep, 1);";
+    $sql = "INSERT INTO Tours (label, insuranceprice, reservationfeeprice, departuredate, isDisabled, isDeleted) OUTPUT INSERTED.id VALUES (:lab, :ins, :res, :dep, 0, 0);";
     try {     
       $this->pdo->beginTransaction();
       $sth = $this->pdo->prepare($sql);
@@ -109,7 +109,7 @@ class Tours extends Model {
         insuranceprice = :ins, 
         reservationfeeprice = :res, 
         departuredate = :dep, 
-        active = :act
+        isDisabled = :act
         WHERE id=:id;";
     try {     
       $this->pdo->beginTransaction();
@@ -119,7 +119,7 @@ class Tours extends Model {
       $sth->bindParam(':ins', $params['insuranceprice'],      \PDO::PARAM_INT);
       $sth->bindParam(':res', $params['reservationfeeprice'], \PDO::PARAM_INT);
       $sth->bindParam(':dep', $params['departuredate'],       \PDO::PARAM_STR);
-      $sth->bindParam(':act', $params['active'],              \PDO::PARAM_INT);
+      $sth->bindParam(':act', $params['isDisabled'],              \PDO::PARAM_INT);
       $sth->execute(); 
       $this->pdo->commit();
     } catch(\PDOException $e) {
@@ -183,11 +183,11 @@ class Tours extends Model {
       $passed = false;
     }
 
-    if (isset($params['active'])) {
-      $result['active'] = Functions::validateBoolToBit($params['active']);
+    if (isset($params['isDisabled'])) {
+      $result['isDisabled'] = Functions::validateBoolToBit($params['isDisabled']);
     } else {
-      //default to 1
-      $result['active'] = 1;
+      //default to 0
+      $result['isDisabled'] = 0;
     }
     
     if (isset($params['categories']) && is_array($params['categories'])) {

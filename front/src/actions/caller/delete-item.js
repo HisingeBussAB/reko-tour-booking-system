@@ -11,7 +11,7 @@ export function deleteItem (itemType, item, data) {
       try {
         const response = await myAxios.delete('/' + itemType + '/' + item, data)
         const id = response.data.response.updatedid
-        dispatch(getItem(itemType, id))
+        dispatch(getItem(itemType, 'all'))
         firebaseSavedItem(id, itemType)
         return true
       } catch (e) {
