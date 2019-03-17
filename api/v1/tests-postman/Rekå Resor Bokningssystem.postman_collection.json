@@ -6,7 +6,6 @@
 	},
 	"item": [
 		{
-			"_postman_id": "5426bbca-c606-4faf-a353-104186990b5b",
 			"name": "timestamp",
 			"event": [
 				{
@@ -70,7 +69,6 @@
 			"response": []
 		},
 		{
-			"_postman_id": "c7148cce-bbe5-4151-99bb-9605d61fb9da",
 			"name": "users/auth Don't send a username",
 			"event": [
 				{
@@ -143,7 +141,6 @@
 			"response": []
 		},
 		{
-			"_postman_id": "8d504658-91af-498e-bfb4-522113d3bf8c",
 			"name": "users/auth Don't send a password",
 			"event": [
 				{
@@ -216,7 +213,6 @@
 			"response": []
 		},
 		{
-			"_postman_id": "c022fd26-82c3-47d5-9203-7f9483c0840e",
 			"name": "users/auth Wrong credentials",
 			"event": [
 				{
@@ -289,7 +285,6 @@
 			"response": []
 		},
 		{
-			"_postman_id": "6d3c10c4-8acb-43fe-be94-338e0c4ba7d0",
 			"name": "users/auth AutoUser Login",
 			"event": [
 				{
@@ -414,7 +409,6 @@
 			"response": []
 		},
 		{
-			"_postman_id": "807637fa-f3a8-4a10-bbfc-9c97f4f303a8",
 			"name": "users/auth/refresh Refresh",
 			"event": [
 				{
@@ -548,7 +542,6 @@
 			"response": []
 		},
 		{
-			"_postman_id": "68207e02-34a9-49e4-b1af-481685f4ad72",
 			"name": "users/auth/refresh Refresh invalid",
 			"event": [
 				{
@@ -621,7 +614,6 @@
 			"response": []
 		},
 		{
-			"_postman_id": "c2c213f5-428b-4902-a1f3-520dcf964db3",
 			"name": "users/auth/revoke Revoke",
 			"event": [
 				{
@@ -694,7 +686,6 @@
 			"response": []
 		},
 		{
-			"_postman_id": "a962d6f1-39f2-48aa-9b9c-2e39eee92767",
 			"name": "tours/tours Check failed request auth",
 			"event": [
 				{
@@ -767,7 +758,6 @@
 			"response": []
 		},
 		{
-			"_postman_id": "f50b8066-0c6e-4795-870a-6529c52c6842",
 			"name": "users/auth AutoUser Log back in after revoke test",
 			"event": [
 				{
@@ -892,7 +882,6 @@
 			"response": []
 		},
 		{
-			"_postman_id": "bad2fe82-95c1-4fd3-a7dc-06c839ca936c",
 			"name": "tours/tours Check logged in succesfull",
 			"event": [
 				{
@@ -942,7 +931,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"user\": \"{{Username}}\"\n}"
+					"raw": ""
 				},
 				"url": {
 					"raw": "{{BaseURL}}categories",
@@ -954,7 +943,6 @@
 			"response": []
 		},
 		{
-			"_postman_id": "19743d46-1088-4d2e-9423-5a6db16fab96",
 			"name": "categories Add Category Test",
 			"event": [
 				{
@@ -970,7 +958,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "10c83c00-6b75-47a3-a0bc-7d3a1bf83f4c",
+						"id": "4399e3dc-1d63-4fd8-af97-619cf4c729ff",
 						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Status code is 201 and json body exists\", function () {",
@@ -987,7 +975,7 @@
 							"",
 							"",
 							"var jsonData = pm.response.json();",
-							"pm.environment.set(\"testIDCategory\", jsonData.response.updatedid);",
+							"pm.environment.set(\"testIDCategory1\", jsonData.response.updatedid);",
 							""
 						]
 					}
@@ -1029,7 +1017,80 @@
 			"response": []
 		},
 		{
-			"_postman_id": "ac2f85d6-3e10-48be-9986-c82cc47c4bd1",
+			"name": "categories Add Anoter Category",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "ecc56d51-28ac-4db0-8719-c55e3b06a5ce",
+						"exec": [
+							"pm.test(\"Status code is 201 and json body exists\", function () {",
+							"    pm.response.to.have.status(201);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"});",
+							"",
+							"pm.test(\"login true, success true\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.login).to.eql(true);",
+							"    pm.expect(jsonData.success).to.eql(true);",
+							"});",
+							"",
+							"",
+							"var jsonData = pm.response.json();",
+							"pm.environment.set(\"testIDCategory2\", jsonData.response.updatedid);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AccessJWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"label\": \"AnotherTestCategory\",\n\t\"isDisabled\": true\n}"
+				},
+				"url": {
+					"raw": "{{BaseURL}}categories",
+					"host": [
+						"{{BaseURL}}categories"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "categories Get Categories Test",
 			"event": [
 				{
@@ -1115,19 +1176,15 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "{{BaseURL}}categories/1",
+					"raw": "{{BaseURL}}categories",
 					"host": [
 						"{{BaseURL}}categories"
-					],
-					"path": [
-						"1"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"_postman_id": "0ebdc61d-1239-4b0d-a6c5-b6ce8199b73c",
 			"name": "categories Edit CategoryName Test",
 			"event": [
 				{
@@ -1143,7 +1200,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "310285a0-5af0-41b2-9139-c3ebac40c6d9",
+						"id": "12d6597e-15c9-4b2e-94a4-7b8a60213874",
 						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Status code is 200 and json body exists\", function () {",
@@ -1155,7 +1212,7 @@
 							"var jsonData = pm.response.json();",
 							"",
 							"pm.test(\"Updated ID returned\", function () {",
-							"    pm.expect(jsonData.response.updatedid).to.eql(Number(pm.environment.get('testIDCategory')));",
+							"    pm.expect(jsonData.response.updatedid).to.eql(Number(pm.environment.get('testIDCategory1')));",
 							"});",
 							"",
 							""
@@ -1190,36 +1247,34 @@
 					"raw": "{\n\t\"label\": \"ReplacedCategoryLabel\"\n}"
 				},
 				"url": {
-					"raw": "{{BaseURL}}categories/{{testIDCategory}}",
+					"raw": "{{BaseURL}}categories/{{testIDCategory1}}",
 					"host": [
 						"{{BaseURL}}categories"
 					],
 					"path": [
-						"{{testIDCategory}}"
+						"{{testIDCategory1}}"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"_postman_id": "2fbc812a-c6dc-4f81-bf5b-402d63d85592",
 			"name": "categories Edit CategoryName Active",
 			"event": [
 				{
 					"listen": "prerequest",
 					"script": {
 						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
-						"type": "text/javascript",
 						"exec": [
 							""
-						]
+						],
+						"type": "text/javascript"
 					}
 				},
 				{
 					"listen": "test",
 					"script": {
-						"id": "a83be21a-d45a-4de0-b268-d2e3a373f94c",
-						"type": "text/javascript",
+						"id": "b6660738-bd6c-4ef8-9233-245350b7a142",
 						"exec": [
 							"pm.test(\"Status code is 200 and json body exists\", function () {",
 							"    pm.response.to.have.status(200);",
@@ -1241,10 +1296,10 @@
 							"    },",
 							"    \"response\": { ",
 							"        \"type\": \"object\",",
-							"        \"required\": [ \"categories\"],",
+							"        \"required\": [ \"updatedid\"],",
 							"        \"properties\": {",
-							"            \"categories\": {",
-							"                \"type\": \"array\"",
+							"            \"updatedid\": {",
+							"                \"type\": \"number\"",
 							"            }",
 							"        }",
 							"    }",
@@ -1256,10 +1311,9 @@
 							"",
 							"pm.test('Schema is valid', function() {",
 							"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
-							"});",
-							"",
-							"pm.environment.unset(\"variable_key\");"
-						]
+							"});"
+						],
+						"type": "text/javascript"
 					}
 				}
 			],
@@ -1287,39 +1341,37 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"label\": \"ReplacedCategoryLabel\",\n\t\"active\": true\n}"
+					"raw": "{\n\t\"label\": \"ReplacedCategoryLabel\",\n\t\"isDisabled\": false\n}"
 				},
 				"url": {
-					"raw": "{{BaseURL}}categories/{{testIDCategory}}",
+					"raw": "{{BaseURL}}categories/{{testIDCategory1}}",
 					"host": [
 						"{{BaseURL}}categories"
 					],
 					"path": [
-						"{{testIDCategory}}"
+						"{{testIDCategory1}}"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"_postman_id": "d678e6f8-41c7-4e1a-9cf9-995bfd140140",
 			"name": "categories Get Category Test",
 			"event": [
 				{
 					"listen": "prerequest",
 					"script": {
 						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
-						"type": "text/javascript",
 						"exec": [
 							""
-						]
+						],
+						"type": "text/javascript"
 					}
 				},
 				{
 					"listen": "test",
 					"script": {
 						"id": "5a915af0-d57f-4d9d-a6e1-26108ccdd5b7",
-						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Status code is 200 and json body exists\", function () {",
 							"    pm.response.to.have.status(200);",
@@ -1365,8 +1417,188 @@
 							"});",
 							"",
 							"pm.test(\"Category was changed to active\", function () {",
-							"    pm.expect(jsonData.response.categories[0].active).to.eql(true);",
+							"    pm.expect(jsonData.response.categories[0].isdisabled).to.eql(false);",
 							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AccessJWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{BaseURL}}categories/{{testIDCategory1}}",
+					"host": [
+						"{{BaseURL}}categories"
+					],
+					"path": [
+						"{{testIDCategory1}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "tours Add Tour Test",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "8561c2be-29ef-4700-a814-21fecd16959e",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 201 and json body exists\", function () {",
+							"    pm.response.to.have.status(201);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"});",
+							"",
+							"pm.test(\"login true, success true\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.login).to.eql(true);",
+							"    pm.expect(jsonData.success).to.eql(true);",
+							"});",
+							"",
+							"",
+							"var jsonData = pm.response.json();",
+							"pm.environment.set(\"testIDTour\", jsonData.response.updatedid);",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AccessJWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"label\": \"TestTour123\",\n\t\"insuranceprice\": 100,\n\t\"reservationfeeprice\": 100,\n\t\"departuredate\": \"2018-01-01\",\n\t\"categories\": [\n\t\t{\n\t\t\t\"id\": \"{{testIDCategory1}}\"\n\t\t\t\n\t\t},\n\t\t{\n\t\t\t\"id\": \"{{testIDCategory2}}\"\n\t\t\t\n\t\t}\n\t\t],\n\t\"rooms\": [\n\t\t{\n\t\t\t\"label\": \"Enkelrum23\",\n\t\t\t\"price\": 100,\n\t\t\t\"size\": 1,\n\t\t\t\"numberavaliable\": 10\n\t\t},\n\t\t{\n\t\t\t\"label\": \"Dubbelru2m3\",\n\t\t\t\"price\": 200,\n\t\t\t\"size\": 2,\n\t\t\t\"numberavaliable\": 20\n\t\t},\n\t\t{\n\t\t\t\"label\": \"Familjeru23m\",\n\t\t\t\"price\": 400,\n\t\t\t\"size\": 4,\n\t\t\t\"numberavaliable\": 40\n\t\t}\n\t\t]\n}"
+				},
+				"url": {
+					"raw": "{{BaseURL}}tours",
+					"host": [
+						"{{BaseURL}}tours"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "tours Get Tours Test",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "4ee2a053-ed9d-45d5-a255-5f454c71195d",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200 and json body exists\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"});",
+							"",
+							"pm.test(\"login true, success true\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.login).to.eql(true);",
+							"    pm.expect(jsonData.success).to.eql(true);",
+							"});",
+							"",
+							"",
+							"var jsonData = pm.response.json();",
+							"",
+							"var schema = {",
+							"\"$schema\": \"http://json-schema.org/draft-04/schema#\",",
+							"\"type\" : \"object\",",
+							"  \"properties\": {",
+							"    \"login\": { ",
+							"        \"type\": \"boolean\",",
+							"        \"enum\": [true]",
+							"    },",
+							"    \"success\": { ",
+							"        \"type\": \"boolean\",",
+							"        \"enum\": [true]",
+							"    },",
+							"    \"response\": { ",
+							"        \"type\": \"object\",",
+							"        \"required\": [ \"tours\"],",
+							"        \"properties\": {",
+							"            \"tours\": {",
+							"                \"type\": \"array\"",
+							"            }",
+							"        }",
+							"    }",
+							"},",
+							"\"required\": [ \"login\", \"success\", \"response\"]",
+							"};",
+							"",
+							"pm.test('Schema is valid', function() {",
+							"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
+							"});",
+							""
 						]
 					}
 				}
@@ -1398,20 +1630,16 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "{{BaseURL}}categories/{{testIDCategory}}",
+					"raw": "{{BaseURL}}tours",
 					"host": [
-						"{{BaseURL}}categories"
-					],
-					"path": [
-						"{{testIDCategory}}"
+						"{{BaseURL}}tours"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"_postman_id": "e64e6ff8-9d6a-4133-a7fb-0cbec54ee4f6",
-			"name": "categories Delete Category Test",
+			"name": "tours Edit Tour Test",
 			"event": [
 				{
 					"listen": "prerequest",
@@ -1426,7 +1654,84 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "873b7222-8b58-437d-a1de-a16c48bcc8fa",
+						"id": "8561c2be-29ef-4700-a814-21fecd16959e",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 201 and json body exists\", function () {",
+							"    pm.response.to.have.status(201);",
+							"    pm.response.to.be.json;",
+							"    pm.response.to.be.withBody;",
+							"});",
+							"",
+							"pm.test(\"login true, success true\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.login).to.eql(true);",
+							"    pm.expect(jsonData.success).to.eql(true);",
+							"});",
+							"",
+							"",
+							"var jsonData = pm.response.json();",
+							"pm.environment.set(\"testIDTour\", jsonData.response.updatedid);",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{AccessJWT}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "X-API-Key",
+						"value": "{{APIKey}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"label\": \"Edited\",\n\t\"insuranceprice\": 1000,\n\t\"reservationfeeprice\": 1000,\n\t\"departuredate\": \"2018-02-02\",\n\t\"categories\": [\n\t\t\t{\n\t\t\t\t\"id\": \"{{testIDCategory2}}\"\n\t\t\t}\n\t\t],\n\t\"rooms\": [\n\t\t{\n\t\t\t\"label\": \"EditedRoom\",\n\t\t\t\"price\": 1000,\n\t\t\t\"size\": 10,\n\t\t\t\"numberavaliable\": 100\n\t\t},\n\t\t{\n\t\t\t\"label\": \"EditedRoom2\",\n\t\t\t\"price\": 2000,\n\t\t\t\"size\": 20,\n\t\t\t\"numberavaliable\": 200\n\t\t}\n\t\t]\n}"
+				},
+				"url": {
+					"raw": "{{BaseURL}}tours/{{testIDTour}}",
+					"host": [
+						"{{BaseURL}}tours"
+					],
+					"path": [
+						"{{testIDTour}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "categories Delete AnotherCategory Test",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "7f7eba23-1364-41c5-a28b-373ff4a366ab",
 						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Status code is 200 and json body exists\", function () {",
@@ -1449,10 +1754,10 @@
 							"    },",
 							"    \"response\": { ",
 							"        \"type\": \"object\",",
-							"        \"required\": [ \"categories\"],",
+							"        \"required\": [ \"updatedid\"],",
 							"        \"properties\": {",
-							"            \"categories\": {",
-							"                \"type\": \"array\"",
+							"            \"updatedid\": {",
+							"                \"type\": \"number\"",
 							"            }",
 							"        }",
 							"    }",
@@ -1464,12 +1769,6 @@
 							"",
 							"pm.test('Schema is valid', function() {",
 							"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
-							"});",
-							"",
-							"",
-							"",
-							"pm.test(\"Category Label was changed\", function () {",
-							"    pm.expect(jsonData.response.categories[0].label).to.eql(\"ReplacedCategoryLabel\");",
 							"});"
 						]
 					}
@@ -1514,24 +1813,22 @@
 			"response": []
 		},
 		{
-			"_postman_id": "24c0beb1-523f-4777-a4f9-b92f0f91275d",
-			"name": "categories Delete Category Test Copy",
+			"name": "categories CategoryWasDeleted",
 			"event": [
 				{
 					"listen": "prerequest",
 					"script": {
 						"id": "10c3d648-40cd-41c1-8f33-8e5ada1e0336",
-						"type": "text/javascript",
 						"exec": [
 							""
-						]
+						],
+						"type": "text/javascript"
 					}
 				},
 				{
 					"listen": "test",
 					"script": {
-						"id": "873b7222-8b58-437d-a1de-a16c48bcc8fa",
-						"type": "text/javascript",
+						"id": "7d5ab9bd-efa3-4a39-bf1d-c6416999bebd",
 						"exec": [
 							"pm.test(\"Status code is 200 and json body exists\", function () {",
 							"    pm.response.to.have.status(200);",
@@ -1568,14 +1865,9 @@
 							"",
 							"pm.test('Schema is valid', function() {",
 							"  pm.expect(tv4.validate(jsonData, schema)).to.be.true;",
-							"});",
-							"",
-							"",
-							"",
-							"pm.test(\"Category Label was changed\", function () {",
-							"    pm.expect(jsonData.response.categories[0].label).to.eql(\"ReplacedCategoryLabel\");",
 							"});"
-						]
+						],
+						"type": "text/javascript"
 					}
 				}
 			],
@@ -1590,7 +1882,7 @@
 						}
 					]
 				},
-				"method": "DELETE",
+				"method": "GET",
 				"header": [
 					{
 						"key": "X-API-Key",
@@ -1606,12 +1898,15 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "{{BaseURL}}categories/{{testIDCategory}}",
+					"raw": "{{BaseURL}}categories?showDeleted=true",
 					"host": [
 						"{{BaseURL}}categories"
 					],
-					"path": [
-						"{{testIDCategory}}"
+					"query": [
+						{
+							"key": "showDeleted",
+							"value": "true"
+						}
 					]
 				}
 			},
