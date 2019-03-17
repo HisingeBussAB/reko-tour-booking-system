@@ -30,7 +30,7 @@ final class Auth {
     }
     
     try {
-      $sql = "SELECT TOP 1 * FROM Auth WHERE [user] = :user ORDER BY id;";
+      $sql = "SELECT * FROM Auth WHERE user = :user ORDER BY id LIMIT 1;";
       $sth = $pdo->prepare($sql);
       $sth->bindParam(':user', $user, \PDO::PARAM_STR);
       $sth->execute(); 
@@ -98,7 +98,7 @@ final class Auth {
       
     // Get the users refresh JWT secret.
     try {
-      $sql = "SELECT TOP 1 token FROM Tokens WHERE username = :user AND tokentype = 'refreshsecret' ORDER BY created DESC;";
+      $sql = "SELECT token FROM Tokens WHERE username = :user AND tokentype = 'refreshsecret' ORDER BY created DESC LIMIT 1;";
       $sth = $pdo->prepare($sql);
       $sth->bindParam(':user', $user, \PDO::PARAM_STR);
       $sth->execute(); 
@@ -119,7 +119,7 @@ final class Auth {
     //We should validate the user still exist before issuing new credentials
 
     try {
-      $sql = "SELECT TOP 1 id FROM Auth WHERE [user] = :user ORDER BY id;";
+      $sql = "SELECT id FROM Auth WHERE user = :user ORDER BY id LIMIT 1;";
       $sth = $pdo->prepare($sql);
       $sth->bindParam(':user', $user, \PDO::PARAM_STR);
       $sth->execute(); 

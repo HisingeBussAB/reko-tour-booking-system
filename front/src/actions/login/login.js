@@ -5,7 +5,7 @@ import {networkAction} from '..'
 export function Login (usr) {
   return async (dispatch) => {
     dispatch(networkAction(1, 'login action'))
-    const errprep = 'Inloggningsförsök misslyckades!'
+    const errprep = 'Inloggningsförsök misslyckades! '
     const isBearer = typeof usr.refreshToken === 'string' && usr.refreshToken.length > 5
     const auth = isBearer
       ? 'Bearer ' + usr.refreshToken

@@ -11,9 +11,9 @@ class Categories extends Model {
     if ($params['id'] > 0 || $params['id'] == -1) {
       try {
         if ($params['id'] == -1) {
-          $sql = "SELECT id, label, isDisabled, isDeleted FROM Categories WHERE isDeleted = 0 ORDER BY label ASC;";
+          $sql = "SELECT id, label, isdisabled, isdeleted FROM Categories WHERE isDeleted = 0 ORDER BY label ASC;";
         } else {
-          $sql = "SELECT id, label, isDisabled, isDeleted FROM Categories WHERE id = :id AND isDeleted = 0;";
+          $sql = "SELECT id, label, isdisabled, isdeleted FROM Categories WHERE id = :id AND isDeleted = 0;";
         }
         $sth = $this->pdo->prepare($sql);
         if ($params['id'] != -1) { $sth->bindParam(':id', $params['id'], \PDO::PARAM_INT); }
@@ -29,7 +29,7 @@ class Categories extends Model {
       } else {
         $i = 0;
         foreach ($result as $item) {
-          $result[$i]['isDisabled'] = filter_var($result[$i]['isDisabled'], FILTER_VALIDATE_BOOLEAN);
+          $result[$i]['isdisabled'] = filter_var($result[$i]['isdisabled'], FILTER_VALIDATE_BOOLEAN);
           $i++;
         }
         return array('categories' => $result);
@@ -45,18 +45,24 @@ class Categories extends Model {
   public function post(array $_params) {
     
     $params = $this->paramsValidationWithExit($_params);
-    if ($params['isDisabled'] == -1) {
-      $params['isDisabled'] = 0;
+    if ($params['isdisabled'] == -1) {
+      $params['isdisabled'] = 0;
     } 
-    $sql = "INSERT INTO Categories (label, isDisabled, isDeleted) OUTPUT INSERTED.id VALUES (:cat, :act, 0);";
+    $sql = "INSERT INTO Categories (label, isdisabled, isdeleted) VALUES (:cat, :act, 0);";
 
     try {     
+      $this->pdo->beginTransaction();
       $sth = $this->pdo->prepare($sql);
       $sth->bindParam(':cat', $params['label'],          \PDO::PARAM_STR);
-      $sth->bindParam(':act', $params['isDisabled'],     \PDO::PARAM_INT);
+      $sth->bindParam(':act', $params['isdisabled'],     \PDO::PARAM_INT);
+      $sth->execute(); 
+      $sql = "SELECT LAST_INSERT_ID() as id;";
+      $sth = $this->pdo->prepare($sql);
       $sth->execute(); 
       $result = $sth->fetch(\PDO::FETCH_ASSOC); 
+      $this->pdo->commit();
     } catch(\PDOException $e) {
+      $this->pdo->rollBack();
       $this->response->DBError($e, __CLASS__, $sql);
       $this->response->Exit(500);
     }
@@ -68,7 +74,7 @@ class Categories extends Model {
 
     if ($this->get(array('id' => $params['id'])) !== false) {
       try {
-        if ($params['isDisabled'] == -1) {
+        if ($params['isdisabled'] == -1) {
           $sql = "UPDATE Categories SET label = :cat WHERE id = :id AND isDeleted = 0;";
         } else {
           $sql = "UPDATE Categories SET label = :cat, isDisabled = :act WHERE id = :id AND isDeleted = 0;";
@@ -76,7 +82,7 @@ class Categories extends Model {
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
         $sth->bindParam(':cat', $params['label'],  \PDO::PARAM_STR);
-        if ($params['isDisabled'] != -1) { $sth->bindParam(':act', $params['isDisabled'],     \PDO::PARAM_INT); }
+        if ($params['isdisabled'] != -1) { $sth->bindParam(':act', $params['isdisabled'],     \PDO::PARAM_INT); }
         $sth->execute(); 
       } catch(\PDOException $e) {
         $this->response->DBError($e, __CLASS__, $sql);
@@ -102,7 +108,7 @@ class Categories extends Model {
     }
     if ($this->get(array('id' => $params['id'])) !== false) {
       try {
-        $sql = "UPDATE Categories SET isDeleted = 1 WHERE id = :id;";
+        $sql = "UPDATE Categories SET isdeleted = 1 WHERE id = :id;";
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
         $sth->execute();
@@ -131,12 +137,12 @@ class Categories extends Model {
       $passed = false;
     }
 
-    if (isset($params['isDisabled'])) {
-      $result['isDisabled'] = Functions::validateBoolToBit($params['isDisabled']);
+    if (isset($params['isdisabled'])) {
+      $result['isdisabled'] = Functions::validateBoolToBit($params['isdisabled']);
     } else {
-      $result['isDisabled'] = -1;
+      $result['isdisabled'] = -1;
     }
-    if (is_null($result['isDisabled'])) {
+    if (is_null($result['isdisabled'])) {
       $this->response->AddResponse('error', 'Avaktiverad måste anges som true eller false.');
       $this->response->AddResponsePushToArray('invalidFields', array('isDisabled'));
       $passed = false;

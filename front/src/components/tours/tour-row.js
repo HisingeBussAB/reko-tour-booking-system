@@ -47,7 +47,7 @@ class TourRow extends Component {
     const {putItem, isDisabled, id = 'new', submitToggle} = this.props
     submitToggle(true, 'tour')
     const data = {
-      label     : category,
+      //label     : category,
       isDisabled: !isDisabled
     }
 
@@ -59,12 +59,12 @@ class TourRow extends Component {
 
     e.preventDefault()
     this.setState({updatingDisabled: true})
-    const {tour = '', saveItem, isActive, id = 'new'} = this.props
+    //const {tour = '', saveItem, isActive, id = 'new'} = this.props
 
-    const data = {
-      label     : category,
+    /*const data = {
+      //label     : category,
       isDisabled: !isDisabled
-    }
+    }*/
     /*
     if (!await saveItem('tours', data, 'save')) {
       this.setState({updatingActive: false})

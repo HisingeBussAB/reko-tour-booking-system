@@ -3,9 +3,10 @@
 
   /* Database details */
 
-  define( 'DB_CONNECTION',      'First part of DB PDO connection string goes here' );
-  define( 'DB_USER',            'name' );
-  define( 'DB_PASSWORD',        'password' );
+  define('DB_NAME', '');
+  define('DB_USER', '');
+  define('DB_PASSWORD', '');
+  define('DB_HOST', 'localhost');
 
 
   /* Provide some detals about your company */
