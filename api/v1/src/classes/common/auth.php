@@ -52,6 +52,7 @@ final class Auth {
       $accessExp = $now + 3700; //+1 hour
       $refreshExp = $now + 2592000;//+30 days
       
+      $accessToken = '';
       $refreshToken = '';
       //Generate Access Token
       $accessToken = self::generateJWT('access', $response, $pdo, $userid, $user, $accessExp, $now);
@@ -141,6 +142,11 @@ final class Auth {
         return false;
       }
 
+      if ($result['id'] != $decoded['jwt']['sub']) {
+        $response->AddResponse('error', 'Refresh token tillhör inte den här användaren.');
+        return false;
+      }
+
       $userid = $result['id'];
       $now = time();
       $accessExp = $now + 3700; //+1 hour
@@ -194,12 +200,8 @@ final class Auth {
     $limit = $now - 3600; //1 hour ago
     $attemptsAllowed = 45;
     
-    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-      $hashedIP = sha1($_SERVER['HTTP_X_FORWARDED_FOR'] . ENV_GENERIC_SALT);
-    } else {
-      $hashedIP = sha1($_SERVER['REMOTE_ADDR'] . ENV_GENERIC_SALT);
-    }
-
+    $hashedIP = sha1(ENV_REMOTE_ADDR . ENV_GENERIC_SALT);
+   
     if ($reset) {
       try {
         $sql = "DELETE FROM HammerGuard WHERE iphash = :ip";
@@ -279,7 +281,7 @@ private static function generateJWT(string $type, Responder $response, \PDO $pdo
     "exp"   => $exp,
     "client" => array(
       "agent" => $_SERVER['HTTP_USER_AGENT'],
-      "ip"    => $_SERVER['REMOTE_ADDR'],
+      "ip"    => ENV_REMOTE_ADDR,
     ),
     "jti"   => bin2hex(random_bytes(6)) //Not used, only adds some entropy
   );

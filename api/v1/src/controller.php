@@ -181,7 +181,7 @@ class Controller {
           header('WWW-Authenticate: Bearer');
           return false;
         }
-        if (ENV_IP_LOCK && $returnedArray['jwt']['client']['ip'] != $_SERVER['REMOTE_ADDR']) {
+        if (ENV_IP_LOCK && $returnedArray['jwt']['client']['ip'] != ENV_REMOTE_ADDR) {
           $this->response->AddResponse('error', 'IP-adress har ändrats. Logga in igen.');
           header('WWW-Authenticate: Bearer');
           return false;
@@ -198,6 +198,5 @@ class Controller {
     header('WWW-Authenticate: Bearer');
     return false;
   }
-
 
 }

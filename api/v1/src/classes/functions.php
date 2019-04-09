@@ -123,6 +123,5 @@ final class Functions {
     return (string)$m->format('H:i:s');
   }
 
-  
-  
+
 }

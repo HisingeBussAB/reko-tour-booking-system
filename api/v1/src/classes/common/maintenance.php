@@ -8,6 +8,7 @@ namespace RekoBooking\classes\common;
 final class Maintenance {
 
   public static function refreshSecrets(Responder $response, \PDO $pdo): bool {
+
     try {
       $sql = "SELECT token, created FROM Tokens WHERE tokentype = 'jwtsecret' ORDER BY created DESC;";
       $sth = $pdo->prepare($sql);
@@ -42,6 +43,7 @@ final class Maintenance {
           }
           $i++;
         }
+       
       }
       
      
