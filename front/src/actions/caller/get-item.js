@@ -30,7 +30,8 @@ function onThen (response, itemType, item) {
     try {
       if (response.data.success !== true) {
         const responseMsg = typeof response.data.response === 'undefined' ? 'Felformaterad data från API.\nKunde inte hämta uppgifter.' : response.data.response
-        const msg = 'Ett fel har uppstått: ' + responseMsg
+        const errorMsg = typeof response.data.error === 'undefined' ? false : response.data.error
+        const msg = errorMsg === false ? 'Ett fel har uppstått: ' + responseMsg : 'Ett fel har uppstått: ' + errorMsg
         dispatch(errorPopup({visible: true, message: msg, suppressed: false}))
       } else {
         dispatch({
@@ -48,7 +49,7 @@ function onCatch (error, itemType) {
   return (dispatch) => {
     let message
     try {
-      message = error.response.data.response
+      message = typeof error.response.data.error === 'undefined' ? error.response.data.response : error.response.data.error
     } catch (e) {
       message = 'Ett fel har uppstått under hämtning av' + itemNameHuman[itemType] + '.'
     }

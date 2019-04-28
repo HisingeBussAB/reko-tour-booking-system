@@ -29,6 +29,10 @@ const BudgetView = MyLoadable({
 const ListView = MyLoadable({
   loader: () => import('./screens/list')
 })
+
+const UpdateFirewall = MyLoadable({
+  loader: () => import('./screens/updatefirewall')
+})
 /* eslint-enable react/display-name */
 
 class App extends Component {
@@ -73,7 +77,7 @@ class App extends Component {
 
   componentDidCatch () {
     /* TODO log */
-    window.alert('Kritiskt fel! Applikationen har krashat.')
+    //window.alert('Kritiskt fel! Applikationen har krashat.')
     clearInterval(this.refreshLogin)
   }
 
@@ -93,9 +97,10 @@ class App extends Component {
               : null }
             <MainMenu />
             <Route exact path="/" component={MainView} />
-            <Route exact path="/bokningar/*" component={TourView} />
-            <Route exact path="/kalkyler/*" component={BudgetView} />
-            <Route exact path="/utskick/*" component={ListView} />
+            <Route path="/bokningar" component={TourView} />
+            <Route path="/kalkyler" component={BudgetView} />
+            <Route path="/utskick" component={ListView} />
+            <Route path="/updatefirewall" component={UpdateFirewall} />
           </div>
           : <LoginScreen />
         }

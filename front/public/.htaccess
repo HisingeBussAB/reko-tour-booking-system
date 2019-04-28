@@ -1,0 +1,16 @@
+RewriteEngine On
+RewriteCond %{REQUEST_URI} !^\/[0-9]+..+.cpaneldcv$
+RewriteCond %{REQUEST_URI} !^/.well-known/acme-challenge/
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} !^/manifest\.json$ 
+RewriteCond %{REQUEST_URI} !^/asset-manifest\.json$ 
+RewriteCond %{REQUEST_URI} !^/robots\.txt$ 
+RewriteCond %{REQUEST_URI} !^/favicon\.ico$ 
+RewriteCond %{REQUEST_URI} !^/service-worker\.js$ 
+RewriteCond %{REQUEST_URI} !^/static
+RewriteCond %{REQUEST_URI} !^/api
+RewriteRule . index.html [L]

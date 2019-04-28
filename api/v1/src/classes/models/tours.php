@@ -11,9 +11,9 @@ class Tours extends Model {
     if ($params['id'] > 0 || $params['id'] == -1) {
       try {
         if ($params['id'] == -1) {
-          $sql = "SELECT id, label, insuranceprice, reservationfeeprice, departuredate, isDisabled FROM Tours;";
+          $sql = "SELECT id, label, insuranceprice, reservationfeeprice, departuredate, isDisabled FROM Tours where isDeleted = 0;";
         } else {
-          $sql = "SELECT id, label, insuranceprice, reservationfeeprice, departuredate, isDisabled FROM Tours WHERE id = :id;";
+          $sql = "SELECT id, label, insuranceprice, reservationfeeprice, departuredate, isDisabled FROM Tours WHERE id = :id AND isDeleted = 0;";
         }
         $sth = $this->pdo->prepare($sql);
         if ($params['id'] != -1) { $sth->bindParam(':id', $params['id'], \PDO::PARAM_INT); }
@@ -23,7 +23,7 @@ class Tours extends Model {
         $this->response->DBError($e, __CLASS__, $sql);
         $this->response->Exit(500);
       }
-      if (count($result) < 1) {
+      if (count($result) < 1 && $params['id'] != -1) {
         $this->response->AddResponse('error', 'Resan hittades inte.');
         $this->response->Exit(404);
       } else {
@@ -56,7 +56,7 @@ class Tours extends Model {
       }
     } else {
       $this->response->AddResponse('error', 'Reseid kan bara anges som ett positivt heltal, eller inte anges alls för alla resor.');
-      $this->response->AddResponse('response', 'Begäran avbruten felaktigt id.');
+      $this->response->AddResponse('response', 'Reseid kan bara anges som ett positivt heltal, eller inte anges alls för alla resor.');
       $this->response->Exit(404);
     }
     return false;
@@ -66,7 +66,7 @@ class Tours extends Model {
     $params = $this->paramsValidationWithExit($_params);
     
 
-    $sql = "INSERT INTO Tours (label, insuranceprice, reservationfeeprice, departuredate, isDisabled, isDeleted) OUTPUT INSERTED.id VALUES (:lab, :ins, :res, :dep, 0, 0);";
+    $sql = "INSERT INTO Tours (label, insuranceprice, reservationfeeprice, departuredate, isDisabled, isDeleted) VALUES (:lab, :ins, :res, :dep, 0, 0);";
     try {     
       $this->pdo->beginTransaction();
       $sth = $this->pdo->prepare($sql);
@@ -74,6 +74,9 @@ class Tours extends Model {
       $sth->bindParam(':ins', $params['insuranceprice'],      \PDO::PARAM_INT);
       $sth->bindParam(':res', $params['reservationfeeprice'], \PDO::PARAM_INT);
       $sth->bindParam(':dep', $params['departuredate'],       \PDO::PARAM_STR);
+      $sth->execute(); 
+      $sql = "SELECT LAST_INSERT_ID() as id;";
+      $sth = $this->pdo->prepare($sql);
       $sth->execute(); 
       $result = $sth->fetch(\PDO::FETCH_ASSOC); 
       foreach ($params['rooms'] as $room) {

@@ -33,11 +33,11 @@ class Controller {
 
   /**
    * Starts the controller checks the method and authentication and executes method
-   * @param string $item Item type the API query is about.
-   * @param int $id The database ID of the item. If -1 treat as entire collection requested.
-   * @param boolean $login Is login required for the requested operation. Can be used override login check for testing and certain actions.
+   * @param $item Item type the API query is about.
+   * @param $id The database ID of the item. If -1 treat as entire collection requested.
+   * @param $login Is login required for the requested operation. Can be used override login check for testing and certain actions.
    */
-  public function start(string $item, int $id = -1, bool $login = true) {
+  public function start($item, $id = -1, $login = true) {
     $isAuthenticated = false;
     if ($login) {
       $isAuthenticated = $this->authenticate();

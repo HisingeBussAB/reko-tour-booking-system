@@ -38,7 +38,7 @@
     "start-js": "react-scripts start",
     "start": "npm-run-all -p watch-css start-js",
     "build-js": "react-scripts build",
-    "build": "npm-run-all build-css-prod build-js",
+    "build": "npm-run-all build-css-prod build-js && sw-precache --config=sw-precache-config.js",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   },
@@ -54,6 +54,7 @@
     "eslint-plugin-standard": "^3.0.1",
     "node-sass-chokidar": "^0.0.3",
     "npm-run-all": "^4.1.2",
-    "redux-freeze": "^0.1.5"
+    "redux-freeze": "^0.1.5",
+    "sw-precache": "^5.2.1"
   }
 }

@@ -448,6 +448,8 @@ function Set_ENV_REMOTE_ADDR($cloudlfarefile) {
       
       if ( $http_code != 200 ) {
         //hit error will add in error checking but for now will return back to user to handle
-        return json_decode($error);
+        return json_decode( $http_response );
+      } else {
+        return json_decode( $http_response );
       }
     }
