@@ -42,9 +42,9 @@ header("Accept-Charset: utf-8");
 header("Cache-Control: no-cache, must-revalidate");
 header("Content-Language: sv-SE");
 header('Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-API-Key');
+header('X-Robots-Tag: noindex, nofollow');
 header('Allow: OPTIONS, GET, HEAD, POST, PUT, DELETE');
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT');
-header('Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-API-Key');
 
 if (ENV_ACCESS_CONTROL_ENABLED) {
   header("Access-Control-Allow-Origin:" . ENV_FULL_DOMAIN);
@@ -91,7 +91,13 @@ if (ENV_LAN_LOCK) {
   }
 }
 
-if (ENV_IP_ADDRESS_LOCK) {
+//Bypass kill switches for firewall update secret link.
+$bypassLocks = false;
+if(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/updatefirewall/' && parse_url('https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], PHP_URL_QUERY) == AUTH_SECRET_LINK) { 
+  $bypassLocks = true;
+}
+
+if (ENV_IP_ADDRESS_LOCK && !$bypassLocks) {
   $file = 'dynamic_allowed_ips.txt';
   updateDynamicIPBlock($file, false);
   $allowed_ips = array();
@@ -119,19 +125,19 @@ if ($_SERVER['REQUEST_METHOD'] == "OPTIONS") {
   die();
 }
 
-if(parse_url('https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], PHP_URL_QUERY) != 'A42AB1192551EDBC1E2D57405B23166300E937AE77CCBDB68837396D3099DB33') { //Bypass kill switch for firewall update secret link. only for https anyway.
-  if (empty($_SERVER["HTTP_X_API_KEY"]) || $_SERVER["HTTP_X_API_KEY"] != AUTH_API_KEY) {
-    http_response_code(403);
-    $a = array(
-      'login' => false,
-      'saved' => false,
-      'response' => 'Fel eller ingen API-nyckel skickad. Du behöver en API-nyckel i headern \'X-API-Key:\' för att komma åt denna resurs.');
-    $headers = ob_get_clean();
-    echo $headers;
-    echo json_encode($a);
-    die();
-  }
+
+if ((empty($_SERVER["HTTP_X_API_KEY"]) || $_SERVER["HTTP_X_API_KEY"] != AUTH_API_KEY) && !$bypassLocks) {
+  http_response_code(403);
+  $a = array(
+    'login' => false,
+    'saved' => false,
+    'response' => 'Fel eller ingen API-nyckel skickad. Du behöver en API-nyckel i headern \'X-API-Key:\' för att komma åt denna resurs.');
+  $headers = ob_get_clean();
+  echo $headers;
+  echo json_encode($a);
+  die();
 }
+
 
 header("Accept: application/json");
 
@@ -140,7 +146,7 @@ $loader = require __DIR__ . '/vendor/autoload.php';
 
 $router = new \AltoRouter();
 
-$router->setBasePath('/api/v1');
+$router->setBasePath('/v1');
 Moment::setDefaultTimezone('CET');
 Moment::setLocale('se_SV');
 
@@ -184,7 +190,7 @@ $router->addRoutes(array(
     $allowed_ips = trim($allowed_ips); 
 
     //Edit IDs in these rules
-    $rule1 = array("id" => ENV_CLOUDFLARE_API_FILTER_ID,"expression" => "(ip.src in {" . $allowed_ips . "} and http.request.uri.path contains \"/api\")","paused"=> false,"description"=> "DynamicUpdateAllowedIPs API"
+    $rule1 = array("id" => ENV_CLOUDFLARE_API_FILTER_ID,"expression" => "(ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"api.rekoresor.app\")","paused"=> false,"description"=> "DynamicUpdateAllowedIPs API"
     );
 
     $rule2 = array("id"=> ENV_CLOUDFLARE_WEB_FILTER_ID,"expression"=>"(ip.src in {" . $allowed_ips . "})","paused"=> false,"description"=> "DynamicUpdateAllowedIPs Web");
@@ -198,11 +204,15 @@ $router->addRoutes(array(
       $endpoint = 'zones/' . ENV_CLOUDFLARE_ZONE . '/filters/' . $rule['id'];
       $data = $rule;
       $method = 'put';
+
       $r = http_request( $endpoint, $data, $method );
-      if(empty($r->error)) {
-        $r->error = false;
+      if (is_object($r)) {
+        if (empty($r->error)) { $r->error = 'none';}
+        if (empty($r->success)) { $r->success = 'failed';}
+        array_push($reply['response'],array('success' => $r->success, 'error' => $r->error));
+      } else {
+        array_push($reply['response'],array('success' => 'false', 'error' => 'failed without reason'));
       }
-      array_push($reply['response'],array('success' => $r->success, 'error' => $r->error));
     }
     $user_ips = array("Cloudflare reported IP" => $_SERVER["HTTP_CF_CONNECTING_IP"],"Connection remote IP" => $_SERVER['REMOTE_ADDR']);
     array_push($reply['ips'], $user_ips);
@@ -449,5 +459,6 @@ function Set_ENV_REMOTE_ADDR($cloudlfarefile) {
       if ( $http_code != 200 ) {
         //hit error will add in error checking but for now will return back to user to handle
         return json_decode($error);
-      }
+      } 
+      return json_decode($http_response);
     }

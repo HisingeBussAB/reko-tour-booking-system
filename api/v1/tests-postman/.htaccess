@@ -1,0 +1,11 @@
+deny from all
+
+# Disable directory browsing 
+Options -Indexes
+
+# Hide the contents of directories
+IndexIgnore *
+
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule . index.php [L]

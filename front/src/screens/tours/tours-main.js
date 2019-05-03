@@ -34,7 +34,7 @@ class TourViewMain extends Component {
     let temp
     try {
       temp = tours.map((tour) => {
-        return <TourRow key={'tour' + tour.id} id={tour.id} label={tour.label} isActive={tour.active} departure={tour.departure} />
+        return <TourRow key={'tour' + tour.id} id={tour.id} label={tour.label} isDisabled={tour.isdisabled} departure={tour.departuredate} />
       })
     } catch (e) {
       temp = null

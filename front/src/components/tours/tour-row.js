@@ -5,7 +5,7 @@ import {faPencilAlt, faSpinner} from '@fortawesome/free-solid-svg-icons'
 import {faSquare, faCheckSquare, faTrashAlt} from '@fortawesome/free-regular-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
-import { getItem, putItem, postItem, deleteItem } from '../../actions'
+import { postItem, getItem, putItem, deleteItem } from '../../actions'
 import { Link } from 'react-router-dom'
 import ConfirmPopup from '../global/confirm-popup'
 
@@ -21,8 +21,6 @@ class TourRow extends Component {
     }
   }
 
-  // key={'tour' + tour.id} id={tour.id} tour={tour.tour} isActive={tour.active} departure={tour.departure}
-
   componentWillReceiveProps (nextProps) {
     const {id = 'new', label = 'new', isDisabled = false} = this.props
     if (nextProps.id !== id) {
@@ -35,7 +33,7 @@ class TourRow extends Component {
       })
     }
     // cancel loaders on changes recived
-    if (nextProps.isActive !== isDisabled) {
+    if (nextProps.isDisabled !== isDisabled) {
       this.setState({updatingDisabled: false})
     }
   }
