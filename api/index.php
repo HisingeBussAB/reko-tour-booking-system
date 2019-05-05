@@ -8,7 +8,6 @@ header("Cache-Control: no-cache, must-revalidate");
 header("Content-Language: sv-SE");
 header('Access-Control-Allow-Methods: GET');
 header('X-Robots-Tag: noindex, nofollow');
-
 header( $_SERVER["SERVER_PROTOCOL"] . ' 200 OK');
 $response = array('status' => 'OK!', 'message' => 'Använd en versionsspecifik URL', 'servertime' => time());
 echo json_encode($response);

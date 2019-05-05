@@ -190,12 +190,12 @@ $router->addRoutes(array(
     $allowed_ips = trim($allowed_ips); 
 
     //Edit IDs in these rules
-    $rule1 = array("id" => ENV_CLOUDFLARE_API_FILTER_ID,"expression" => "(ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"api.rekoresor.app\")","paused"=> false,"description"=> "DynamicUpdateAllowedIPs API"
+    $rule1 = array("id" => ENV_CLOUDFLARE_API_FILTER_ID,"expression" => "(ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"https://api.rekoresor.app\") or (ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"https://apitest.rekoresor.app\")","paused"=> false,"description"=> "DynamicUpdateAllowedIPs API"
     );
 
-    $rule2 = array("id"=> ENV_CLOUDFLARE_WEB_FILTER_ID,"expression"=>"(ip.src in {" . $allowed_ips . "})","paused"=> false,"description"=> "DynamicUpdateAllowedIPs Web");
+    //$rule2 = array("id"=> ENV_CLOUDFLARE_WEB_FILTER_ID,"expression"=>"(ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"://bokningar.rekoresor.app\") or (ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"://bokningartest.rekoresor.app\")","paused"=> false,"description"=> "DynamicUpdateAllowedIPs Web");
 
-    $rules = array($rule1, $rule2);
+    $rules = array($rule1);//, $rule2);
     $reply = array();
     $reply['ips'] = array();
     $reply['response'] = array();

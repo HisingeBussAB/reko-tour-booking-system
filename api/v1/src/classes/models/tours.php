@@ -11,9 +11,9 @@ class Tours extends Model {
     if ($params['id'] > 0 || $params['id'] == -1) {
       try {
         if ($params['id'] == -1) {
-          $sql = "SELECT id, label, insuranceprice, reservationfeeprice, departuredate, isDisabled FROM Tours where isDeleted = 0;";
+          $sql = "SELECT id, label, insuranceprice, reservationfeeprice, departuredate, isDisabled FROM Tours WHERE isDeleted = 0 ORDER BY departuredate DESC;";
         } else {
-          $sql = "SELECT id, label, insuranceprice, reservationfeeprice, departuredate, isDisabled FROM Tours WHERE id = :id AND isDeleted = 0;";
+          $sql = "SELECT id, label, insuranceprice, reservationfeeprice, departuredate, isDisabled FROM Tours WHERE id = :id AND isDeleted = 0 ORDER BY departuredate DESC;";
         }
         $sth = $this->pdo->prepare($sql);
         if ($params['id'] != -1) { $sth->bindParam(':id', $params['id'], \PDO::PARAM_INT); }
@@ -27,9 +27,11 @@ class Tours extends Model {
         $this->response->AddResponse('error', 'Resan hittades inte.');
         $this->response->Exit(404);
       } else {
+        $i = 0;
         foreach ($result as $key=>$tour) {
+          $result[$key]['isdisabled'] = filter_var($result[$key]['isdisabled'], FILTER_VALIDATE_BOOLEAN);
           try {
-            $sql = "SELECT id, label, price, size, numberavaliable FROM Rooms WHERE tourid = :id;";
+            $sql = "SELECT id, label, price, size, numberavaliable FROM Rooms WHERE tourid = :id ORDER BY size ASC;";
             $sth = $this->pdo->prepare($sql);
             $sth->bindParam(':id', $tour['id'], \PDO::PARAM_INT);
             $sth->execute();
@@ -39,8 +41,13 @@ class Tours extends Model {
             $this->response->Exit(500);
           }
           try {
-            $sql = "SELECT Categories.id as id, label FROM Categories INNER JOIN Categories_Tours ON Categories_Tours.categoryid = Categories.id WHERE Categories_Tours.tourid = :id
-              GROUP BY Categories.id, label;";
+            $sql = "SELECT Categories.id as id, label 
+                      FROM Categories 
+                      INNER JOIN Categories_Tours 
+                        ON Categories_Tours.categoryid = Categories.id 
+                      WHERE Categories_Tours.tourid = :id
+                      GROUP BY Categories.id, label 
+                      ORDER BY label ASC;";
             $sth = $this->pdo->prepare($sql);
             $sth->bindParam(':id', $tour['id'], \PDO::PARAM_INT);
             $sth->execute();
@@ -106,7 +113,7 @@ class Tours extends Model {
   }
 
   public function put(array $_params) {
-    $params = $this->paramsValidationWithExit($_params);
+    $params = $this->paramsValidationWithExit($_params, 'put');
     $sql = "UPDATE Tours SET 
         label = :lab, 
         insuranceprice = :ins, 
@@ -122,7 +129,7 @@ class Tours extends Model {
       $sth->bindParam(':ins', $params['insuranceprice'],      \PDO::PARAM_INT);
       $sth->bindParam(':res', $params['reservationfeeprice'], \PDO::PARAM_INT);
       $sth->bindParam(':dep', $params['departuredate'],       \PDO::PARAM_STR);
-      $sth->bindParam(':act', $params['isDisabled'],              \PDO::PARAM_INT);
+      $sth->bindParam(':act', $params['isDisabled'],          \PDO::PARAM_INT);
       $sth->execute(); 
       $this->pdo->commit();
     } catch(\PDOException $e) {
@@ -134,11 +141,58 @@ class Tours extends Model {
 
   }
 
-  public function delete(array $_params) {
+  public function delete(array $params) {
+    if (ENV_DEBUG_MODE && !empty($_GET["forceReal"]) && Functions::validateBoolToBit($_GET["forceReal"])) {
+      //Allows true deletes while running tests or after debugging
+      //Start debug deleter
+      try {
+        $this->pdo->beginTransaction();
+        $sql = "SELECT * FROM Tours WHERE id = :id;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
+        $sth->execute();
+        $result = $sth->fetch(\PDO::FETCH_ASSOC); 
+        if (count($result) < 1) {
+          return false;        
+        }
+        $sql = "DELETE FROM Rooms WHERE tourid = :id;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
+        $sth->execute();
+        $sql = "DELETE FROM Categories_Tours WHERE tourid = :id;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
+        $sth->execute();
+        $sql = "DELETE FROM Tours WHERE id = :id;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
+        $sth->execute();
+        $this->pdo->commit();
+      } catch(\PDOException $e) {
+        $this->response->DBError($e, __CLASS__, $sql);
+        $this->pdo->rollBack();
+        $this->response->Exit(500);
+      }
+    }
+    //End debug deleter
 
+    if ($this->get(array('id' => $params['id'])) !== false) {
+      try {
+        $sql = "UPDATE Tours SET isDeleted = 1 WHERE id = :id;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
+        $sth->execute();
+      } catch(\PDOException $e) {
+        $this->response->DBError($e, __CLASS__, $sql);
+        $this->response->Exit(500);
+      }
+      return array('updatedid' => $params['id']);
+    }
+    
+    return false;    
   }
 
-  private function paramsValidationWithExit($params) {
+  private function paramsValidationWithExit($params, $req = NULL) {
     $passed = true;
     $result = array();
 
@@ -207,14 +261,14 @@ class Tours extends Model {
           $passed = false;
         }
       }
-    } else {
+    } elseif ($req != 'put') {
       $this->response->AddResponse('error', 'Minst en kategori måste anges för resan.');
       $this->response->AddResponsePushToArray('invalidFields', array('categories'));
       $passed = false;
     }
     
     
-    if (isset($params['categories']) && is_array($params['categories'])) {
+    if (isset($params['rooms']) && is_array($params['rooms'])) {
       foreach($params['rooms'] as $key=>$room) {
         if (isset($room['label'])) {
           $result['rooms'][$key]['label'] = Functions::sanatizeStringUnsafe($room['label']);
@@ -260,7 +314,7 @@ class Tours extends Model {
           $passed = false;
         }
       }
-    } else {
+    } elseif ($req != 'put') {
       $this->response->AddResponse('error', 'Minst en rumstyp måste anges för resan. För dagsresa lägg till ett rum av typen Dagsresa');
       $this->response->AddResponsePushToArray('invalidFields', array('rooms'));
       $passed = false;

@@ -13,7 +13,7 @@ class Categories extends Model {
         if ($params['id'] == -1) {
           $sql = "SELECT id, label, isDisabled FROM Categories WHERE isDeleted = 0 ORDER BY label ASC;";
         } else {
-          $sql = "SELECT id, label, isDisabled FROM Categories WHERE id = :id AND isDeleted = 0;";
+          $sql = "SELECT id, label, isDisabled FROM Categories WHERE id = :id AND isDeleted = 0 ORDER BY label ASC;";
         }
         $sth = $this->pdo->prepare($sql);
         if ($params['id'] != -1) { $sth->bindParam(':id', $params['id'], \PDO::PARAM_INT); }

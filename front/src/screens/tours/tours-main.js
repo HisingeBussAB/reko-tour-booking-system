@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { getItem } from '../../actions'
+import { faFilter } from '@fortawesome/free-solid-svg-icons'
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import { bindActionCreators } from 'redux'
 import TourRow from '../../components/tours/tour-row'
@@ -10,9 +12,9 @@ class TourViewMain extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      isSubmitting: {
-        tour: false
-      }
+      isSubmitting: false,
+      tourRowLimit: 10,
+      showOnlyActive: true
     }
   }
 
@@ -21,20 +23,36 @@ class TourViewMain extends Component {
     getItem('tours')
   }
 
-  submitToggle = (b, type) => {
-    const {isSubmitting} = this.state
-    isSubmitting[type] = !!b
-    this.setState({isSubmitting})
+  submitToggle = (b) => {
+    const validatedb = !!b
+    this.setState({isSubmitting: validatedb})
+  }
+
+  toggleShowOnlyActive = (e) => {
+    e.preventDefault()
+    const {showOnlyActive} = this.state
+    const inverted = !showOnlyActive
+    this.setState({showOnlyActive: inverted})
   }
 
   render () {
     const {tours = []} = this.props
-    const {isSubmitting} = this.state
+    const {isSubmitting,tourRowLimit,showOnlyActive} = this.state
 
     let temp
     try {
-      temp = tours.map((tour) => {
-        return <TourRow key={'tour' + tour.id} id={tour.id} label={tour.label} isDisabled={tour.isdisabled} departure={tour.departuredate} />
+      temp = tours.slice(0,tourRowLimit).map((tour) => {
+        if (!(tour.isdisabled && showOnlyActive)) {
+        return <TourRow key={'tour' + tour.id} 
+                        id={tour.id} 
+                        label={tour.label} 
+                        isDisabled={tour.isdisabled} 
+                        departuredate={tour.departuredate} 
+                        submitToggle={this.submitToggle} 
+                        insuranceprice={tour.insuranceprice} 
+                        reservationfeeprice={tour.reservationfeeprice}
+                        />
+        }
       })
     } catch (e) {
       temp = null
@@ -66,8 +84,22 @@ class TourViewMain extends Component {
               <form>
                 <fieldset disabled={isSubmitting.tour}>
                   <table className="w-75 my-3 py-2 mx-auto px-1 text-justify d-block">
+                    <thead>
+                    <tr>
+                      <th className="py-2" colSpan="2">Redigera resa</th>
+                      <th className="align-middle text-center py-2">
+                        {!showOnlyActive &&
+                          <span title="Dölj inaktiva resor" className="seconday-color custom-scale cursor-pointer"><FontAwesomeIcon icon={faFilter} onClick={(e) => this.toggleShowOnlyActive(e)} size="lg" /></span> }
+                        {showOnlyActive &&
+                          <span title="Visa inaktiva resor" className="primary-color custom-scale  cursor-pointer"><FontAwesomeIcon icon={faFilter} onClick={(e) => this.toggleShowOnlyActive(e)} size="lg" /></span> }
+                      </th>
+                    </tr>
+                    </thead>
                     <tbody>
                       {tourRows}
+                      <tr>
+                        <td colSpan="3" className="py-3"><button className="btn btn-primary btn-sm mt-1 px-2 py-1 w-100" onClick={(e) => {e.preventDefault(); this.setState({tourRowLimit: tourRowLimit + 10})}}>Visa fler resor</button></td>
+                      </tr>
                     </tbody>
                   </table>
                 </fieldset>

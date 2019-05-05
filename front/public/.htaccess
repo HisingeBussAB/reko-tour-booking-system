@@ -12,5 +12,4 @@ RewriteCond %{REQUEST_URI} !^/robots\.txt$
 RewriteCond %{REQUEST_URI} !^/favicon\.ico$ 
 RewriteCond %{REQUEST_URI} !^/service-worker\.js$ 
 RewriteCond %{REQUEST_URI} !^/static
-RewriteCond %{REQUEST_URI} !^/api
 RewriteRule . index.html [L]

@@ -47,7 +47,7 @@ class Controller {
       if ($id != -1) {
         $id = Functions::validateInt($id, 0);
         if (is_null($id)) {
-          $this->response->AddResponse('error', 'Ogiltigt mål ID. Måste vara ett positivt heltal.');
+          $this->response->AddResponse('error', 'Ogiltigt mål Id. Måste vara ett positivt heltal.');
           $this->response->Exit(404);
         }
       }

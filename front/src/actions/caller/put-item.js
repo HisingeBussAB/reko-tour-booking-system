@@ -17,11 +17,9 @@ export function putItem (itemType, item, data) {
         return true
       } catch (e) {
         try {
-          if (typeof e.response.data.response !== 'undefined' && e.response.data.response.length > 0) {
-            dispatch(errorPopup({visible: true, message: e.response.data.response, suppressed: false}))
-          } else {
-            dispatch(errorPopup({visible: true, message: 'Kunde utföra åtgärden.\nOkänt eller inget svar från API.', suppressed: false}))
-          }
+          const reply = (typeof e.response.data.response !== 'undefined' && e.response.data.response.length > 0) ? e.response.data.response : 'Kunde inte utföra åtgärden.'
+          const err = (typeof e.response.data.error !== 'undefined' && e.response.data.error.length > 0) ? '\n' + e.response.data.error : 'Okänt eller inget svar från API.'
+          dispatch(errorPopup({visible: true, message: reply + '\n' + err, suppressed: false}))
           return false
         } catch (e) {
           dispatch(errorPopup({visible: true, message: 'Kunde utföra åtgärden.\nOkänt eller inget svar från API.', suppressed: false}))
