@@ -18,9 +18,9 @@
  * - Handles 404 response
  */
 
-namespace RekoBooking;
+namespace Index;
 
-use RekoBooking\Controller;
+use \RekoBooking\Controller;
 use \Moment\Moment;
 
 mb_internal_encoding("UTF-8");
@@ -161,7 +161,7 @@ $router = new \AltoRouter();
 
 $router->setBasePath('/v1');
 Moment::setDefaultTimezone('CET');
-Moment::setLocale('se_SV');
+Moment::setLocale('sv_SE');
 
 
 $router->addRoutes(array(

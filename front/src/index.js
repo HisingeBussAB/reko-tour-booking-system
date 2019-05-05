@@ -9,6 +9,8 @@ import MyLoadable from './components/loader/myloadable'
 
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css'
 import '../node_modules/react-datepicker/dist/react-datepicker.css'
+import '../node_modules/react-bootstrap-typeahead/css/Typeahead.css'
+import '../node_modules/react-bootstrap-typeahead/css/Typeahead-bs4.css'
 import './styles/css/index.css'
 
 Storage.prototype.setObject = function (key, value) {

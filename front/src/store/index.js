@@ -27,7 +27,8 @@ const initialState = {
     tours     : []
   },
   lists: {
-    groupcustomers: []
+    groupcustomers: [],
+    newsletter:     []
   },
   networkOperations: []
 }

@@ -249,6 +249,10 @@ select:invalid {
   animation: dots 1s steps(5, end) infinite;
 }
 
+.rbt-input-main {
+  border: 1px solid #0856fb !important;
+}
+
 @keyframes dots {
   0%, 20% {
     color: rgba(0, 0, 0, 0);

@@ -3,10 +3,16 @@ import {mergeObjectArrays} from '../utils'
 export default function lists (state = {}, action) {
   switch (action.type) {
     case 'DATA_GROUPCUSTOMERS_SAVE':
-      if (action.payload.id === 'all' || typeof state.lists.groupcustomers === 'undefined') {
-        return {...state, lists: {groupcustomers: action.payload.lists.groupcustomers}}
+      if (action.payload.id === 'all' || typeof state.groupcustomers === 'undefined') {
+        return {...state, groupcustomers: action.payload.groupcustomers}
       } else {
-        return {...state, lists: {groupcustomers: mergeObjectArrays(state.lists.groupcustomers, action.payload.lists.groupcustomers, 'id')}}
+        return {...state, groupcustomers: mergeObjectArrays(state.groupcustomers, action.payload.groupcustomers, 'id')}
+      }
+    case 'DATA_NEWSLETTER_SAVE':
+      if (action.payload.id === 'all' || typeof state.newsletter === 'undefined') {
+        return {...state, newsletter: action.payload.newsletter}
+      } else {
+        return {...state, newsletter: mergeObjectArrays(state.newsletter, action.payload.newsletter, 'id')}
       }
     default:
       return state

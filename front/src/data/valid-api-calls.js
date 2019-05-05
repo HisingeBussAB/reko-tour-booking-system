@@ -1,5 +1,6 @@
 export const itemNameHuman = {
-  tours     : 'tours',
-  categories: 'categories',
-  groupcustomers: 'groupcustomers'
+  tours         : 'tours',
+  categories    : 'categories',
+  groupcustomers: 'groupcustomers',
+  newsletter    : 'newsletter'
 }
