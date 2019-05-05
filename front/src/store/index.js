@@ -23,7 +23,11 @@ const initialState = {
     refreshExpires: 0
   },
   tours: {
-    categories: []
+    categories: [],
+    tours     : []
+  },
+  lists: {
+    groupcustomers: []
   },
   networkOperations: []
 }

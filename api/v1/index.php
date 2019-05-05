@@ -52,6 +52,19 @@ if (ENV_ACCESS_CONTROL_ENABLED) {
   header("Access-Control-Allow-Origin: *");
 }
 
+//Prevent special case of using misconfigured mod_remoteip for remote addr spoofing.
+if (!empty($_SERVER['HTTP_X_FORWARDED_FOR']) && preg_match('/\d,\d/', $_SERVER['HTTP_X_FORWARDED_FOR']) == 1) {
+  http_response_code(403);
+  $a = array(
+    'login' => false,
+    'saved' => false,
+    'response' => 'Begäran nekad av säkerhetsskäl. Kontakta systemadministratör.');
+    $headers = ob_get_clean();
+    echo $headers;
+    echo json_encode($a);
+    die();
+}
+
 $cloudlfarefile = 'cloudflareips.txt';
 if (!file_exists($cloudlfarefile)) {
   file_put_contents($cloudlfarefile, file_get_contents('https://www.cloudflare.com/ips-v4'));
@@ -165,6 +178,10 @@ $router->addRoutes(array(
   array('GET|POST',       '/reservations[/]?',              function()         { $start = new Controller; echo $start->start('Reservations'    );   }),
   array('GET|PUT|DELETE', '/customers/[i:id]?[/]?',         function($id = -1) { $start = new Controller; echo $start->start('Customers',   $id);   }),
   array('GET|POST',       '/customers[/]?',                 function()         { $start = new Controller; echo $start->start('Customers'       );   }),
+  array('GET|PUT|DELETE', '/groupcustomers/[i:id]?[/]?',    function($id = -1) { $start = new Controller; echo $start->start('GroupCustomers',$id); }),
+  array('GET|POST',       '/groupcustomers[/]?',            function()         { $start = new Controller; echo $start->start('GroupCustomers');     }),
+  array('GET|PUT|DELETE', '/newsletter/[i:id]?[/]?',        function($id = -1) { $start = new Controller; echo $start->start('Newsletter',   $id);  }),
+  array('GET|POST',       '/newsletter[/]?',                function()         { $start = new Controller; echo $start->start('Newsletter'       );  }),
   array('GET|PUT|DELETE', '/leads/[i:id]?[/]?',             function($id = -1) { $start = new Controller; echo $start->start('Leads',       $id);   }),
   array('GET|POST',       '/leads[/]?',                     function()         { $start = new Controller; echo $start->start('Leads'           );   }),
   array('GET|PUT|DELETE', '/payments/[i:id]?[/]?',          function($id = -1) { $start = new Controller; echo $start->start('Payments',    $id);   }),

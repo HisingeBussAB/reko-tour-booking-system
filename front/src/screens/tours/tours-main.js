@@ -12,8 +12,8 @@ class TourViewMain extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      isSubmitting: false,
-      tourRowLimit: 10,
+      isSubmitting  : false,
+      tourRowLimit  : 10,
       showOnlyActive: true
     }
   }
@@ -37,21 +37,21 @@ class TourViewMain extends Component {
 
   render () {
     const {tours = []} = this.props
-    const {isSubmitting,tourRowLimit,showOnlyActive} = this.state
+    const {isSubmitting, tourRowLimit, showOnlyActive} = this.state
 
     let temp
     try {
-      temp = tours.slice(0,tourRowLimit).map((tour) => {
+      temp = tours.slice(0, tourRowLimit).map((tour) => {
         if (!(tour.isdisabled && showOnlyActive)) {
-        return <TourRow key={'tour' + tour.id} 
-                        id={tour.id} 
-                        label={tour.label} 
-                        isDisabled={tour.isdisabled} 
-                        departuredate={tour.departuredate} 
-                        submitToggle={this.submitToggle} 
-                        insuranceprice={tour.insuranceprice} 
-                        reservationfeeprice={tour.reservationfeeprice}
-                        />
+          return <TourRow key={'tour' + tour.id}
+            id={tour.id}
+            label={tour.label}
+            isDisabled={tour.isdisabled}
+            departuredate={tour.departuredate}
+            submitToggle={this.submitToggle}
+            insuranceprice={tour.insuranceprice}
+            reservationfeeprice={tour.reservationfeeprice}
+          />
         }
       })
     } catch (e) {
@@ -85,20 +85,20 @@ class TourViewMain extends Component {
                 <fieldset disabled={isSubmitting.tour}>
                   <table className="w-75 my-3 py-2 mx-auto px-1 text-justify d-block">
                     <thead>
-                    <tr>
-                      <th className="py-2" colSpan="2">Redigera resa</th>
-                      <th className="align-middle text-center py-2">
-                        {!showOnlyActive &&
+                      <tr>
+                        <th className="py-2" colSpan="2">Redigera resa</th>
+                        <th className="align-middle text-center py-2">
+                          {!showOnlyActive &&
                           <span title="Dölj inaktiva resor" className="seconday-color custom-scale cursor-pointer"><FontAwesomeIcon icon={faFilter} onClick={(e) => this.toggleShowOnlyActive(e)} size="lg" /></span> }
-                        {showOnlyActive &&
+                          {showOnlyActive &&
                           <span title="Visa inaktiva resor" className="primary-color custom-scale  cursor-pointer"><FontAwesomeIcon icon={faFilter} onClick={(e) => this.toggleShowOnlyActive(e)} size="lg" /></span> }
-                      </th>
-                    </tr>
+                        </th>
+                      </tr>
                     </thead>
                     <tbody>
                       {tourRows}
                       <tr>
-                        <td colSpan="3" className="py-3"><button className="btn btn-primary btn-sm mt-1 px-2 py-1 w-100" onClick={(e) => {e.preventDefault(); this.setState({tourRowLimit: tourRowLimit + 10})}}>Visa fler resor</button></td>
+                        <td colSpan="3" className="py-3"><button className="btn btn-primary btn-sm mt-1 px-2 py-1 w-100" onClick={(e) => { e.preventDefault(); this.setState({tourRowLimit: tourRowLimit + 10}) }}>Visa fler resor</button></td>
                       </tr>
                     </tbody>
                   </table>

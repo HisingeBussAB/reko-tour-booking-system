@@ -234,6 +234,15 @@ CREATE TABLE `Budgets_Earnings` (
     )
 );
 
+CREATE TABLE `Categories_GroupCustomers` (
+    `id` bigint AUTO_INCREMENT NOT NULL ,
+    `groupId` bigint  NOT NULL ,
+    `categoryId` bigint  NOT NULL ,
+    PRIMARY KEY (
+        `id`
+    )
+);
+
 ALTER TABLE `Bookings` ADD CONSTRAINT `fk_Bookings_tourId` FOREIGN KEY(`tourId`)
 REFERENCES `Tours` (`id`);
 
@@ -282,3 +291,8 @@ REFERENCES `Budgets` (`id`);
 ALTER TABLE `Budgets_Earnings` ADD CONSTRAINT `fk_Budgets_Earnings_budgetId` FOREIGN KEY(`budgetId`)
 REFERENCES `Budgets` (`id`);
 
+ALTER TABLE `Categories_GroupCustomers` ADD CONSTRAINT `fk_Categories_GroupCustomers_groupId` FOREIGN KEY(`groupId`)
+REFERENCES `GroupCustomers` (`id`);
+
+ALTER TABLE `Categories_GroupCustomers` ADD CONSTRAINT `fk_Categories_GroupCustomers_categoryId` FOREIGN KEY(`categoryId`)
+REFERENCES `Categories` (`id`);

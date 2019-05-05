@@ -1,4 +1,5 @@
 export const itemNameHuman = {
   tours     : 'tours',
-  categories: 'categories'
+  categories: 'categories',
+  groupcustomers: 'groupcustomers'
 }
