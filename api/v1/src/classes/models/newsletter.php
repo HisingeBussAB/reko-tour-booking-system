@@ -28,8 +28,8 @@ class Newsletter extends Model {
         return array('newsletter' => $result);
       }
     } else {
-      $this->response->AddResponse('error', 'Newsletterid kan bara anges som ett positivt heltal, eller inte anges alls för alla resor.');
-      $this->response->AddResponse('response', 'Newsletterid kan bara anges som ett positivt heltal, eller inte anges alls för alla resor.');
+      $this->response->AddResponse('error', 'Newsletterid kan bara anges som ett positivt heltal, eller inte anges alls för alla adresser.');
+      $this->response->AddResponse('response', 'Newsletterid kan bara anges som ett positivt heltal, eller inte anges alls för alla adresser.');
       $this->response->Exit(404);
     }
     return false;
