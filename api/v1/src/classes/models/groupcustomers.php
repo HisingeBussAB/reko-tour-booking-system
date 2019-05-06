@@ -8,99 +8,122 @@ class GroupCustomers extends Model {
 
   public function get(array $params) {
     if ($params['id'] > 0 || $params['id'] == -1) {
-     
+      try {
+        $sql = "SELECT  id
+                    ,organisation
+                    ,firstName
+                    ,lastName
+                    ,street
+                    ,zip
+                    ,city
+                    ,phone
+                    ,email
+                    ,personalNumber	
+                    ,date
+                    ,compare FROM GroupCustomers";
+        $sql .= ($params['id'] != -1) 
+                    ? " WHERE id = :id"
+                    : "";
+        $sql .= " ORDER BY organisation, lastName, firstName, date ASC;";
+        $sth = $this->pdo->prepare($sql);
+        if ($params['id'] != -1) { $sth->bindParam(':id', $params['id'], \PDO::PARAM_INT); }
+        $sth->execute(); 
+        $result = $sth->fetchAll(\PDO::FETCH_ASSOC); 
+      } catch(\PDOException $e) {
+        $this->response->DBError($e, __CLASS__, $sql);
+        $this->response->Exit(500);
+      }
+      if (count($result) < 1 && $params['id'] != -1) {
+        $this->response->AddResponse('error', 'Gruppkunden hittades inte.');
+        $this->response->Exit(404);
+      } else {
+        foreach ($result as $key=>$client) {
+          try {
+            $sql = "SELECT DISTINCT Categories.id as id, label 
+                      FROM Categories 
+                      INNER JOIN Categories_GroupCustomers
+                        ON Categories_GroupCustomers.categoryid = Categories.id 
+                      WHERE Categories_GroupCustomers.groupid = :id
+                      ORDER BY label ASC;";
+            $sth = $this->pdo->prepare($sql);
+            $sth->bindParam(':id', $client['id'], \PDO::PARAM_INT);
+            $sth->execute();
+            $categoryresult = $sth->fetchAll(\PDO::FETCH_ASSOC); 
+          } catch(\PDOException $e) {
+            $this->response->DBError($e, __CLASS__, $sql);
+            $this->response->Exit(500);
+          }
+          $result[$key]['categories'] = $categoryresult;
+        }
+        return array('newsletter' => $result);
+      }
     } else {
-      $this->response->AddResponse('error', 'Reseid kan bara anges som ett positivt heltal, eller inte anges alls för alla resor.');
-      $this->response->AddResponse('response', 'Reseid kan bara anges som ett positivt heltal, eller inte anges alls för alla resor.');
+      $this->response->AddResponse('error', 'GroupCuustomerid kan bara anges som ett positivt heltal, eller inte anges alls för alla gruppkunder.');
+      $this->response->AddResponse('response', 'GroupCuustomerid kan bara anges som ett positivt heltal, eller inte anges alls för alla gruppkunder.');
       $this->response->Exit(404);
     }
     return false;
   }
-
+//TODO
   public function post(array $_params) {
     $params = $this->paramsValidationWithExit($_params);
-    
-
-    $sql = "INSERT INTO Tours (label, insuranceprice, reservationfeeprice, departuredate, isDisabled, isDeleted) VALUES (:lab, :ins, :res, :dep, 0, 0);";
+    $sql = "SELECT id FROM Newsletter WHERE email = :email;";
     try {     
-      $this->pdo->beginTransaction();
-
-      $this->pdo->commit();
+      $sth = $this->pdo->prepare($sql);
+      $sth->bindParam(':email', $params['email'],        \PDO::PARAM_STR);
+      $sth->execute(); 
+      $result = $sth->fetch(\PDO::FETCH_ASSOC); 
     } catch(\PDOException $e) {
       $this->response->DBError($e, __CLASS__, $sql);
+      $this->response->Exit(500);
+    }
+    if ($result != false) {
+      $this->response->AddResponse('error', 'Adressen ' . $params['email'] . ' finns redan i systemet.');
+      $this->response->AddResponse('response', 'Adressen ' . $params['email'] . ' finns redan i systemet.');
+      $this->response->Exit(404);
+    }
+    $sql = "INSERT INTO Newsletter (email) VALUES (:email);";
+    try {     
+      $this->pdo->beginTransaction();
+      $sth = $this->pdo->prepare($sql);
+      $sth->bindParam(':email', $params['email'],        \PDO::PARAM_STR);
+      $sth->execute(); 
+      $sql = "SELECT LAST_INSERT_ID() as id;";
+      $sth = $this->pdo->prepare($sql);
+      $sth->execute(); 
+      $result = $sth->fetch(\PDO::FETCH_ASSOC); 
+      $this->pdo->commit();
+    } catch(\PDOException $e) {
       $this->pdo->rollBack();
+      $this->response->DBError($e, __CLASS__, $sql);
       $this->response->Exit(500);
     }
     return array('updatedid' => $result['id']);   
   }
 
   public function put(array $_params) {
-    $params = $this->paramsValidationWithExit($_params, 'put');
-    $sql = "UPDATE Tours SET 
-        label = :lab, 
-        insuranceprice = :ins, 
-        reservationfeeprice = :res, 
-        departuredate = :dep, 
-        isDisabled = :act
-        WHERE id=:id;";
-    try {     
-      $this->pdo->beginTransaction();
-      $sth = $this->pdo->prepare($sql);
-      $sth->bindParam(':id',  $params['id'],                  \PDO::PARAM_INT);
-      $sth->bindParam(':lab', $params['label'],               \PDO::PARAM_STR);
-      $sth->bindParam(':ins', $params['insuranceprice'],      \PDO::PARAM_INT);
-      $sth->bindParam(':res', $params['reservationfeeprice'], \PDO::PARAM_INT);
-      $sth->bindParam(':dep', $params['departuredate'],       \PDO::PARAM_STR);
-      $sth->bindParam(':act', $params['isDisabled'],          \PDO::PARAM_INT);
-      $sth->execute(); 
-      $this->pdo->commit();
-    } catch(\PDOException $e) {
-      $this->response->DBError($e, __CLASS__, $sql);
-      $this->pdo->rollBack();
-      $this->response->Exit(500);
+    $params = $this->paramsValidationWithExit($_params);
+    if ($this->get(array('id' => $params['id'])) !== false) {
+      try {
+        $sql = "UPDATE Newsletter SET email = :email WHERE id = :id;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
+        $sth->bindParam(':email', $params['email'],  \PDO::PARAM_STR);
+        $sth->execute(); 
+      } catch(\PDOException $e) {
+        $this->response->DBError($e, __CLASS__, $sql);
+        $this->response->Exit(500);
+      }
+      return array('updatedid' => $params['id']);
     }
-    return array('updatedid' => $params['id']);   
+    return false;    
 
   }
 
   public function delete(array $params) {
-    if (ENV_DEBUG_MODE && !empty($_GET["forceReal"]) && Functions::validateBoolToBit($_GET["forceReal"])) {
-      //Allows true deletes while running tests or after debugging
-      //Start debug deleter
-      try {
-        $this->pdo->beginTransaction();
-        $sql = "SELECT * FROM Tours WHERE id = :id;";
-        $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
-        $sth->execute();
-        $result = $sth->fetch(\PDO::FETCH_ASSOC); 
-        if (count($result) < 1) {
-          return false;        
-        }
-        $sql = "DELETE FROM Rooms WHERE tourid = :id;";
-        $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
-        $sth->execute();
-        $sql = "DELETE FROM Categories_Tours WHERE tourid = :id;";
-        $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
-        $sth->execute();
-        $sql = "DELETE FROM Tours WHERE id = :id;";
-        $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
-        $sth->execute();
-        $this->pdo->commit();
-      } catch(\PDOException $e) {
-        $this->response->DBError($e, __CLASS__, $sql);
-        $this->pdo->rollBack();
-        $this->response->Exit(500);
-      }
-    }
-    //End debug deleter
-
     if ($this->get(array('id' => $params['id'])) !== false) {
       try {
-        $sql = "UPDATE Tours SET isDeleted = 1 WHERE id = :id;";
+        $sql = "DELETE FROM Newsletter WHERE id = :id;";
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
         $sth->execute();
@@ -110,139 +133,23 @@ class GroupCustomers extends Model {
       }
       return array('updatedid' => $params['id']);
     }
-    
     return false;    
   }
 
-  private function paramsValidationWithExit($params, $req = NULL) {
+  
+
+  private function paramsValidationWithExit($params) {
     $passed = true;
     $result = array();
 
-    if (isset($params['label'])) {
-      $result['label'] = Functions::sanatizeStringUnsafe($params['label']);
-    } else {
-      $result['label'] = '';
-    }
-    if (empty($result['label'])) {
-      $this->response->AddResponse('error', 'Resan måste ha en benämning.');
-      $this->response->AddResponsePushToArray('invalidFields', array('label'));
+    $result['email'] = (isset($params['email'])) 
+      ? Functions::validateEmail($params['email']) : '';
+    if (empty($result['email'])) {
+      $this->response->AddResponse('error', 'En giltig e-postadress måste anges.');
+      $this->response->AddResponsePushToArray('invalidFields', array('email'));
       $passed = false;
     }
-
-    if (isset($params['insuranceprice'])) {
-      $result['insuranceprice'] = Functions::validateInt($params['insuranceprice']);
-    } else {
-      $result['insuranceprice'] = NULL;
-    }
-    if (is_null($result['insuranceprice'])) {
-      $this->response->AddResponse('error', 'Avbeställningsavgift måste anges med ett heltal.');
-      $this->response->AddResponsePushToArray('invalidFields', array('insuranceprice'));
-      $passed = false;
-    }
-
-    if (isset($params['reservationfeeprice'])) {
-      $result['reservationfeeprice'] = Functions::validateInt($params['reservationfeeprice']);
-    } else {
-      $result['reservationfeeprice'] = NULL;
-    }
-    if (is_null($result['reservationfeeprice'])) {
-      $this->response->AddResponse('error', 'Anmälningsavgift måste anges med ett heltal.');
-      $this->response->AddResponsePushToArray('invalidFields', array('reservationfeeprice'));
-      $passed = false;
-    }
-
-    if (isset($params['departuredate'])) {
-      $result['departuredate'] = Functions::validateDate($params['departuredate']);
-    } else {
-      $result['departuredate'] = NULL;
-    }
-    if (is_null($result['departuredate'])) {
-      $this->response->AddResponse('error', 'Avresedatum måste anges med ett datum. Helst i format ÅÅÅÅ-MM-DD.');
-      $this->response->AddResponsePushToArray('invalidFields', array('departuredate'));
-      $passed = false;
-    }
-
-    if (isset($params['isDisabled'])) {
-      $result['isDisabled'] = Functions::validateBoolToBit($params['isDisabled']);
-    } else {
-      //default to 0
-      $result['isDisabled'] = 0;
-    }
-    
-    if (isset($params['categories']) && is_array($params['categories'])) {
-      foreach($params['categories'] as $key=>$category) {
-        if (isset($category['id'])) {
-          $result['categories'][$key]['id'] = Functions::sanatizeStringUnsafe($category['id']);
-        } else {
-          $result['categories'][$key]['id'] = '';
-        }
-        $Categories = new Categories($this->response, $this->pdo);
-        if (empty($result['categories'][$key]['id']) || $Categories->get(array('id' => $category['id'])) == false) {
-          $this->response->AddResponse('error', 'Kategori id är ogiltigt.');
-          $this->response->AddResponsePushToArray('invalidFields', array('categories.' . $key . '.id'));
-          $passed = false;
-        }
-      }
-    } elseif ($req != 'put') {
-      $this->response->AddResponse('error', 'Minst en kategori måste anges för resan.');
-      $this->response->AddResponsePushToArray('invalidFields', array('categories'));
-      $passed = false;
-    }
-    
-    
-    if (isset($params['rooms']) && is_array($params['rooms'])) {
-      foreach($params['rooms'] as $key=>$room) {
-        if (isset($room['label'])) {
-          $result['rooms'][$key]['label'] = Functions::sanatizeStringUnsafe($room['label']);
-        } else {
-          $result['rooms'][$key]['label'] = '';
-        }
-        if (empty($result['rooms'][$key]['label'])) {
-          $this->response->AddResponse('error', 'Rumstypen måste ha en benämning.');
-          $this->response->AddResponsePushToArray('invalidFields', array('rooms.' . $key . '.label'));
-          $passed = false;
-        }
-        
-        if (isset($room['price'])) {
-          $result['rooms'][$key]['price'] = Functions::validateInt($room['price']);
-        } else {
-          $result['rooms'][$key]['price'] = NULL;
-        }
-        if (is_null($result['rooms'][$key])) {
-          $this->response->AddResponse('error', 'Rumspris måste anges som ett heltal.');
-          $this->response->AddResponsePushToArray('invalidFields', array('rooms.' . $key . '.price'));
-          $passed = false;
-        }
-    
-        if (isset($room['size'])) {
-          $result['rooms'][$key]['size'] = Functions::validateInt($room['size'], -2147483648, 2147483647);
-        } else {
-          $result['rooms'][$key]['size'] = NULL;
-        }
-        if (is_null($result['rooms'][$key]['size'])) {
-          $this->response->AddResponse('error', 'Antal personer per rum måste anges som ett heltal.');
-          $this->response->AddResponsePushToArray('invalidFields', array('rooms.' . $key . '.size'));
-          $passed = false;
-        }
-
-        if (isset($room['numberavaliable'])) {
-          $result['rooms'][$key]['numberavaliable'] = Functions::validateInt($room['numberavaliable'], -2147483648, 2147483647);
-        } else {
-          $result['rooms'][$key]['numberavaliable'] = NULL;
-        }
-        if (is_null($result['rooms'][$key]['numberavaliable'])) {
-          $this->response->AddResponse('error', 'Antal tillgängliga rum måste anges som ett heltal.');
-          $this->response->AddResponsePushToArray('invalidFields', array('rooms.' . $key . '.numberavaliable'));
-          $passed = false;
-        }
-      }
-    } elseif ($req != 'put') {
-      $this->response->AddResponse('error', 'Minst en rumstyp måste anges för resan. För dagsresa lägg till ett rum av typen Dagsresa');
-      $this->response->AddResponsePushToArray('invalidFields', array('rooms'));
-      $passed = false;
-    }
-    
-
+ 
     $result['id'] = $params['id'];
     if ($passed) {
       return $result;
