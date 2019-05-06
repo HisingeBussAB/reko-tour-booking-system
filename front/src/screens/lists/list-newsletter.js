@@ -75,7 +75,7 @@ class NewsletterList extends Component {
 
   render () {
     const {newsletter} = this.props
-    const {isSubmitting, emailSelected, validEmailEntry, showList, wasDeleted, existEmailEntry,wasSaved} = this.state
+    const {isSubmitting, emailSelected, validEmailEntry, showList, wasDeleted, existEmailEntry, wasSaved} = this.state
 
     const EmailList = newsletter.map(nl => { return <tr key={nl.id}><td>{nl.email}</td></tr> })
 
@@ -111,8 +111,8 @@ class NewsletterList extends Component {
                 </button>
                 {!validEmailEntry && <div className="w-100 m-1 d-block text-danger text-center">Du måste ange en giltig e-postadress.</div>}
                 {!existEmailEntry && <div className="w-100 m-1 d-block text-danger text-center">E-postadressen verkar inte finnas i registret.</div>}
-                {!!wasDeleted     && <div className="w-100 m-1 d-block text-info text-center">E-postadressen {wasDeleted} har tagits bort!</div>}
-                {!!wasSaved       && <div className="w-100 m-1 d-block text-success text-center">E-postadressen {wasSaved} har sparats!</div>}
+                {!!wasDeleted && <div className="w-100 m-1 d-block text-info text-center">E-postadressen {wasDeleted} har tagits bort!</div>}
+                {!!wasSaved && <div className="w-100 m-1 d-block text-success text-center">E-postadressen {wasSaved} har sparats!</div>}
               </div>
               <div className="mt-5 text-center">
                 <p>Det finns {newsletter.length} adresser i systemet.</p>
