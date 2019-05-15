@@ -64,7 +64,7 @@ class GroupCustomers extends Model {
     }
     return false;
   }
-//TODO
+
   public function post(array $_params) {
     $params = $this->paramsValidationWithExit($_params);
     $sql = "SELECT id FROM Newsletter WHERE email = :email;";

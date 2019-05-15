@@ -161,6 +161,11 @@ class Controller {
     return $this->userData;
   }
 
+  public function Maintinance() {
+    Maintenance::refreshSecrets($this->response, $this->pdo);
+    return 'complete';
+  } 
+
   private function authenticate() {
     if (!empty($_SERVER['HTTP_AUTHORIZATION']) && preg_match('/Bearer\s(.*\..*\..*)/', $_SERVER['HTTP_AUTHORIZATION'], $matches)) {
       $refreshJWT = $matches[1];
