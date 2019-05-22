@@ -35,6 +35,22 @@ final class Functions {
     }, array_keys($a), $a), 1, 0);
   }
 
+
+
+  /**
+   * Compare creator. String used screen for duplicates. 
+   * Consists of parts of name and address
+   */
+
+  public static function getCompString($_firstName = '',$_lastName = '',$_zip = '', $_street='') {
+    $firstName = str_replace(['-',' '],'',substr(filter_var(filter_var(strtolower(trim($_firstName)), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK), FILTER_SANITIZE_EMAIL), 0, 15));
+    $lastName = str_replace(['-',' '],'',substr(filter_var(filter_var(strtolower(trim($_lastName)), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK), FILTER_SANITIZE_EMAIL), 0, 15));
+    $zip = str_replace(['+','-',' '],'',filter_var(substr(trim($_zip), 0, 5), FILTER_SANITIZE_NUMBER_INT));
+    $street = str_replace(['-',' '],'',substr(filter_var(filter_var(strtolower(trim($_street)), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK), FILTER_SANITIZE_EMAIL), 3, 9));
+    return (string)substr(($firstName . $lastName . (string)$zip . $street),0,200);
+  }
+
+
   /**
    * Validation/sanitazion functions
    * These functions return validated/santazited value or NULL if fail
@@ -65,7 +81,7 @@ final class Functions {
   public static function validateDate($date) {
     if (gettype($date) != "integer" && gettype($date) != "string") { return NULL; }
     Moment::setDefaultTimezone('CET');
-    Moment::setLocale('se_SV');
+    Moment::setLocale('sv_SE');
     try {
       $m = new \Moment\Moment($date);
     } catch (\Exception $e) {
@@ -74,47 +90,66 @@ final class Functions {
     return (string)$m->format('Y-m-d');
   }
 
-  public static function sanatizeStringUnsafe($string) {
+  public static function sanatizeStringUnsafe($string, $len = 255) {
     //Just make sure it is a string, trim and casted as such. 
     //statements should be prepared and the API should not be excplicilty trusted in front-end ie. do not dangerously set innerHTML.
+    //Optinally cut string to fit DB field
     if (gettype($string) != "integer" && gettype($string) != "string") { return NULL; }
-    $new = filter_var(trim($string), FILTER_UNSAFE_RAW);
+    $new = substr(filter_var(trim($string), FILTER_UNSAFE_RAW),0,$len);
     if(empty($new)) { return NULL; }
     return (string)$new;
   }
 
   public static function validateZIP($zip) {
     if (gettype($zip) != "integer" && gettype($zip) != "string") { return NULL; }
-    $new = self::validateInt(str_replace(['+','-'],'',filter_var(trim($zip), FILTER_SANITIZE_NUMBER_INT)), 10000, 99999);
+    $new = self::validateInt(str_replace(['+','-',' '],'',filter_var(trim($zip), FILTER_SANITIZE_NUMBER_INT)), 1000, 999999); //Shouldnt block foreing zips totally
     if (empty($new)) {return NULL;}
     return (int)$new;
   }
 
   public static function validatePhone($phone) {
     if (gettype($phone) != "integer" && gettype($phone) != "string") { return NULL; }
-    $new = str_replace(['-'],'',filter_var(trim($phone), FILTER_SANITIZE_NUMBER_INT));
+    $new = substr(str_replace(['+'],'',filter_var(trim($phone), FILTER_SANITIZE_NUMBER_INT)),0,25); //cut to 25
     if (empty($new)) {return NULL;}
     return (string)$new;
   }
 
   public static function validateEmail($email) {
     if (gettype($email) != "integer" && gettype($email) != "string") { return NULL; }
-    $new = filter_var(trim($email), FILTER_VALIDATE_EMAIL);
+    $new = substr(filter_var(trim($email), FILTER_VALIDATE_EMAIL),0,60); //Cut to 60 chars
     if(empty($new)) { return NULL; }
     return (string)$new;
   }
 
   public static function validatePersonalNumber($pnumb) {
     if (gettype($pnumb) != "integer" && gettype($pnumb) != "string") { return NULL; }
-    $new = str_replace(['+','-'],'',filter_var(trim($pnumb), FILTER_SANITIZE_NUMBER_INT));
-    if(empty($new)) { return NULL; }
+    preg_match('/^(18|19|20|21)?([0-9]{6}[-+][0-9]{4})$/', trim($pnumb), $matched, PREG_UNMATCHED_AS_NULL | PREG_OFFSET_CAPTURE);
+    if(empty($matched[2][0])) { return NULL; } 
+    $sanitizedmatch = str_replace(['+','-'],'',filter_var(trim($matched[2][0]), FILTER_SANITIZE_NUMBER_INT));
+    $controlnr = substr((string)$sanitizedmatch, -1);
+    $numbers = str_split(substr((string)$sanitizedmatch, 0,9));
+    $multipler = 2;
+    $sums = '';
+    foreach($numbers as $nr) {
+      $sums = $sums . (string)((int)$nr * (int)$multipler);
+      $multipler = $multipler == 2 ? 1 : 2;
+    }
+    $sum = 0;
+    foreach(str_split($sums) as $nr) {
+      $sum = $sum + (int)$nr;
+    }
+    if ((int)$controlnr != (int)((10 - ($sum % 10)) % 10)) {
+      return NULL;
+    }
+
+    $new = trim($matched[2][0]);
     return (string)$new;
   }
 
   public static function validateTime($time) {
     if (gettype($time) != "integer" && gettype($time) != "string") { return NULL; }
     Moment::setDefaultTimezone('CET');
-    Moment::setLocale('se_SV');
+    Moment::setLocale('sv_SE');
     try {
       $m = new \Moment\Moment($time);
     } catch (\Exception $e) {

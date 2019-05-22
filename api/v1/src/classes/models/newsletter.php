@@ -50,7 +50,7 @@ class Newsletter extends Model {
     if ($result != false) {
       $this->response->AddResponse('error', 'Adressen ' . $params['email'] . ' finns redan i systemet.');
       $this->response->AddResponse('response', 'Adressen ' . $params['email'] . ' finns redan i systemet.');
-      $this->response->Exit(404);
+      $this->response->Exit(409);
     }
     $sql = "INSERT INTO Newsletter (email) VALUES (:email);";
     try {     
