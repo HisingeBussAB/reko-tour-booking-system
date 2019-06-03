@@ -115,7 +115,6 @@ if(in_array(ENV_REMOTE_ADDR, ENV_SERVER_IP) && (parse_url($_SERVER['REQUEST_URI'
   $bypassLocks = true;
 }
 
-
 if (ENV_IP_ADDRESS_LOCK && !$bypassLocks) {
   $file = 'dynamic_allowed_ips.txt';
   updateDynamicIPBlock($file, false);
@@ -180,7 +179,7 @@ if ($bypassLocks != false && !(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) 
   $a = array(
     'login' => false,
     'saved' => false,
-    'response' => 'Fel i åtkomstprocedur!. Ej behörig.');
+    'response' => 'Fel i åtkomstprocedur! Ej behörig.');
   $headers = ob_get_clean();
   echo $headers;
   echo json_encode($a);
@@ -191,6 +190,7 @@ $router->addRoutes(array(
   array('POST',           '/users/auth[/]?',                function()         { $start = new Controller; echo $start->auth('login');               }),
   array('POST',           '/users/auth/refresh[/]?',        function()         { $start = new Controller; echo $start->auth('refresh');             }),
   array('POST',           '/users/auth/revoke[/]?',         function()         { $start = new Controller; echo $start->auth('revoke');              }),
+  array('POST',           '/users/auth/revokeall[/]?',         function()         { $start = new Controller; echo $start->auth('revokeall');              }),
   array('GET|PUT|DELETE', '/tours/[i:id]?[/]?',             function($id = -1) { $start = new Controller; echo $start->start('Tours',       $id);   }),
   array('GET|POST',       '/tours[/]?',                     function()         { $start = new Controller; echo $start->start('Tours'           );   }),
   array('GET|PUT|DELETE', '/categories/[i:id]?[/]?',        function($id = -1) { $start = new Controller; echo $start->start('Categories',  $id);   }),

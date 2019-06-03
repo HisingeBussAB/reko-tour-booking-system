@@ -28,7 +28,7 @@ const initialState = {
   },
   lists: {
     groupcustomers: [],
-    newsletter:     []
+    newsletter    : []
   },
   networkOperations: []
 }

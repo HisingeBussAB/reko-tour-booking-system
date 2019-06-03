@@ -153,12 +153,17 @@ class Controller {
             http_response_code(401);
           }
           break;
+
+          case "revokeall":
+          if ( Auth::revokeall($this->response, $this->pdo )) {
+            http_response_code(200);
+          } else {
+            header('WWW-Authenticate: Bearer');
+            http_response_code(401);
+          }
+          break;
       }
       return $this->response->GetResponse();
-  }
-
-  public function getUserData() {
-    return $this->userData;
   }
 
   public function Maintinance() {

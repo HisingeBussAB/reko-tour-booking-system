@@ -57,11 +57,11 @@ class GroupCustomers extends Model {
           }
           $result[$key]['categories'] = $categoryresult;
         }
-        return array('groupCustomers' => $result);
+        return array('groupcustomers' => $result);
       }
     } else {
-      $this->response->AddResponse('error', 'GroupCuustomerid kan bara anges som ett positivt heltal, eller inte anges alls för alla gruppkunder.');
-      $this->response->AddResponse('response', 'GroupCuustomerid kan bara anges som ett positivt heltal, eller inte anges alls för alla gruppkunder.');
+      $this->response->AddResponse('error', 'Groupcustomerid kan bara anges som ett positivt heltal, eller inte anges alls för alla gruppkunder.');
+      $this->response->AddResponse('response', 'Groupcustomerid kan bara anges som ett positivt heltal, eller inte anges alls för alla gruppkunder.');
       $this->response->Exit(404);
     }
     return false;
@@ -203,15 +203,15 @@ class GroupCustomers extends Model {
     }
     if ($this->get(array('id' => $params['id'])) !== false) {
       try {
-        $params['organisation'] = substr(md5(mt_rand()),0,20);
-        $params['firstName'] = substr(md5(mt_rand()),0,20);
-        $params['lastName'] = substr(md5(mt_rand()),0,20);
-        $params['street'] = substr(md5(mt_rand()),0,20);
-        $params['zip'] = '00000';
-        $params['city'] = substr(md5(mt_rand()),0,20);
-        $params['phone'] = '00000000';
-        $params['email'] = 'example@example.com';
-        $params['personalNumber'] = '000000-0000';
+        $params['organisation'] = substr(md5(mt_rand()),0,4);
+        $params['firstName'] = substr(md5(mt_rand()),0,4);
+        $params['lastName'] = substr(md5(mt_rand()),0,4);
+        $params['street'] = substr(md5(mt_rand()),0,2);
+        $params['zip'] = '0';
+        $params['city'] = substr(md5(mt_rand()),0,2);
+        $params['phone'] = '0';
+        $params['email'] = substr(md5(mt_rand()),0,2);
+        $params['personalNumber'] = '0';
         $comp = Functions::getCompString($params['firstName'],$params['lastName'],$params['zip'],$params['street']);
 
         $sql .= "UPDATE GroupCustomers SET 
