@@ -63,14 +63,12 @@ class GroupList extends Component {
                   renderMenu={(results, menuProps) => (
                     <Menu {...menuProps}>
                       {results.map((result, index) => (
-                        //typeof result.firstname !== 'undefined' ?
-                          <MenuItem key={index} option={result} position={index}>
-                            <div key={index} className="small m-0 p-0">
-                              <p className="m-0 p-0">{result.organisation}</p>
-                              <p className="m-0 p-0">{result.firstname + ' ' + result.lastname}</p>                   
-                            </div>
-                          </MenuItem> //: null
-                          ))}
+                        <MenuItem key={index} option={result} position={index}>
+                          <div key={index} className="small m-0 p-0">
+                            <p className="m-0 p-0">{result.organisation}</p>
+                            <p className="m-0 p-0">{result.firstname} {result.lastname}</p>                   
+                          </div>
+                        </MenuItem>))}
                     </Menu>
                   )}
                   // eslint-disable-next-line no-return-assign
