@@ -253,6 +253,14 @@ select:invalid {
   border: 1px solid #0856fb !important;
 }
 
+.rbt-input-multi {
+  border: 1px solid #0856fb !important;
+}
+
+.rbt-input-multi .rbt-input-main {
+  border: 0 !important;
+}
+
 @keyframes dots {
   0%, 20% {
     color: rgba(0, 0, 0, 0);
