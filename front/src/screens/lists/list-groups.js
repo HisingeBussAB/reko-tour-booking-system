@@ -4,13 +4,14 @@ import { bindActionCreators } from 'redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import {getItem} from '../../actions'
-import { Typeahead } from 'react-bootstrap-typeahead'
+import { Typeahead, Menu, MenuItem } from 'react-bootstrap-typeahead'
 
 class GroupList extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      isSubmitting: false
+      isSubmitting: false,
+      orgSelected: []
     }
   }
 
@@ -33,8 +34,9 @@ class GroupList extends Component {
   }
 
   render () {
-    const { isSubmitting } = this.state
+    const { isSubmitting, orgSelected } = this.state
     const { groupcustomers } = this.props
+
     return (
       <div className="ListView GroupList">
 
@@ -43,21 +45,36 @@ class GroupList extends Component {
             <div className="container text-left" style={{maxWidth: '650px'}}>
               <h3 className="my-4 w-50 mx-auto text-center">Gruppkunder</h3>
               <h6 className="m-3 p-2 text-center">Sök efter eller lägg till gruppkunder</h6>
-              <div>
-                <Typeahead className="rounded w-50 m-2 d-inline-block" /*
-                  id="email"
-                  name="email"
+              <div className="text-center">
+                <Typeahead className="rounded w-50 m-2 d-inline-block"
+                  id="groupOrg"
+                  name="groupOrg"
                   minLength={2}
                   maxResults={5}
                   flip
                   emptyLabel=""
                   disabled={isSubmitting}
-                  onChange={(emailSelected) => { this.setState({ emailSelected: emailSelected, validEmailEntry: true, wasSaved: false, existEmailEntry: true }) }}
-                  options={newsletter.map(nl => { return nl.email })}
-                  selected={emailSelected}
-                  placeholder="Skriv en e-postadress..."
+                  onChange={(orgSelected) => { this.setState({ orgSelected: orgSelected }) }}
+                  labelKey="organisation"
+                  filterBy={['organisation']}
+                  options={groupcustomers}
+                  selected={orgSelected}
+                  placeholder="Organisation"
+                  renderMenu={(results, menuProps) => (
+                    <Menu {...menuProps}>
+                      {results.map((result, index) => (
+                        //typeof result.firstname !== 'undefined' ?
+                          <MenuItem key={index} option={result} position={index}>
+                            <div key={index} className="small m-0 p-0">
+                              <p className="m-0 p-0">{result.organisation}</p>
+                              <p className="m-0 p-0">{result.firstname + ' ' + result.lastname}</p>                   
+                            </div>
+                          </MenuItem> //: null
+                          ))}
+                    </Menu>
+                  )}
                   // eslint-disable-next-line no-return-assign
-                  ref={(ref) => this._typeahead = ref} */
+                  ref={(ref) => this._typeahead = ref}
                 />
 
               </div>

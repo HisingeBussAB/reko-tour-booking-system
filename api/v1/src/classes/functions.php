@@ -40,16 +40,23 @@ final class Functions {
   /**
    * Compare creator. String used screen for duplicates. 
    * Consists of parts of name and address
+   * First 35 are comparison without addr, last 7 is adr
    */
 
   public static function getCompString($_firstName = '',$_lastName = '',$_zip = '', $_street='') {
-    $firstName = str_replace(['-',' '],'',substr(filter_var(filter_var(strtolower(trim($_firstName)), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK), FILTER_SANITIZE_EMAIL), 0, 15));
-    $lastName = str_replace(['-',' '],'',substr(filter_var(filter_var(strtolower(trim($_lastName)), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK), FILTER_SANITIZE_EMAIL), 0, 15));
-    $zip = str_replace(['+','-',' '],'',filter_var(substr(trim($_zip), 0, 5), FILTER_SANITIZE_NUMBER_INT));
-    $street = str_replace(['-',' '],'',substr(filter_var(filter_var(strtolower(trim($_street)), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK), FILTER_SANITIZE_EMAIL), 3, 9));
+    $firstName = str_pad(str_replace(['-',' '],'',substr(filter_var(filter_var(strtolower(trim($_firstName)), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK), FILTER_SANITIZE_EMAIL), 0, 15)),15,"0",STR_PAD_RIGHT);
+    $lastName = str_pad(str_replace(['-',' '],'',substr(filter_var(filter_var(strtolower(trim($_lastName)), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK), FILTER_SANITIZE_EMAIL), 0, 15)),15,"0",STR_PAD_RIGHT);
+    $zip = str_pad(str_replace(['+','-',' '],'',filter_var(substr(trim($_zip), 0, 5), FILTER_SANITIZE_NUMBER_INT)),5,"0",STR_PAD_RIGHT);
+    $street = str_pad(str_replace(['-',' '],'',substr(filter_var(filter_var(strtolower(trim($_street)), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK), FILTER_SANITIZE_EMAIL), 3, 9)),7,"0",STR_PAD_RIGHT);
     return (string)substr(($firstName . $lastName . (string)$zip . $street),0,200);
   }
 
+  /**
+   * Compare two comp strings with or without address. First 35 are comparison without addr, last 7 is adr
+   */
+  public static function compCompString(string $str1, string $str2, $useAdr = false) {
+    return $useAdr ? (substr($str1,0,35) == substr($str2,0,35)) : ($str1 == $str2);
+  }
 
   /**
    * Validation/sanitazion functions
