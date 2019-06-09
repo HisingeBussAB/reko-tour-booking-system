@@ -29,7 +29,9 @@ class GroupList extends Component {
       email         : '',
       personalnumber: '',
       date          : moment().format('YYYY-MM-DD'),
-      isConfirming  : false
+      isConfirming  : false,
+      showList      : false,
+      sortBy        : 'organisation'
     }
     this.initialstate = {
       orgSelected   : [],
@@ -190,7 +192,7 @@ class GroupList extends Component {
   }
 
   render () {
-    const { isConfirming, isSubmitting, orgSelected, catSelected, firstname, lastname, organisation, street, city, zip, phone, email, personalnumber, date } = this.state
+    const { showList, sortBy, isConfirming, isSubmitting, orgSelected, catSelected, firstname, lastname, organisation, street, city, zip, phone, email, personalnumber, date } = this.state
     const { groupcustomers, categories } = this.props
 
     const allactivecategories = categories.filter(category => !category.isdisabled)
@@ -212,6 +214,16 @@ class GroupList extends Component {
     const isEdited = this.getEditState()
     const isEmpty = this.getEmptyState()
     const hasSelected = typeof orgSelected[0] !== 'undefined'
+
+
+    const orgRows = groupcustomers.map(c => {return <tr key={c.id}><td>{c.organisation}</td>
+      <td>{`${c.firstname} ${c.lastname}`}</td>
+      <td>{c.street}</td>
+      <td>{c.zip}</td>
+      <td>{c.city}</td>
+      <td>{c.phone}</td>
+      <td>{c.email}</td>
+      <td>{c.date}</td></tr>})
 
     return (
       <div className="ListView GroupList">
@@ -370,8 +382,8 @@ class GroupList extends Component {
                       : null }              
                   </div>
                   <div className="text-right col-6 px-1 py-0 m-0">
-                      {(hasSelected && isEdited) || (!hasSelected && !isEmpty) ?
-                      <button onClick={e => this.handleSave(e)} disabled={isSubmitting} type="button" title="Spara gruppkund" className="btn btn-lg btn-primary custom-scale">
+                    {(hasSelected && isEdited) || (!hasSelected && !isEmpty) 
+                      ? <button onClick={e => this.handleSave(e)} disabled={isSubmitting} type="button" title="Spara gruppkund" className="btn btn-lg btn-primary custom-scale">
                         <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faSave} size="lg" />&nbsp;Spara</span>
                       </button> : null }
                     { hasSelected && !isEdited
@@ -379,12 +391,36 @@ class GroupList extends Component {
                         <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faTrash} size="lg" />&nbsp;Radera</span>
                       </button>
                       : null }
-                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </fieldset>
         </form>
+        <div className="mt-3 mx-2 text-center w-100">
+                <p>Det finns {groupcustomers.length} gruppkunder i systemet.</p>
+                <button className="btn btn-primary btn-sm m-2 mr-3" onClick={e => { e.preventDefault(); this.setState({showList: !showList}) }}>       {showList ? 'Dölj' : 'Visa'} lista</button>
+              </div>
+              <div className="mt-3 mx-2 w-100 text-center GruppKundLista">
+                {showList ?  <table className="mx-auto table table-sm table-hover">
+          <thead>
+              <tr>
+                <th scope="col">Organisation</th>
+                <th scope="col">Kontaktperson</th>
+                <th scope="col">Adress</th>
+                <th scope="col">Postnr</th>
+                <th scope="col">Stad</th>
+                <th scope="col">Telefonnr</th>
+                <th scope="col">E-post</th>
+                <th scope="col">Senast</th>
+              </tr>
+            </thead>
+          <tbody>
+              {orgRows}
+            </tbody>
+        </table> : null}
+              </div>
+       
       </div>
     )
   }
