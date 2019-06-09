@@ -6,7 +6,7 @@ export function getItem (itemType, item = 'all') {
   return async (dispatch) => {
     if (itemNameHuman.hasOwnProperty(itemType)) {
       dispatch(networkAction(1, 'get items ' + itemType))
-      const itemString = parseInt(item).toString() === item ? '/' + item : ''
+      const itemString = parseInt(item, 10).toString() === item ? '/' + item : ''
       try {
         const response = await myAxios.get('/' + itemType + itemString)
         dispatch(onThen(response, itemType, item))
