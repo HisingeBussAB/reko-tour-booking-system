@@ -198,7 +198,7 @@ class Tours extends Model {
     $result = array();
 
     if (isset($params['label'])) {
-      $result['label'] = Functions::sanatizeStringUnsafe($params['label']);
+      $result['label'] = Functions::sanatizeStringUnsafe($params['label'], 100);
     } else {
       $result['label'] = '';
     }
@@ -272,7 +272,7 @@ class Tours extends Model {
     if (isset($params['rooms']) && is_array($params['rooms'])) {
       foreach($params['rooms'] as $key=>$room) {
         if (isset($room['label'])) {
-          $result['rooms'][$key]['label'] = Functions::sanatizeStringUnsafe($room['label']);
+          $result['rooms'][$key]['label'] = Functions::sanatizeStringUnsafe($room['label'], 100);
         } else {
           $result['rooms'][$key]['label'] = '';
         }

@@ -110,6 +110,11 @@ if(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/updatefirewall/' && 
   $bypassLocks = true;
 }
 
+//Bypass kill switches for cron jobs
+if(in_array(ENV_REMOTE_ADDR, ENV_SERVER_IP) && (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/updatefirewall/' || parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/maintinance/')) { 
+  $bypassLocks = true;
+}
+
 if (ENV_IP_ADDRESS_LOCK && !$bypassLocks) {
   $file = 'dynamic_allowed_ips.txt';
   updateDynamicIPBlock($file, false);
@@ -152,6 +157,9 @@ if ((empty($_SERVER["HTTP_X_API_KEY"]) || $_SERVER["HTTP_X_API_KEY"] != AUTH_API
 }
 
 
+
+
+
 header("Accept: application/json");
 
 $loader = require __DIR__ . '/vendor/autoload.php';
@@ -164,10 +172,25 @@ Moment::setDefaultTimezone('CET');
 Moment::setLocale('sv_SE');
 
 
+//Final saftey kill setting check for only URLs it should apply to
+if ($bypassLocks != false && !(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/updatefirewall/' || parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/maintinance/'))
+{
+  http_response_code(403);
+  $a = array(
+    'login' => false,
+    'saved' => false,
+    'response' => 'Fel i åtkomstprocedur! Ej behörig.');
+  $headers = ob_get_clean();
+  echo $headers;
+  echo json_encode($a);
+  die();
+}
+
 $router->addRoutes(array(
   array('POST',           '/users/auth[/]?',                function()         { $start = new Controller; echo $start->auth('login');               }),
   array('POST',           '/users/auth/refresh[/]?',        function()         { $start = new Controller; echo $start->auth('refresh');             }),
   array('POST',           '/users/auth/revoke[/]?',         function()         { $start = new Controller; echo $start->auth('revoke');              }),
+  array('POST',           '/users/auth/revokeall[/]?',         function()         { $start = new Controller; echo $start->auth('revokeall');              }),
   array('GET|PUT|DELETE', '/tours/[i:id]?[/]?',             function($id = -1) { $start = new Controller; echo $start->start('Tours',       $id);   }),
   array('GET|POST',       '/tours[/]?',                     function()         { $start = new Controller; echo $start->start('Tours'           );   }),
   array('GET|PUT|DELETE', '/categories/[i:id]?[/]?',        function($id = -1) { $start = new Controller; echo $start->start('Categories',  $id);   }),
@@ -191,6 +214,9 @@ $router->addRoutes(array(
   array('GET|PUT|DELETE', '/deadlines/[i:id]?[/]?',         function($id = -1) { $start = new Controller; echo $start->start('Deadlines',   $id);   }),
   array('GET|POST',       '/deadlines[/]?',                 function()         { $start = new Controller; echo $start->start('Deadlines'       );   }),
   
+  //CRON links
+  array('GET',            '/maintinance[/]?',                 function()       { $start = new Controller; echo $start->Maintinance();               }),
+  
   array('GET|POST',       '/updatefirewall[/]?', function(){
     file_put_contents('cloudflareips.txt', file_get_contents('https://www.cloudflare.com/ips-v4'));
     updateDynamicIPBlock('dynamic_allowed_ips.txt', true);
@@ -204,15 +230,15 @@ $router->addRoutes(array(
     foreach(ENV_IP_ADDRESS_LOCK_ALLOWED_IPS as $ip) {
       $allowed_ips = $allowed_ips . ' ' . $ip;
     }
+    foreach(ENV_SERVER_IP as $ip) {
+      $allowed_ips = $allowed_ips . ' ' . $ip;
+    }
     $allowed_ips = trim($allowed_ips); 
 
     //Edit IDs in these rules
-    $rule1 = array("id" => ENV_CLOUDFLARE_API_FILTER_ID,"expression" => "(ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"https://api.rekoresor.app\") or (ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"https://apitest.rekoresor.app\")","paused"=> false,"description"=> "DynamicUpdateAllowedIPs API"
-    );
-
-    //$rule2 = array("id"=> ENV_CLOUDFLARE_WEB_FILTER_ID,"expression"=>"(ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"://bokningar.rekoresor.app\") or (ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"://bokningartest.rekoresor.app\")","paused"=> false,"description"=> "DynamicUpdateAllowedIPs Web");
-
-    $rules = array($rule1);//, $rule2);
+    $rule1 = array("id" => ENV_CLOUDFLARE_API_FILTER_ID,"expression" => "(ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"https://api.rekoresor.app\") or (ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"https://apitest.rekoresor.app\")","paused"=> false,"description"=> "DynamicUpdateAllowedIPs API");
+    $rule2 = array("id"=> ENV_CLOUDFLARE_WEB_FILTER_ID,"expression"=>"(ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"://bokningar.rekoresor.app\") or (ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"://bokningartest.rekoresor.app\")","paused"=> false,"description"=> "DynamicUpdateAllowedIPs Web");
+    $rules = array($rule1, $rule2);
     $reply = array();
     $reply['ips'] = array();
     $reply['response'] = array();
@@ -334,6 +360,9 @@ function Set_ENV_REMOTE_ADDR($cloudlfarefile) {
         if ($ip != $host) {
           $allowed_ips = $allowed_ips . ' ' . $ip;
         }
+      }
+      foreach(ENV_SERVER_IP as $ip) {
+        $allowed_ips = $allowed_ips . ' ' . $ip;
       }
       $ipsformatted = str_replace(' ', ',', trim($allowed_ips));
       file_put_contents($file, $ipsformatted);

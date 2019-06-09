@@ -152,8 +152,6 @@ select {
   }
 }
 
-
-
 .MainMenu {
   border-bottom: 1px solid $secondary-color;
   
@@ -263,6 +261,13 @@ select {
 
 .rbt-input-main {
   border: 1px solid #0856fb !important;
+}
+
+.rbt-input-multi {
+  border: 1px solid #0856fb !important;
+  .rbt-input-main {
+    border: 0 !important;
+  }
 }
 
 @keyframes dots {

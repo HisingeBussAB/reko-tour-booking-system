@@ -153,13 +153,23 @@ class Controller {
             http_response_code(401);
           }
           break;
+
+          case "revokeall":
+          if ( Auth::revokeall($this->response, $this->pdo )) {
+            http_response_code(200);
+          } else {
+            header('WWW-Authenticate: Bearer');
+            http_response_code(401);
+          }
+          break;
       }
       return $this->response->GetResponse();
   }
 
-  public function getUserData() {
-    return $this->userData;
-  }
+  public function Maintinance() {
+    Maintenance::refreshSecrets($this->response, $this->pdo);
+    return 'complete';
+  } 
 
   private function authenticate() {
     if (!empty($_SERVER['HTTP_AUTHORIZATION']) && preg_match('/Bearer\s(.*\..*\..*)/', $_SERVER['HTTP_AUTHORIZATION'], $matches)) {

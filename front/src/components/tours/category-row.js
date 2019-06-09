@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import {faSave, faSpinner} from '@fortawesome/free-solid-svg-icons'
-import {faSquare, faCheckSquare, faTrashAlt} from '@fortawesome/free-regular-svg-icons'
+import {faSave, faSpinner, faTrash} from '@fortawesome/free-solid-svg-icons'
+import {faSquare, faCheckSquare} from '@fortawesome/free-regular-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import {getItem, putItem, postItem, deleteItem} from '../../actions'
@@ -165,7 +165,7 @@ class CategoriesRow extends Component {
         </td>
         <td className="align-middle pl-3 py-2 text-center">
           {!deleting &&
-          <span title="Ta bort denna kategori permanent" className="danger-color custom-scale cursor-pointer"><FontAwesomeIcon icon={faTrashAlt} onClick={(e) => this.deleteConfirm(e)} size="2x" /></span>}
+          <span title="Ta bort denna kategori permanent" className="danger-color custom-scale cursor-pointer"><FontAwesomeIcon icon={faTrash} onClick={(e) => this.deleteConfirm(e)} size="2x" /></span>}
           {deleting &&
             <span title="Tar bort denna kategori..." className="danger-color"><FontAwesomeIcon icon={faSpinner} size="2x" pulse /></span>}
         </td>
