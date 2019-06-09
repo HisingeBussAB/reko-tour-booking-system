@@ -13,7 +13,7 @@ export function postItem (itemType, data) {
         const id = response.data.response.updatedid
         dispatch(getItem(itemType, id))
         firebaseSavedItem(id, itemType)
-        return true
+        return id
       } catch (e) {
         try {
           const reply = typeof e.response.data.response !== 'undefined' && e.response.data.response.length > 0 ? e.response.data.response : 'Kunde inte utföra åtgärden.'

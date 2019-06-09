@@ -56,6 +56,7 @@ class GroupCustomers extends Model {
             $this->response->Exit(500);
           }
           $result[$key]['categories'] = $categoryresult;
+          $result[$key]['zip'] = ($client['zip'] == null OR $client['zip'] < 1) ? '' : $client['zip'];
         }
         return array('groupcustomers' => $result);
       }
@@ -266,8 +267,8 @@ class GroupCustomers extends Model {
       $result['organisation'] = 'Privat grupp';
     }
 
-    if (isset($params['firstName'])) {
-      $result['firstName'] = Functions::sanatizeStringUnsafe($params['firstName'], 100);
+    if (isset($params['firstname'])) {
+      $result['firstName'] = Functions::sanatizeStringUnsafe($params['firstname'], 100);
     } else {
       $result['firstName'] = '';
     }
@@ -277,8 +278,8 @@ class GroupCustomers extends Model {
       $passed = false;
     }
 
-    if (isset($params['lastName'])) {
-      $result['lastName'] = Functions::sanatizeStringUnsafe($params['lastName'], 100);
+    if (isset($params['lastname'])) {
+      $result['lastName'] = Functions::sanatizeStringUnsafe($params['lastname'], 100);
     } else {
       $result['lastName'] = '';
     }
@@ -296,7 +297,7 @@ class GroupCustomers extends Model {
         $passed = false;
       }
     } else {
-      $result['street'] = null;
+      $result['street'] = '';
     }
    
     if (isset($params['zip']) && !empty($params['zip'])) {
@@ -307,7 +308,7 @@ class GroupCustomers extends Model {
         $passed = false;
       }
     } else {
-      $result['zip'] = null;
+      $result['zip'] = '';
     }
     
     if (isset($params['city']) && !empty($params['city'])) {
@@ -318,7 +319,7 @@ class GroupCustomers extends Model {
         $passed = false;
       }
     } else {
-      $result['city'] = null;
+      $result['city'] = '';
     }
     
     if (isset($params['phone']) && !empty($params['phone'])) {
@@ -329,7 +330,7 @@ class GroupCustomers extends Model {
         $passed = false;
       }
     } else {
-      $result['phone'] = null;
+      $result['phone'] = '';
     }
 
     if (isset($params['email']) && !empty($params['email'])) {
@@ -340,18 +341,18 @@ class GroupCustomers extends Model {
         $passed = false;
       }
     } else {
-      $result['email'] = null;
+      $result['email'] = '';
     }
 
-    if (isset($params['personalNumber']) && !empty($params['personalNumber'])) {
-      $result['personalNumber'] = Functions::validatePersonalNumber($params['personalNumber']);
+    if (isset($params['personalnumber']) && !empty($params['personalnumber'])) {
+      $result['personalNumber'] = Functions::validatePersonalNumber($params['personalnumber']);
       if (is_null($result['personalNumber'])) {
         $this->response->AddResponse('error', 'Personnummer anges XXXXXX-XXXX och måste ha giltig kontrollsiffra.');
         $this->response->AddResponsePushToArray('invalidFields', array('personalNumber'));
         $passed = false;
       }
     } else {
-      $result['personalNumber'] = null;
+      $result['personalNumber'] = '';
     }
 
     if (isset($params['date'])) {
@@ -382,8 +383,8 @@ class GroupCustomers extends Model {
       }
     }
 
-    if (isset($params['isAnonymized'])) {
-      $result['isAnonymized'] = Functions::validateBoolToBit($params['isAnonymized']);
+    if (isset($params['isanonymized'])) {
+      $result['isAnonymized'] = Functions::validateBoolToBit($params['isanonymized']);
     } else {
       $result['isAnonymized'] = -1;
     }
