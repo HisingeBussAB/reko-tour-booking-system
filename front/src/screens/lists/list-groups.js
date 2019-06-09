@@ -2,12 +2,12 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {faSave, faSpinner, faEraser, faTrash, faCalendarCheck} from '@fortawesome/free-solid-svg-icons'
+import {faSave, faSpinner, faEraser, faTrash, faCalendarCheck, faSort} from '@fortawesome/free-solid-svg-icons'
 import PropTypes from 'prop-types'
 import {getItem, putItem, postItem, deleteItem} from '../../actions'
 import { Typeahead, Menu, MenuItem } from 'react-bootstrap-typeahead'
 import searchStyle from '../../styles/searchStyle'
-import { looseObjectCompare, strictObjectCompare } from '../../utils'
+import { looseObjectCompare } from '../../utils'
 import moment from 'moment'
 import 'moment/locale/sv'
 import ConfirmPopup from '../../components/global/confirm-popup'
@@ -377,18 +377,18 @@ class GroupList extends Component {
                   <div className="text-left col-6 pb-1 pt-2 px-1 m-0">
                     { !isEmpty
                       ? <button onClick={e => this.handleClear(e)} disabled={isSubmitting} type="button" title="Rensa formuläret" className="btn btn-warning custom-scale">
-                        <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faEraser} size="lg" />&nbsp;Rensa</span>
+                      {isSubmitting ? <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faSpinner} size="lg" />&nbsp;Rensa</span> : <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faEraser} size="lg" />&nbsp;Rensa</span>}
                       </button>
                       : null }              
                   </div>
                   <div className="text-right col-6 px-1 py-0 m-0">
                     {(hasSelected && isEdited) || (!hasSelected && !isEmpty) 
                       ? <button onClick={e => this.handleSave(e)} disabled={isSubmitting} type="button" title="Spara gruppkund" className="btn btn-lg btn-primary custom-scale">
-                        <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faSave} size="lg" />&nbsp;Spara</span>
+                      {isSubmitting ? <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faSpinner} size="lg" />&nbsp;Spara</span> : <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faSave} size="lg" />&nbsp;Spara</span>}
                       </button> : null }
                     { hasSelected && !isEdited
                       ? <button onClick={e => this.deleteConfirm(e)} disabled={isSubmitting} type="button" title="Ta bort gruppkunden" className="btn btn-danger custom-scale">
-                        <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faTrash} size="lg" />&nbsp;Radera</span>
+                        {isSubmitting ? <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faSpinner} size="lg" />&nbsp;Radera</span> : <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faTrash} size="lg" />&nbsp;Radera</span>}
                       </button>
                       : null }
                   </div>
@@ -402,7 +402,7 @@ class GroupList extends Component {
                 <button className="btn btn-primary btn-sm m-2 mr-3" onClick={e => { e.preventDefault(); this.setState({showList: !showList}) }}>       {showList ? 'Dölj' : 'Visa'} lista</button>
               </div>
               <div className="mt-3 mx-2 w-100 text-center GruppKundLista">
-                {showList ?  <table className="mx-auto table table-sm table-hover">
+                {showList ?  <table className="mx-auto table table-sm table-hover" style={{width: '85%'}}>
           <thead>
               <tr>
                 <th scope="col">Organisation</th>
