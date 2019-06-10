@@ -47,3 +47,20 @@ export function looseObjectCompare (obj1, obj2) {
   }
   return true
 }
+
+// https://stackoverflow.com/questions/1129216/sort-array-of-objects-by-string-property-value
+export function dynamicSort (property) {
+  let sortOrder = 1
+  if (property[0] === '-') {
+    sortOrder = -1
+    property = property.substr(1)
+  }
+  return function (a,b) {
+    /* next line works with strings and numbers, 
+       * and you may want to customize it to your needs
+       */
+    
+    const result = a[property].toString().toLowerCase() < b[property].toString().toLowerCase() ? -1 : a[property].toString().toLowerCase() > b[property].toString().toLowerCase() ? 1 : 0
+    return result * sortOrder
+  }
+}

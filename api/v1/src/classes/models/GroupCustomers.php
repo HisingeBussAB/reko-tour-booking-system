@@ -69,7 +69,7 @@ class GroupCustomers extends Model {
   }
 
   public function post(array $_params) {
-    $params = $this->paramsValidationWithExit($_params);
+    $params = $this->paramsValidationWithExit($_params, true);
     $comp = Functions::getCompString($params['firstName'],$params['lastName'],$params['zip'],$params['street']);
     $sql = "INSERT INTO GroupCustomers (
       organisation
@@ -133,7 +133,7 @@ class GroupCustomers extends Model {
   }
 
   public function put(array $_params) {
-    $params = $this->paramsValidationWithExit($_params);
+    $params = $this->paramsValidationWithExit($_params, true);
     $comp = Functions::getCompString($params['firstName'],$params['lastName'],$params['zip'],$params['street']);
     if ($this->get(array('id' => $params['id'])) !== false) {
       try {
@@ -215,7 +215,7 @@ class GroupCustomers extends Model {
         $params['personalNumber'] = '0';
         $comp = Functions::getCompString($params['firstName'],$params['lastName'],$params['zip'],$params['street']);
 
-        $sql .= "UPDATE GroupCustomers SET 
+        $sql = "UPDATE GroupCustomers SET 
         organisation  = :organisation
         ,firstName    = :firstName
         ,lastName     = :lastName
@@ -255,7 +255,7 @@ class GroupCustomers extends Model {
 
   
 
-  private function paramsValidationWithExit($params) {
+  private function paramsValidationWithExit($params, $validateCategories = false) {
     $passed = true;
     $result = array();
     if (isset($params['organisation'])) {
@@ -366,6 +366,7 @@ class GroupCustomers extends Model {
       $passed = false;
     }
     
+
     $result['categories'] = array();
     if (isset($params['categories']) && is_array($params['categories'])) {
       foreach($params['categories'] as $key=>$category) {
@@ -374,14 +375,45 @@ class GroupCustomers extends Model {
         } else {
           $result['categories'][$key]['id'] = '';
         }
-        $Categories = new Categories($this->response, $this->pdo);
-        if (empty($result['categories'][$key]['id']) || $Categories->get(array('id' => $category['id'])) == false) {
-          $this->response->AddResponse('error', 'Kategori id: ' . $category['id'] . ' är borttagen eller ogiltig.');
-          $this->response->AddResponsePushToArray('invalidFields', array('categories.' . $key . '.id'));
-          $passed = false;
+
+        if ($validateCategories) {
+          $flag = true;
+          if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
+            try {
+              $sql = "SELECT DISTINCT categoryid as id
+                        FROM Categories_GroupCustomers
+                        WHERE groupid = :id;";
+              $sth = $this->pdo->prepare($sql);
+              $sth->bindParam(':id', $params['id'], \PDO::PARAM_INT);
+              $sth->execute();
+              $categoryids = $sth->fetchAll(\PDO::FETCH_ASSOC); 
+            } catch(\PDOException $e) {
+              $this->response->DBError($e, __CLASS__, $sql);
+              $this->response->Exit(500);
+            }
+            $org = array();
+            $in = array();
+            foreach($categoryids as $c) {
+              array_push($org, $c['id']);
+            }
+            foreach($params['categories'] as $c) {
+              array_push($in, $c['id']);
+            }
+            if (sizeof(array_diff($org,$in)) == 0) {
+              $flag = false;
+            }
+          }
+          if ($flag) {
+            $Categories = new Categories($this->response, $this->pdo);
+            if (empty($result['categories'][$key]['id']) || $Categories->get(array('id' => $category['id'])) == false) {
+              $this->response->AddResponse('error', 'Kategori id: ' . $category['id'] . ' är borttagen eller ogiltig.');
+              $this->response->AddResponsePushToArray('invalidFields', array('categories.' . $key . '.id'));
+              $passed = false;
+              }
+            }
+          }
         }
       }
-    }
 
     if (isset($params['isanonymized'])) {
       $result['isAnonymized'] = Functions::validateBoolToBit($params['isanonymized']);

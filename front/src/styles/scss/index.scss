@@ -152,6 +152,10 @@ select {
   }
 }
 
+.nowrap {
+  white-space:nowrap;
+}
+
 .MainMenu {
   border-bottom: 1px solid $secondary-color;
   
