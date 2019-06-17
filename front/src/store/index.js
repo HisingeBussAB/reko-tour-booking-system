@@ -30,7 +30,13 @@ const initialState = {
     groupcustomers: [],
     newsletter    : []
   },
-  networkOperations: []
+  pendingfromweb: {
+    count     : {},
+    bookings  : [],
+    leads     : [],
+    newsletter: []
+  },
+  networkOperations: [],
 }
 
 const enhancers = []

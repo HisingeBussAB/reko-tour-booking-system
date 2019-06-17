@@ -30,6 +30,10 @@ const ListView = MyLoadable({
   loader: () => import('./screens/list')
 })
 
+const PendingView = MyLoadable({
+  loader: () => import('./screens/pending')
+})
+
 const UpdateFirewall = MyLoadable({
   loader: () => import('./screens/updatefirewall')
 })
@@ -100,6 +104,7 @@ class App extends Component {
             <Route path="/bokningar" component={TourView} />
             <Route path="/kalkyler" component={BudgetView} />
             <Route path="/utskick" component={ListView} />
+            <Route path="/pending" component={PendingView} />
             <Route path="/updatefirewall" component={UpdateFirewall} />
           </div>
           : <LoginScreen />

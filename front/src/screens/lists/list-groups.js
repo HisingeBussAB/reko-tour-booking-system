@@ -7,7 +7,7 @@ import PropTypes from 'prop-types'
 import {getItem, putItem, postItem, deleteItem} from '../../actions'
 import { Typeahead, Menu, MenuItem } from 'react-bootstrap-typeahead'
 import searchStyle from '../../styles/searchStyle'
-import { looseObjectCompare, dynamicSort } from '../../utils'
+import { looseObjectCompare, dynamicSort, getActivePlusSelectedCategories } from '../../utils'
 import moment from 'moment'
 import 'moment/locale/sv'
 import ConfirmPopup from '../../components/global/confirm-popup'
@@ -16,23 +16,24 @@ class GroupList extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      isSubmitting  : false,
-      orgSelected   : [],
-      catSelected   : [],
-      firstname     : '',
-      lastname      : '',
-      organisation  : '',
-      street        : '',
-      city          : '',
-      zip           : '',
-      phone         : '',
-      email         : '',
-      personalnumber: '',
-      date          : moment().format('YYYY-MM-DD'),
-      isConfirming  : false,
-      showList      : false,
-      sortBy        : 'organisation',
-      sortIsDown    : true
+      isSubmitting     : false,
+      orgSelected      : [],
+      catSelected      : [],
+      firstname        : '',
+      lastname         : '',
+      organisation     : '',
+      street           : '',
+      city             : '',
+      zip              : '',
+      phone            : '',
+      email            : '',
+      personalnumber   : '',
+      date             : moment().format('YYYY-MM-DD'),
+      isConfirming     : false,
+      showList         : false,
+      sortBy           : 'organisation',
+      sortIsDown       : true,
+      catFilterSelected: []
     }
     this.initialstate = {
       orgSelected   : [],
@@ -74,7 +75,7 @@ class GroupList extends Component {
     const categories = typeof org[0] === 'undefined' ? catSelected : org[0].categories
     const e = {}
     const properties = ['firstname', 'lastname', 'organisation', 'street', 'city', 'zip', 'phone', 'email', 'personalnumber', 'date']
-    properties.map(p => {
+    properties.forEach(p => {
       const value = typeof org[0] === 'undefined' ? state[p] : org[0][p]
       e.name = p
       e.value = value
@@ -88,7 +89,7 @@ class GroupList extends Component {
   }
 
   handleSetToday = (e) => {
-    if (typeof e !== 'undefined') {e.preventDefault()}
+    if (typeof e !== 'undefined') { e.preventDefault() }
     const now = moment().format('YYYY-MM-DD')
     this.setState({ date: now }, () => this.handleSaveDate())
   }
@@ -113,7 +114,7 @@ class GroupList extends Component {
     const { putItem, postItem } = this.props
     const hasSelected = typeof orgSelected[0] !== 'undefined'
     this.setState({isSubmitting: true})
-    const data = this.getStructuredState()  
+    const data = this.getStructuredState()
     if (hasSelected) {
       data.id = orgSelected[0].id
       if (await putItem('groupcustomers', orgSelected[0].id, data)) { this.setState({orgSelected: [data], catSelected: data.categories}) }
@@ -129,7 +130,7 @@ class GroupList extends Component {
   }
 
   handleClear = (e) => {
-    if (typeof e !== 'undefined') {e.preventDefault()}
+    if (typeof e !== 'undefined') { e.preventDefault() }
     this._Organisation.getInstance().clear()
     this._Category.getInstance().clear()
     this.setState(this.initialstate)
@@ -145,7 +146,7 @@ class GroupList extends Component {
   getEmptyState = () => {
     const structuredState = this.getStructuredState()
     const { firstname, lastname, organisation, street, phone, email } = this.state
-    if ((firstname.length < 2 || lastname.length < 2) && organisation.length < 1 ) { return true }
+    if ((firstname.length < 2 || lastname.length < 2) && organisation.length < 1) { return true }
     if (street.length < 2 && phone.length < 5 && email.length < 5) { return true }
     if (looseObjectCompare(this.initialstate, structuredState)) { return true }
     return false
@@ -198,24 +199,10 @@ class GroupList extends Component {
   }
 
   render () {
-    const { sortIsDown, showList, sortBy, isConfirming, isSubmitting, orgSelected, catSelected, firstname, lastname, organisation, street, city, zip, phone, email, personalnumber, date } = this.state
+    const { sortIsDown, showList, sortBy, isConfirming, isSubmitting, orgSelected, catSelected, firstname, lastname, organisation, street, city, zip, phone, email, personalnumber, date, catFilterSelected } = this.state
     const { groupcustomers, categories } = this.props
 
-    const allactivecategories = categories.filter(category => !category.isdisabled)
-    const activecategoriesandselected = typeof orgSelected[0] !== 'undefined' ? allactivecategories.concat(orgSelected[0].categories) : allactivecategories
-    const activecategories = []
-    if (typeof activecategoriesandselected === 'object') {
-      const map = new Map()
-      for (const item of activecategoriesandselected) {
-        if (!map.has(item.id)) {
-          map.set(item.id, true)
-          activecategories.push({
-            id   : item.id,
-            label: item.label
-          })
-        }
-      }
-    }
+    const activecategories = getActivePlusSelectedCategories(categories, orgSelected[0])
 
     const isEdited = this.getEditState()
     const isEmpty = this.getEmptyState()
@@ -223,15 +210,19 @@ class GroupList extends Component {
 
     const groupcustomersSorted = [...groupcustomers]
     groupcustomersSorted.sort(dynamicSort(sortBy))
-    if (!sortIsDown) {groupcustomersSorted.reverse()}
-    const orgRows = groupcustomersSorted.map(c => {
+    if (!sortIsDown) { groupcustomersSorted.reverse() }
+    const selectedFilterLabels = catFilterSelected.map(cf => { return cf.label })
+    const orgRowsFiltered = groupcustomersSorted.filter(c => {
+      const rowCatLabels = c.categories.map(l => { return l.label })
+      return (catFilterSelected.length < 1) || selectedFilterLabels.some(r => rowCatLabels.includes(r))
+    }).map(c => {
       return <tr key={c.id}><td>{c.organisation}</td>
         <td onClick={() => this.changeOrg([c])}>{`${c.firstname} ${c.lastname}`}</td>
         <td onClick={() => this.changeOrg([c])}>{c.street}</td>
         <td onClick={() => this.changeOrg([c])}>{c.zip}</td>
         <td onClick={() => this.changeOrg([c])}>{c.city}</td>
         <td onClick={() => this.changeOrg([c])}>{c.phone}</td>
-        <td onClick={() => this.changeOrg([c])}>{c.email}</td>  
+        <td onClick={() => this.changeOrg([c])}>{c.email}</td>
         <td onClick={() => this.changeOrg([c])}>{c.date}</td>
         <td><FontAwesomeIcon onClick={() => this.changeOrg([c], () => this.handleSetToday())} className="text-primary" icon={faCalendarCheck} size="sm" /></td>
         <td><FontAwesomeIcon onClick={() => this.changeOrg([c], () => this.deleteConfirm())} className="text-danger" icon={faTrash} size="sm" /></td>
@@ -243,7 +234,7 @@ class GroupList extends Component {
         {isConfirming && typeof orgSelected[0] !== 'undefined' && <ConfirmPopup doAction={this.doDelete} message={`Vill du verkligen ta bort:\n${orgSelected[0].organisation}\n${orgSelected[0].firstname} ${orgSelected[0].lastname}`} />}
         <form>
           <fieldset disabled={isSubmitting}>
-            <div className="container text-left" style={{maxWidth: '650px'}}>
+            <div className="container text-left" style={{maxWidth: '850px'}}>
               <h3 className="my-3 w-50 mx-auto text-center">Gruppkunder</h3>
               <div className="container-fluid" style={{width: '85%'}}>
                 <div className="row m-0 p-0">
@@ -328,7 +319,7 @@ class GroupList extends Component {
                 </div>
                 <div className="row m-0 p-0">
                   <div className="text-center col-12 px-1 py-0 m-0">
-                    <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="personalnumber">Orgnr/Personnr:</label>
+                    <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="personalnumber">Orgnr/Personnr (xxxxxx-xxxx):</label>
                     <input placeholder="XXXXXX-XXXX" pattern="^[0-9]{6}[-+]{1}[0-9]{4}$" maxLength="11" type="text" name="personalnumber" value={personalnumber} onChange={e => this.handleChange(e.target)} className="rounded w-100 d-inline-block m-0" />
                   </div>
                 </div>
@@ -357,7 +348,7 @@ class GroupList extends Component {
                 </div>
                 <div className="row m-0 p-0">
                   <div className="text-left col-6 px-1 py-0 m-0">
-                    <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="personalnumber">Senaste kontakt:</label>
+                    <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="personalnumber">Senaste kontakt (åååå-mm-dd):</label>
                     <input placeholder="ÅÅÅÅ-MM-DD" type="date" name="date" value={date} onChange={e => this.handleChange(e.target)} className="rounded d-inline-block m-0 w-100" />
                   </div>
                   <div className="text-left col-2 px-1 py-0 m-0">
@@ -378,12 +369,12 @@ class GroupList extends Component {
                         <br />Ändringana har inte sparats!
                       </div>
                       : null }
-                    {!hasSelected ?
-                      <div className="bg-success text-light rounded p-1 my-1">
+                    {!hasSelected
+                      ? <div className="bg-success text-light rounded p-1 my-1">
                     Skapar ny gruppkund
                         { !hasSelected && isEmpty ? <span><br />Det behövs mer information innan det går att spara.</span> : null}
                       </div> : null}
-                    
+
                   </div>
                 </div>
                 <div className="row my-1 mx-0 p-0">
@@ -392,10 +383,10 @@ class GroupList extends Component {
                       ? <button onClick={e => this.handleClear(e)} disabled={isSubmitting} type="button" title="Rensa formuläret" className="btn btn-warning custom-scale">
                         {isSubmitting ? <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faSpinner} size="lg" />&nbsp;Rensa</span> : <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faEraser} size="lg" />&nbsp;Rensa</span>}
                       </button>
-                      : null }              
+                      : null }
                   </div>
-                  <div className="text-right col-6 px-1 py-0 m-0"  style={{height: '50px'}}>
-                    {(hasSelected && isEdited) || (!hasSelected && !isEmpty) 
+                  <div className="text-right col-6 px-1 py-0 m-0" style={{height: '50px'}}>
+                    {(hasSelected && isEdited) || (!hasSelected && !isEmpty)
                       ? <button onClick={e => this.handleSave(e)} disabled={isSubmitting} type="button" title="Spara gruppkund" className="btn btn-lg btn-primary custom-scale">
                         {isSubmitting ? <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faSpinner} size="lg" />&nbsp;Spara</span> : <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faSave} size="lg" />&nbsp;Spara</span>}
                       </button> : null }
@@ -414,8 +405,27 @@ class GroupList extends Component {
           <p>Det finns {groupcustomers.length} gruppkunder i systemet.</p>
           <button className="btn btn-primary m-2 mr-3" onClick={e => { e.preventDefault(); this.setState({showList: !showList}) }}>       {showList ? 'Dölj' : 'Visa'} lista</button>
         </div>
-        <div className="mt-3 mx-2 w-100 text-center GruppKundLista">
-          {showList ?  <table className="mx-auto table table-sm table-hover" style={{width: '85%'}}>
+        <div className="mt-3 mx-auto w-100 text-center GruppKundLista text-center">
+          {showList ? <div className="w-75 mx-auto my-5 text-center" style={{maxWidth: '850px'}}><h5>Filtrera på kategorier</h5>
+            <Typeahead className="rounded w-100 d-inline-block m-0"
+              id="groupFilterCategories"
+              name="groupFilterCategories"
+              minLength={0}
+              maxResults={30}
+              flip
+              multiple
+              emptyLabel=""
+              onChange={(catFilterSelected) => { this.setState({ catFilterSelected: catFilterSelected }) }}
+              labelKey="label"
+              filterBy={['label']}
+              options={activecategories}
+              selected={catFilterSelected}
+              placeholder="Kategorier"
+              // eslint-disable-next-line no-return-assign
+              ref={(ref) => this._FilterCategory = ref}
+            />
+          </div> : null}
+          {showList ? <table className="mx-auto table table-sm table-hover" style={{width: '85%'}}>
             <thead>
               <tr>
                 <th className="nowrap" scope="col" onClick={() => this.sortBy('organisation')}>Organisation {sortBy === 'organisation' ? <FontAwesomeIcon icon={sortIsDown ? faSortDown : faSortUp} size="sm" /> : null}</th>
@@ -431,11 +441,11 @@ class GroupList extends Component {
               </tr>
             </thead>
             <tbody>
-              {orgRows}
+              {orgRowsFiltered}
             </tbody>
           </table> : null}
         </div>
-       
+
       </div>
     )
   }

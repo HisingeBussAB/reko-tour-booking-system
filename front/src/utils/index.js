@@ -55,12 +55,30 @@ export function dynamicSort (property) {
     sortOrder = -1
     property = property.substr(1)
   }
-  return function (a,b) {
-    /* next line works with strings and numbers, 
+  return function (a, b) {
+    /* next line works with strings and numbers,
        * and you may want to customize it to your needs
        */
-    
     const result = a[property].toString().toLowerCase() < b[property].toString().toLowerCase() ? -1 : a[property].toString().toLowerCase() > b[property].toString().toLowerCase() ? 1 : 0
     return result * sortOrder
   }
+}
+
+export function getActivePlusSelectedCategories (categories, selectedItemThatHasCategories) {
+  const allactivecategories = categories.filter(category => !category.isdisabled)
+  const activecategoriesandselected = typeof selectedItemThatHasCategories !== 'undefined' ? allactivecategories.concat(selectedItemThatHasCategories.categories) : allactivecategories
+  const activecategories = []
+  if (typeof activecategoriesandselected === 'object') {
+    const map = new Map()
+    for (const item of activecategoriesandselected) {
+      if (!map.has(item.id)) {
+        map.set(item.id, true)
+        activecategories.push({
+          id   : item.id,
+          label: item.label
+        })
+      }
+    }
+  }
+  return activecategories
 }

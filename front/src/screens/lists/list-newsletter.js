@@ -16,7 +16,7 @@ class NewsletterList extends Component {
       validEmailEntry: true,
       existEmailEntry: true,
       showList       : false,
-      showSepList    : false,    
+      showSepList    : false,
       wasDeleted     : false,
       wasSaved       : false
     }
@@ -85,7 +85,7 @@ class NewsletterList extends Component {
 
         <form>
           <fieldset disabled={isSubmitting}>
-            <div className="container text-left" style={{maxWidth: '650px'}}>
+            <div className="container text-left" style={{maxWidth: '850px'}}>
               <h3 className="my-4 w-50 mx-auto text-center">Nyhetsbrev</h3>
               <h6 className="m-3 p-2 text-center">Sök efter eller lägg till e-post i nyhetsbrevslistan</h6>
               <div>
@@ -129,7 +129,7 @@ class NewsletterList extends Component {
               </div>
               <div className="mt-3 EpostLista2">
                 {showSepList ? <p>
-                    {EmailSepList}
+                  {EmailSepList}
                 </p> : null}
               </div>
             </div>
