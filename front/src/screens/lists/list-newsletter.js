@@ -16,6 +16,7 @@ class NewsletterList extends Component {
       validEmailEntry: true,
       existEmailEntry: true,
       showList       : false,
+      showSepList    : false,
       wasDeleted     : false,
       wasSaved       : false
     }
@@ -75,16 +76,16 @@ class NewsletterList extends Component {
 
   render () {
     const {newsletter} = this.props
-    const {isSubmitting, emailSelected, validEmailEntry, showList, wasDeleted, existEmailEntry, wasSaved} = this.state
+    const {isSubmitting, emailSelected, validEmailEntry, showList, wasDeleted, existEmailEntry, wasSaved, showSepList} = this.state
 
     const EmailList = newsletter.map(nl => { return <tr key={nl.id}><td>{nl.email}</td></tr> })
-
+    const EmailSepList = newsletter.map(nl => { return nl.email + '; ' })
     return (
       <div className="ListView NewsletterList">
 
         <form>
           <fieldset disabled={isSubmitting}>
-            <div className="container text-left" style={{maxWidth: '650px'}}>
+            <div className="container text-left" style={{maxWidth: '850px'}}>
               <h3 className="my-4 w-50 mx-auto text-center">Nyhetsbrev</h3>
               <h6 className="m-3 p-2 text-center">Sök efter eller lägg till e-post i nyhetsbrevslistan</h6>
               <div>
@@ -116,14 +117,20 @@ class NewsletterList extends Component {
               </div>
               <div className="mt-5 text-center">
                 <p>Det finns {newsletter.length} adresser i systemet.</p>
-                <button className="btn btn-primary btn-sm" onClick={e => { e.preventDefault(); this.setState({showList: !showList}) }}>{showList ? 'Dölj' : 'Visa'} lista</button>
+                <button className="btn btn-primary btn-sm m-2 mr-3" onClick={e => { e.preventDefault(); this.setState({showList: !showList}) }}>       {showList ? 'Dölj' : 'Visa'} lista</button>
+                <button className="btn btn-primary btn-sm m-2 ml-3" onClick={e => { e.preventDefault(); this.setState({showSepList: !showSepList}) }}>{showSepList ? 'Dölj' : 'Visa'} separerad lista</button>
               </div>
-              <div className="mt-3 EpostLista">
+              <div className="mt-3 EpostLista1">
                 {showList ? <table>
                   <tbody>
                     {EmailList}
                   </tbody>
                 </table> : null}
+              </div>
+              <div className="mt-3 EpostLista2">
+                {showSepList ? <p>
+                  {EmailSepList}
+                </p> : null}
               </div>
             </div>
           </fieldset>

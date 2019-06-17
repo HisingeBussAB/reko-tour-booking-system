@@ -25,7 +25,7 @@ class Categories extends Model {
       }
       if (count($result) < 1 && $params['id'] != -1) {
         $this->response->AddResponse('error', 'Kategorin hittades inte.');
-        $this->response->Exit(404);
+        return false;
       } else {
         $i = 0;
         foreach ($result as $item) {
@@ -126,7 +126,7 @@ class Categories extends Model {
     $passed = true;
     $result = array();
     if (isset($params['label'])) {
-      $result['label'] = Functions::sanatizeStringUnsafe($params['label']);
+      $result['label'] = Functions::sanatizeStringUnsafe($params['label'], 60);
     } else {
       $result['label'] = '';
     }

@@ -28,9 +28,15 @@ const initialState = {
   },
   lists: {
     groupcustomers: [],
-    newsletter:     []
+    newsletter    : []
   },
-  networkOperations: []
+  pendingfromweb: {
+    count     : {},
+    bookings  : [],
+    leads     : [],
+    newsletter: []
+  },
+  networkOperations: [],
 }
 
 const enhancers = []

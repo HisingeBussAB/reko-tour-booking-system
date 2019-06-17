@@ -37,6 +37,17 @@ body {
       border-color: $danger-color;
       color: $danger-color;
     }
+    &:disabled {
+      background-color: $danger-color; 
+      border-color: $danger-color; 
+      color: white;
+      opacity: 95%;
+      &:hover {
+        background-color: $danger-color; 
+        border-color: $danger-color; 
+        color: white;
+      }
+    }
 }
 
 .btn-success {
@@ -50,6 +61,11 @@ body {
     }
 }
 
+.badge-primary {
+  background-color: $primary-color; 
+  color: white;
+  padding: 6px;
+}
 
 .btn-primary {
   background-color: $primary-color; 
@@ -59,6 +75,17 @@ body {
       background-color: #fff;
       border-color: $primary-color;
       color: $primary-color;
+    }
+    &:disabled {
+      background-color: $primary-color; 
+      border-color: $primary-color; 
+      color: white;
+      opacity: 95%;
+      &:hover {
+        background-color: $primary-color; 
+        border-color: $primary-color; 
+        color: white;
+      }
     }
 }
 
@@ -152,7 +179,9 @@ select {
   }
 }
 
-
+.nowrap {
+  white-space:nowrap;
+}
 
 .MainMenu {
   border-bottom: 1px solid $secondary-color;
@@ -234,18 +263,18 @@ select {
 
 }
 
-
+.custom-border-right {
+  border-right: 1px solid $secondary-color;
+}
+.custom-border-top {
+  border-top: 1px solid $secondary-color;
+}
 
 .MainView {
   border-bottom: 1px solid $secondary-color;
-  div {
+  > div {
   min-height: 500px;
   }
-  .custom-border-right {
-    border-right: 1px solid $secondary-color;
-  }
-
-
 }
 
 .Loader {
@@ -263,6 +292,13 @@ select {
 
 .rbt-input-main {
   border: 1px solid #0856fb !important;
+}
+
+.rbt-input-multi {
+  border: 1px solid #0856fb !important;
+  .rbt-input-main {
+    border: 0 !important;
+  }
 }
 
 @keyframes dots {

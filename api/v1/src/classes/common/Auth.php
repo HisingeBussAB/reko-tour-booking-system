@@ -6,6 +6,7 @@
 namespace RekoBooking\classes\common;
 
 use \Firebase\JWT\JWT;
+use RekoBooking\classes\common\Maintenance;
 
 final class Auth {
 
@@ -52,6 +53,14 @@ final class Auth {
       $accessExp = $now + 3700; //+1 hour
       $refreshExp = $now + 2592000;//+30 days
       
+      //Generate JWT secret for login
+      $session = self::getSession();
+      if (!Maintenance::insertNewSecret($response, $pdo, md5($_SERVER['HTTP_USER_AGENT']))) {
+        $response->AddResponse('response', 'Kunde inte skapa ny JWT nyckel, kritiskt databasfel!');
+        $response->AddResponse('error', 'Kunde inte skapa ny JWT nyckel, kritiskt databasfel!');
+      };
+
+
       $accessToken = '';
       $refreshToken = '';
       //Generate Access Token
@@ -80,28 +89,21 @@ final class Auth {
     
   }
 
-  public static function refresh(Responder $response, \PDO $pdo) {
-    if (!empty($_SERVER['HTTP_AUTHORIZATION']) && preg_match('/Bearer\s(.*\..*\..*)/', $_SERVER['HTTP_AUTHORIZATION'], $matches)) {
-      $refreshJWT = $matches[1];
-    } else {
-      $response->AddResponse('error', 'Felformaterad authorization header.');
-      return false;
-    }
-
+  private static function getUser(Responder $response, \PDO $pdo) {
+    $session = self::getSession();
     $unvalidatedData = json_decode(trim(file_get_contents('php://input')), true);
-
     if (empty($unvalidatedData['user'])) {
-      $response->AddResponse('error', 'Användarnamn måste anges (i JSON body user:) för att göra en refresh begäran.');
+      $response->AddResponse('error', 'Användarnamn måste anges (i JSON body user:) för att göra denna begäran.');
       return false;
     }
-    
     $user = trim(filter_var($unvalidatedData['user'], FILTER_SANITIZE_STRING));
       
-    // Get the users refresh JWT secret.
+    // Get the users refresh JWT secret. Also verifies the user is logged in with a matching session.
     try {
-      $sql = "SELECT token FROM Tokens WHERE username = :user AND tokentype = 'refreshsecret' ORDER BY created DESC LIMIT 1;";
+      $sql = "SELECT token FROM Tokens WHERE username = :user AND tokentype = 'refreshsecret' AND session = :session ORDER BY created DESC LIMIT 1;";
       $sth = $pdo->prepare($sql);
       $sth->bindParam(':user', $user, \PDO::PARAM_STR);
+      $sth->bindParam(':session', $session, \PDO::PARAM_STR);
       $sth->execute(); 
       $result = $sth->fetch(\PDO::FETCH_ASSOC);
     } catch(\PDOException $e) {
@@ -113,7 +115,35 @@ final class Auth {
       $response->AddResponse('error', 'Det finns ingen nyckel på servern som motsvarar denna förfrågan.');
       return false;
     }
+    return $user;
+  }
 
+  public static function refresh(Responder $response, \PDO $pdo) {
+    $session = self::getSession();
+    if (!empty($_SERVER['HTTP_AUTHORIZATION']) && preg_match('/Bearer\s(.*\..*\..*)/', $_SERVER['HTTP_AUTHORIZATION'], $matches)) {
+      $refreshJWT = $matches[1];
+    } else {
+      $response->AddResponse('error', 'Felformaterad authorization header.');
+      return false;
+    }
+   
+    $user = self::getUser($response, $pdo);
+    try {
+      $sql = "SELECT token FROM Tokens WHERE username = :user AND tokentype = 'refreshsecret' AND session = :session ORDER BY created DESC LIMIT 1;";
+      $sth = $pdo->prepare($sql);
+      $sth->bindParam(':user', $user, \PDO::PARAM_STR);
+      $sth->bindParam(':session', $session, \PDO::PARAM_STR);
+      $sth->execute(); 
+      $result = $sth->fetch(\PDO::FETCH_ASSOC);
+    } catch(\PDOException $e) {
+      $response->DBError($e, __CLASS__, $sql);
+      $response->Exit(500);
+    }
+
+    if (!$result) {
+      $response->AddResponse('error', 'Det finns ingen nyckel på servern som motsvarar denna förfrågan.');
+      return false;
+    }
     $secret = $result['token'];
     $decoded = self::validateJWT($refreshJWT, $secret);
 
@@ -177,20 +207,49 @@ final class Auth {
   }
 
   public static function revoke(Responder $response, \PDO $pdo) {
-    // Just use the refresh method but dont send the new tokens for now
-    if (self::refresh($response, $pdo)) {
+    // Logout session
+    $session = self::getSession();
+    $user = self::getUser($response, $pdo);
+    self::refresh($response, $pdo);
+    try {
+      $sql = "DELETE FROM Tokens WHERE username = :user AND session = :session;";
+      $sth = $pdo->prepare($sql);
+      $sth->bindParam(':user', $user, \PDO::PARAM_STR);
+      $sth->bindParam(':session', $session, \PDO::PARAM_STR);
+      $sth->execute(); 
+    } catch(\PDOException $e) {
+      $response->DBError($e, __CLASS__, $sql);
+      $response->Exit(500);
+    }
       $response->AddResponse('login', false);
       $response->AddResponse('login', true);
       $response->AddResponse('response', 'Du är utloggad');
       $response->AddResponse('access', '');
       $response->AddResponse('refresh', '');
       $response->AddResponse('servertime', time());
-      return true;
-    } else {
-      $response->AddResponse('error', 'Kunde inte utföra utloggning. Sannolikt är du inte inloggad');
-      return false;
+      return true;   
+  }
+
+  public static function revokeall(Responder $response, \PDO $pdo) {
+    // Logout all users sessions
+    $user = self::getUser($response, $pdo);
+    self::refresh($response, $pdo);
+    try {
+      $sql = "DELETE FROM Tokens WHERE username = :user;";
+      $sth = $pdo->prepare($sql);
+      $sth->bindParam(':user', $user, \PDO::PARAM_STR);
+      $sth->execute(); 
+    } catch(\PDOException $e) {
+      $response->DBError($e, __CLASS__, $sql);
+      $response->Exit(500);
     }
-    
+      $response->AddResponse('login', false);
+      $response->AddResponse('login', true);
+      $response->AddResponse('response', 'Du är utloggad från alla sessioner.');
+      $response->AddResponse('access', '');
+      $response->AddResponse('refresh', '');
+      $response->AddResponse('servertime', time());
+      return true;   
   }
 
   private static function HammerGuard(Responder $response, \PDO $pdo, bool $reset) {
@@ -254,9 +313,11 @@ final class Auth {
   }
 
   public static function getSecrets(Responder $response, \PDO $pdo) {
+    $session = md5($_SERVER['HTTP_USER_AGENT']);
     try {
-      $sql = "SELECT token FROM Tokens WHERE tokentype = 'jwtsecret' ORDER BY created DESC;";
+      $sql = "SELECT token FROM Tokens WHERE tokentype = 'jwtsecret' AND session = :session ORDER BY created DESC;";
       $sth = $pdo->prepare($sql);
+      $sth->bindParam(':session', $session, \PDO::PARAM_STR);
       $sth->execute(); 
       $result = $sth->fetchAll(\PDO::FETCH_ASSOC);
     } catch(\PDOException $e) {
@@ -264,14 +325,14 @@ final class Auth {
       $response->Exit(500);
     }
     if (count($result) < 1) {
-      $response->AddResponse('error', 'Databasen är korruperad, det hittades ingen nyckel att kyptera din token med.');
+      $response->AddResponse('error', 'Det hittades ingen nyckel att (av)kyptera din token med. Prova logga in på nytt.');
       $response->Exit(500);
     }
     return $result;
   } 
 
 private static function generateJWT(string $type, Responder $response, \PDO $pdo, int $userid, string $user, int $exp, int $now) {
-
+  $session = self::getSession();
   $token = array(
     "iss"   => ENV_DOMAIN,
     "aud"   => ENV_DOMAIN,
@@ -306,11 +367,12 @@ private static function generateJWT(string $type, Responder $response, \PDO $pdo
       $response->Exit(500);
     }
 
-    //Clear user's saved refresh secrets
+    //Clear user's saved refresh secrets for session
     try {
-      $sql = "DELETE FROM Tokens WHERE tokentype = 'refreshsecret' AND username = :user;";
+      $sql = "DELETE FROM Tokens WHERE tokentype = 'refreshsecret' AND username = :user AND session = :session;";
       $sth = $pdo->prepare($sql);
       $sth->bindParam(':user', $user, \PDO::PARAM_STR);
+      $sth->bindParam(':session', $session, \PDO::PARAM_STR);
       $sth->execute(); 
     } catch(\PDOException $e) {
       $response->DBError($e, __CLASS__, $sql);
@@ -318,11 +380,12 @@ private static function generateJWT(string $type, Responder $response, \PDO $pdo
     }
     //Save refresh secret
     try {
-      $sql = "INSERT INTO Tokens (Token, TokenType, Created, username) VALUES (:token, 'refreshsecret', :created, :user);";
+      $sql = "INSERT INTO Tokens (Token, TokenType, Created, username, session) VALUES (:token, 'refreshsecret', :created, :user, :session);";
       $sth = $pdo->prepare($sql);
       $sth->bindParam(':token', $refreshSecret, \PDO::PARAM_STR);
       $sth->bindParam(':created', $now, \PDO::PARAM_INT);
       $sth->bindParam(':user', $user, \PDO::PARAM_STR);
+      $sth->bindParam(':session', $session, \PDO::PARAM_STR);
       $sth->execute(); 
     } catch(\PDOException $e) {
       $response->DBError($e, __CLASS__, $sql);
@@ -371,6 +434,13 @@ private static function generateJWT(string $type, Responder $response, \PDO $pdo
     $returnArray['jwt'] = $decodedJWT;
     return $returnArray;
 
+  }
+
+  private static function getSession() {
+    $cf = empty($_SERVER['HTTP_CF_CONNECTING_IP']) ? 'NOT-CF' : $_SERVER['HTTP_CF_CONNECTING_IP'];
+    $addr = empty(ENV_REMOTE_ADDR) ? $_SERVER['REMOTE_ADDR'] : ENV_REMOTE_ADDR;
+    $clientlang = empty($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? 'NO' : $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+    return hash('sha256', $cf . $addr . $_SERVER['HTTP_USER_AGENT'] . $clientlang . $_SERVER['SERVER_NAME']);
   }
 
 }

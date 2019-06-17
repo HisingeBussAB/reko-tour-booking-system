@@ -73,7 +73,7 @@ class Categories extends Component {
 
         <form>
           <fieldset disabled={isSubmitting}>
-            <div className="container text-left" style={{maxWidth: '650px'}}>
+            <div className="container text-left" style={{maxWidth: '850px'}}>
               <h3 className="my-4 w-50 mx-auto text-center">Resekategorier</h3>
               <table className="table table-hover w-100">
                 <thead>

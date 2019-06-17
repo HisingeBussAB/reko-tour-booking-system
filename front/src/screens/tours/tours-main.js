@@ -41,18 +41,16 @@ class TourViewMain extends Component {
 
     let temp
     try {
-      temp = tours.slice(0, tourRowLimit).map((tour) => {
-        if (!(tour.isdisabled && showOnlyActive)) {
-          return <TourRow key={'tour' + tour.id}
-            id={tour.id}
-            label={tour.label}
-            isDisabled={tour.isdisabled}
-            departuredate={tour.departuredate}
-            submitToggle={this.submitToggle}
-            insuranceprice={tour.insuranceprice}
-            reservationfeeprice={tour.reservationfeeprice}
-          />
-        }
+      temp = tours.slice(0, tourRowLimit).filter(tour => { return !(tour.isdisabled && showOnlyActive) }).map((tour) => {
+        return <TourRow key={'tour' + tour.id}
+          id={tour.id}
+          label={tour.label}
+          isDisabled={tour.isdisabled}
+          departuredate={tour.departuredate}
+          submitToggle={this.submitToggle}
+          insuranceprice={tour.insuranceprice}
+          reservationfeeprice={tour.reservationfeeprice}
+        />
       })
     } catch (e) {
       temp = null

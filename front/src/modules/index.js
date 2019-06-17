@@ -4,11 +4,13 @@ import errorPopup from '../reducers/error-popup'
 import tours from '../reducers/tours'
 import lists from '../reducers/lists'
 import networkOperations from '../reducers/network-icon'
+import pendingfromweb from '../reducers/pendingfromweb'
 
 export default combineReducers({
   login,
   errorPopup,
   networkOperations,
   tours,
-  lists
+  lists,
+  pendingfromweb
 })

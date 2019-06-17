@@ -37,6 +37,19 @@ body {
   color: #dc3545;
 }
 
+.btn-danger:disabled {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+  opacity: 95%;
+}
+
+.btn-danger:disabled:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
 .btn-success {
   background-color: #28a745;
   border-color: #28a745;
@@ -49,6 +62,12 @@ body {
   color: #28a745;
 }
 
+.badge-primary {
+  background-color: #0856fb;
+  color: white;
+  padding: 6px;
+}
+
 .btn-primary {
   background-color: #0856fb;
   border-color: #0856fb;
@@ -59,6 +78,19 @@ body {
   background-color: #fff;
   border-color: #0856fb;
   color: #0856fb;
+}
+
+.btn-primary:disabled {
+  background-color: #0856fb;
+  border-color: #0856fb;
+  color: white;
+  opacity: 95%;
+}
+
+.btn-primary:disabled:hover {
+  background-color: #0856fb;
+  border-color: #0856fb;
+  color: white;
 }
 
 .btn-outline-primary {
@@ -145,6 +177,10 @@ select:invalid {
   color: white !important;
 }
 
+.nowrap {
+  white-space: nowrap;
+}
+
 .MainMenu {
   border-bottom: 1px solid #6e6e6e;
 }
@@ -224,16 +260,20 @@ select:invalid {
   min-width: 175px;
 }
 
+.custom-border-right {
+  border-right: 1px solid #6e6e6e;
+}
+
+.custom-border-top {
+  border-top: 1px solid #6e6e6e;
+}
+
 .MainView {
   border-bottom: 1px solid #6e6e6e;
 }
 
-.MainView div {
+.MainView > div {
   min-height: 500px;
-}
-
-.MainView .custom-border-right {
-  border-right: 1px solid #6e6e6e;
 }
 
 .Loader {
@@ -251,6 +291,14 @@ select:invalid {
 
 .rbt-input-main {
   border: 1px solid #0856fb !important;
+}
+
+.rbt-input-multi {
+  border: 1px solid #0856fb !important;
+}
+
+.rbt-input-multi .rbt-input-main {
+  border: 0 !important;
 }
 
 @keyframes dots {

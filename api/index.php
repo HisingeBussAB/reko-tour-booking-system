@@ -13,3 +13,4 @@ $response = array('status' => 'OK!', 'message' => 'Använd en versionsspecifik U
 echo json_encode($response);
 
 
+

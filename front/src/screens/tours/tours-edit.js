@@ -4,9 +4,10 @@ import { bindActionCreators } from 'redux'
 import {faPlus, faSave, faMinus} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
-import {postItem, getItem} from '../../actions'
+import {getItem, putItem, postItem, deleteItem} from '../../actions'
+import { Typeahead, Menu, MenuItem } from 'react-bootstrap-typeahead'
 import update from 'immutability-helper'
-import { findByKey } from '../../utils'
+import { findByKey, getActivePlusSelectedCategories } from '../../utils'
 
 class NewTour extends Component {
   constructor (props) {
@@ -107,23 +108,10 @@ class NewTour extends Component {
   }
 
   render () {
-    const {tourName, tourCategory, tourDate, tourRoomOpt, tourInsurance, tourReservation, isSubmitting = false} = this.state
-    const {categories = []} = this.props
+    const {isSubmitting, catSelected, tourName, tourInsurance, tourCategory, tourDate, tourReservation, tourRoomOpt} = this.state
+    const {categories, tours} = this.props
 
-    let temp
-    try {
-      temp = categories.map((category) => {
-        if (category.active) {
-          return <option key={category.id} value={category.id} style={{color: 'black'}}>{category.category}</option>
-        } else {
-          return null
-        }
-      })
-    } catch (e) {
-      temp = null
-    }
-    const categoryOptions = temp
-    temp = undefined
+    const activecategories = getActivePlusSelectedCategories(categories, tours[0])
 
     const roomRows = tourRoomOpt.map((item, i) => {
       return (<tr key={i}>
@@ -138,64 +126,84 @@ class NewTour extends Component {
       <div className="TourView NewTour">
         <form>
           <fieldset disabled={isSubmitting}>
-            <div className="container text-left" style={{maxWidth: '650px'}}>
-              <h3 className="my-4 w-50 mx-auto text-center">{tourName !== '' ? 'Ändra ' + tourName : 'Skapa ny resa'}</h3>
-              <fieldset>
-                <div>
-                  <label htmlFor="tourName" className="d-block small mt-1 mb-0">Resans namn</label>
-                  <input id="tourName" name="tourName" value={tourName} onChange={e => this.handleChange(e.target)} className="rounded w-100" placeholder="Resans namn" maxLength="99" type="text" required />
-                </div>
-                <div>
-                  <label htmlFor="tourCategory" className="d-block small mt-1 mb-0">Huvudkategori</label>
-                  <select id="tourCategory" name="tourCategory" onChange={e => this.handleChange(e.target)} className="rounded w-100" value={tourCategory} required>
-                    <option disabled hidden value="">-Välj-</option>
-                    {categoryOptions}
-                  </select>
-                </div>
-                <div className="w-50 d-inline">
-                  <label htmlFor="tourDate" className="d-block small mt-1 mb-0">Avresedatum (åååå-mm-dd)</label>
-                  <input id="tourDate" name="tourDate" value={tourDate} onChange={e => this.handleChange(e.target)} className="rounded" type="date" style={{width: '166px'}} min="2000-01-01" max="3000-01-01" placeholder="0" required />
-                </div>
-                <div className="w-25 d-inline">
-                  <label htmlFor="tourReservation" className="d-block small mt-1 mb-0">Anmälningsavgift</label>
-                  <input id="tourReservation" name="tourReservation" value={tourReservation} onChange={e => this.handleChange(e.target)} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
-                </div>
-                <div className="w-25 d-inline">
-                  <label htmlFor="tourInsurance" className="d-block small mt-1 mb-0">Avbeställningskydd</label>
-                  <input id="tourInsurance" name="tourInsurance" value={tourInsurance} onChange={e => this.handleChange(e.target)} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
-                </div>
-              </fieldset>
-              <fieldset>
-                <table className="table table-borderless table-sm table-hover w-100 mx-auto mt-3">
-                  <thead>
-                    <tr>
-                      <th span="col" className="p-2 text-center w-75 font-weight-normal">Boende</th>
-                      <th span="col" className="p-2 text-center font-weight-normal small">Pers/rum</th>
-                      <th span="col" className="p-2 text-center font-weight-normal small">Pris/pers</th>
-                      <th span="col" className="p-2 text-center font-weight-normal small">Antal bokade</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {roomRows}
-                    <tr>
-                      <td className="p-2 align-middle" colSpan="2">
-                        <button onClick={this.addRow} disabled={isSubmitting} type="button" title="Lägg till flera boendealternativ" className="btn btn-primary custom-scale">
-                          <span className="mt-1"><FontAwesomeIcon icon={faPlus} size="lg" /></span>
-                        </button>
-                        {tourRoomOpt.length > 1 &&
-                        <button onClick={this.removeRow} disabled={isSubmitting} type="button" title="Ta bort sista raden boendealternativ" className="btn btn-danger custom-scale ml-3">
-                          <span className="mt-1"><FontAwesomeIcon icon={faMinus} size="lg" /></span>
-                        </button>}
-                      </td>
-                      <td className="p-2 text-right align-middle" colSpan="2">
-                        <button onClick={this.handleSave} disabled={isSubmitting} type="button" title="Spara resan" className="btn btn-primary custom-scale">
-                          <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faSave} size="lg" />&nbsp;Spara</span>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </fieldset>
+            <div className="container text-left" style={{maxWidth: '850px'}}>
+              <h3 className="my-3 w-50 mx-auto text-center">{tourName !== '' ? 'Ändra ' + tourName : 'Skapa ny resa'}</h3>
+              <div className="container-fluid" style={{width: '85%'}}>
+                <fieldset>
+                  <div className="row m-0 p-0">
+                    <div className="text-center col-12 px-1 py-0 m-0">
+                      <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="tourName">Resans namn</label>
+                      <input id="tourName" name="tourName" value={tourName} onChange={e => this.handleChange(e.target)} className="rounded w-100 d-inline-block m-0" placeholder="Resans namn" maxLength="99" type="text" required />
+                    </div>
+                  </div>
+                  <div className="row m-0 p-0">
+                    <div className="text-center col-12 px-1 py-0 m-0">
+                      <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="groupCategories">Resekategorier:</label>
+                      <Typeahead className="rounded w-100 d-inline-block m-0"
+                        id="groupCategories"
+                        name="groupCategories"
+                        minLength={0}
+                        maxResults={30}
+                        flip
+                        multiple
+                        emptyLabel=""
+                        disabled={isSubmitting}
+                        onChange={(catSelected) => { this.setState({ catSelected: catSelected }) }}
+                        labelKey="label"
+                        filterBy={['label']}
+                        options={activecategories}
+                        selected={catSelected}
+                        placeholder="Kategorier"
+                        // eslint-disable-next-line no-return-assign
+                        ref={(ref) => this._Category = ref}
+                      />
+                    </div>
+                  </div>
+                  <div className="w-50 d-inline">
+                    <label htmlFor="tourDate" className="d-block small mt-1 mb-0">Avresedatum (åååå-mm-dd)</label>
+                    <input id="tourDate" name="tourDate" value={tourDate} onChange={e => this.handleChange(e.target)} className="rounded" type="date" style={{width: '166px'}} min="2000-01-01" max="3000-01-01" placeholder="0" required />
+                  </div>
+                  <div className="w-25 d-inline">
+                    <label htmlFor="tourReservation" className="d-block small mt-1 mb-0">Anmälningsavgift</label>
+                    <input id="tourReservation" name="tourReservation" value={tourReservation} onChange={e => this.handleChange(e.target)} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
+                  </div>
+                  <div className="w-25 d-inline">
+                    <label htmlFor="tourInsurance" className="d-block small mt-1 mb-0">Avbeställningskydd</label>
+                    <input id="tourInsurance" name="tourInsurance" value={tourInsurance} onChange={e => this.handleChange(e.target)} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
+                  </div>
+                </fieldset>
+                <fieldset>
+                  <table className="table table-borderless table-sm table-hover w-100 mx-auto mt-3">
+                    <thead>
+                      <tr>
+                        <th span="col" className="p-2 text-center w-75 font-weight-normal">Boende</th>
+                        <th span="col" className="p-2 text-center font-weight-normal small">Pers/rum</th>
+                        <th span="col" className="p-2 text-center font-weight-normal small">Pris/pers</th>
+                        <th span="col" className="p-2 text-center font-weight-normal small">Antal bokade</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {roomRows}
+                      <tr>
+                        <td className="p-2 align-middle" colSpan="2">
+                          <button onClick={this.addRow} disabled={isSubmitting} type="button" title="Lägg till flera boendealternativ" className="btn btn-primary custom-scale">
+                            <span className="mt-1"><FontAwesomeIcon icon={faPlus} size="lg" /></span>
+                          </button>
+                          {tourRoomOpt.length > 1 &&
+                          <button onClick={this.removeRow} disabled={isSubmitting} type="button" title="Ta bort sista raden boendealternativ" className="btn btn-danger custom-scale ml-3">
+                            <span className="mt-1"><FontAwesomeIcon icon={faMinus} size="lg" /></span>
+                          </button>}
+                        </td>
+                        <td className="p-2 text-right align-middle" colSpan="2">
+                          <button onClick={this.handleSave} disabled={isSubmitting} type="button" title="Spara resan" className="btn btn-primary custom-scale">
+                            <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faSave} size="lg" />&nbsp;Spara</span>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </fieldset>
+              </div>
             </div>
           </fieldset>
         </form>
