@@ -74,7 +74,7 @@ final class Functions {
   public static function validateInt($int, int $min = PHP_INT_MIN, int $max = PHP_INT_MAX) {
     if ((gettype($int) != "integer" && gettype($int) != "string") || $int === true) { return NULL; }
     $new = filter_var(trim($int), FILTER_VALIDATE_INT, array("options" => array("min_range"=>$min, "max_range"=>$max)));
-    if (empty($new)) {return NULL;}
+    if (empty($new) && $new != 0) {return NULL;}
     return (int)$new;
   }
 

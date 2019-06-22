@@ -66,7 +66,8 @@ export function dynamicSort (property) {
 
 export function getActivePlusSelectedCategories (categories, selectedItemThatHasCategories) {
   const allactivecategories = categories.filter(category => !category.isdisabled)
-  const activecategoriesandselected = typeof selectedItemThatHasCategories !== 'undefined' ? allactivecategories.concat(selectedItemThatHasCategories.categories) : allactivecategories
+  const activecategoriesandselected = typeof selectedItemThatHasCategories !== 'undefined' && typeof selectedItemThatHasCategories.categories === 'object'
+    ? allactivecategories.concat(selectedItemThatHasCategories.categories) : allactivecategories
   const activecategories = []
   if (typeof activecategoriesandselected === 'object') {
     const map = new Map()

@@ -1,13 +1,14 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import {faPlus, faSave, faMinus} from '@fortawesome/free-solid-svg-icons'
+import {faPlus, faSave, faMinus, faSpinner, faArrowLeft} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import {getItem, putItem, postItem, deleteItem} from '../../actions'
-import { Typeahead, Menu, MenuItem } from 'react-bootstrap-typeahead'
+import { Typeahead } from 'react-bootstrap-typeahead'
 import update from 'immutability-helper'
 import { findByKey, getActivePlusSelectedCategories } from '../../utils'
+import { Redirect } from "react-router-dom";
 import moment from 'moment'
 import 'moment/locale/sv'
 
@@ -19,11 +20,17 @@ class NewTour extends Component {
       id                 : 'new',
       label              : '',
       departuredate      : moment().format('YYYY-MM-DD'),
-      stateCategories    : [],
       insuranceprice     : 150,
       reservationfeeprice: 300,
-      rooms              : [],
-      catSelected        : [] }
+      rooms              : [
+        {id             : 'new',
+          label          : '',
+          price          : '0',
+          size           : '0',
+          numberavaliable: '0'}],
+      catSelected: [],
+      redirectTo: false
+    }
   }
 
   componentWillMount () {
@@ -40,16 +47,44 @@ class NewTour extends Component {
         id                 : tour.id,
         label              : tour.label,
         departuredate      : moment(tour.departuredate).format('YYYY-MM-DD'),
-        stateCategories    : tour.categories,
         insuranceprice     : tour.insuranceprice,
         reservationfeeprice: tour.reservationfeeprice,
         rooms              : tour.rooms,
-        catSelected        : tour.categories
+        catSelected        : tour.categories,
+        redirectTo         : false
       })
     }
   }
 
-  handleSave = () => {}
+  handleSave = async () => {
+    const {id, rooms, label, departuredate, reservationfeeprice, insuranceprice, catSelected} = this.state
+    const {postItem, putItem, getItem} = this.props
+    this.setState({isSubmitting: true})
+    const tourData = {
+      label              : label,
+      insuranceprice     : insuranceprice,
+      reservationfeeprice: reservationfeeprice,
+      departuredate      : moment(departuredate).format('YYYY-MM-DD'),
+      categories         : catSelected.map(cat => { return {id: cat.id} }),
+      rooms              : rooms.map((item, i) => {
+        return {
+          id             : item.id,
+          label          : this['roomOpt' + i].getInstance().getInput().value,
+          price          : Number(item.price).toString(),
+          size           : Number(item.size).toString(),
+          numberavaliable: Number(item.numberavaliable).toString()
+        } 
+      })
+    }
+    const reply = id === 'new' ? await postItem('tours', tourData) : await putItem('tours', id, tourData)
+    if (reply !== false && !isNaN(reply)) {
+      getItem('categories', 'all')
+      if(id === 'new') {
+        this.setState({redirectTo: '/bokningar/resa/' + reply}, () => {this.setState({redirectTo: false})})
+      }
+    }
+    this.setState({isSubmitting: false})
+  }
 
   handleChange = (e) => {
     this.setState({ [e.name]: e.value })
@@ -65,8 +100,9 @@ class NewTour extends Component {
     const emptyRoom = {
       id             : 'new',
       label          : '',
-      price          : '',
-      numberavaliable: ''
+      price          : '0',
+      size           : '0',
+      numberavaliable: '0'
     }
     const {rooms} = this.state
     const newroom = update(rooms, {$push: [emptyRoom]})
@@ -82,35 +118,61 @@ class NewTour extends Component {
   }
 
   render () {
-    const {isSubmitting, label, departuredate, stateCategories, insuranceprice, reservationfeeprice, rooms, catSelected} = this.state
-    const {categories, tours} = this.props
-    const activecategories = getActivePlusSelectedCategories(categories, tours.id)
+    const {id, isSubmitting, label, departuredate, insuranceprice, reservationfeeprice, rooms, catSelected, redirectTo} = this.state
+    const {categories, tours, history} = this.props
 
+    if (redirectTo !== false) { return <Redirect to={redirectTo} /> }
+
+    const activecategories = getActivePlusSelectedCategories(categories, findByKey(id, 'id', tours))
+    const roomtypesRaw = tours.filter(tour => {
+      return typeof tour.rooms === 'object' && tour.rooms.length > 0
+    }).map(tour => {
+      return tour.rooms.map(room => { return room.label })
+    })
+    const roomtypes = [...new Set(roomtypesRaw.flat())]
     const roomRows = rooms.map((item, i) => {
-      return (<tr key={i}>
-        <td className="p-2 w-50 align-middle"><input value={item.label} name="label" onChange={(e) => this.handleChangeRoomRow(e.target, i)} className="rounded w-100" placeholder="Rumstyp/Dagsresa" maxLength="99" type="text" required /></td>
-        <td className="p-2 align-middle"><input value={Number(item.size).toFixed(0)} name="size" onChange={(e) => this.handleChangeRoomRow(e.target, i)} className="text-right rounded" placeholder="0" type="number" min="0" max="99" maxLength="2" step="1" style={{width: '75px'}} required /></td>
-        <td className="pl-2 pr-1 text-nowrap align-middle"><input value={Number(item.price).toFixed(0)} name="price" onChange={(e) => this.handleChangeRoomRow(e.target, i)} className="text-right rounded mr-1" type="number" placeholder="0" min="0" max="99999" maxLength="5" step="1" style={{width: '75px'}} required />kr</td>
-        <td className="p-2 align-middle"><input value={Number(item.numberavaliable).toFixed(0)} name="numberavaliable" onChange={(e) => this.handleChangeRoomRow(e.target, i)} className="text-right rounded" type="number" placeholder="0" min="0" max="999" maxLength="3" step="1" style={{width: '75px'}} required /></td>
+      return (<tr key={item.id.toString() + i.toString()}>
+        <td className="p-2 w-50 align-middle">
+          <Typeahead className="rounded w-100 d-inline-block m-0"
+            id={'roomOpt' + i}
+            name="label"
+            minLength={0}
+            maxResults={30}
+            flip
+            emptyLabel=""
+            disabled={isSubmitting}
+            options={roomtypes}
+            placeholder="Rumstyp/Dagsresa"
+            defaultSelected={(typeof item.label === 'undefined') ? [] : [item.label]}
+            // eslint-disable-next-line no-return-assign
+            ref={(ref) => this['roomOpt' + i] = ref}
+          />
+        </td>
+        <td className="p-2 align-middle"><input value={Number(isNaN(item.size) ? 0 : item.size).toFixed(0)} name="size" onChange={(e) => this.handleChangeRoomRow(e.target, i)} className="text-right rounded" placeholder="0" type="number" min="0" max="99" maxLength="2" step="1" style={{width: '75px'}} required /></td>
+        <td className="pl-2 pr-1 text-nowrap align-middle"><input value={Number(isNaN(item.price) ? 0 : item.price).toFixed(0)} name="price" onChange={(e) => this.handleChangeRoomRow(e.target, i)} className="text-right rounded mr-1" type="number" placeholder="0" min="0" max="99999" maxLength="5" step="1" style={{width: '75px'}} required />kr</td>
+        <td className="p-2 align-middle"><input value={Number(isNaN(item.numberavaliable) ? 0 : item.numberavaliable).toFixed(0)} name="numberavaliable" onChange={(e) => this.handleChangeRoomRow(e.target, i)} className="text-right rounded" type="number" placeholder="0" min="0" max="999" maxLength="3" step="1" style={{width: '75px'}} required /></td>
       </tr>)
     })
 
     return (
       <div className="TourView NewTour">
         <form>
+        <button onClick={() => {history.goBack()}} disabled={isSubmitting} type="button" title="Tillbaka till meny" className="mr-4 btn btn-primary btn-sm custom-scale position-absolute" style={{right: 0}}>
+                <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faArrowLeft} size="1x" />&nbsp;Meny</span>
+              </button>
           <fieldset disabled={isSubmitting}>
             <div className="container text-left" style={{maxWidth: '850px'}}>
-              <h3 className="my-3 w-50 mx-auto text-center">{label !== '' ? 'Ändra ' + label : 'Skapa ny resa'}</h3>
+
+              <h3 className="my-3 w-50 mx-auto text-center">{id !== 'new' ? 'Ändra resa: ' + label + ' ' + moment(departuredate).format('D/M') : 'Skapa ny resa'}</h3>
               <div className="container-fluid" style={{width: '85%'}}>
                 <fieldset>
-                  <div className="row m-0 p-0">
-                    <div className="text-center col-12 px-1 py-0 m-0">
+
+                    <div className="text-left col-12 px-0 py-0 m-0">
                       <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="tourName">Resans namn</label>
-                      <input id="tourName" name="tourName" value={label} onChange={() => {}} className="rounded w-100 d-inline-block m-0" placeholder="Resans namn" maxLength="99" type="text" required />
+                      <input id="tourName" name="label" value={label} onChange={(e) => {this.handleChange(e.target)}} className="rounded w-100 d-inline-block m-0" placeholder="Resans namn" maxLength="99" type="text" required />
                     </div>
-                  </div>
-                  <div className="row m-0 p-0">
-                    <div className="text-center col-12 px-1 py-0 m-0">
+ 
+                    <div className="text-left col-12 px-0 py-0 m-0">
                       <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="tourCategories">Resekategorier:</label>
                       <Typeahead className="rounded w-100 d-inline-block m-0"
                         id="tourCategories"
@@ -131,18 +193,17 @@ class NewTour extends Component {
                         ref={(ref) => this._Category = ref}
                       />
                     </div>
-                  </div>
                   <div className="w-50 d-inline">
                     <label htmlFor="tourDate" className="d-block small mt-1 mb-0">Avresedatum (åååå-mm-dd)</label>
-                    <input id="tourDate" name="tourDate" value={departuredate} onChange={() => {}} className="rounded" type="date" style={{width: '166px'}} min="2000-01-01" max="3000-01-01" placeholder="0" required />
+                    <input id="tourDate" name="departuredate" value={departuredate} onChange={(e) => {this.handleChange(e.target)}} className="rounded" type="date" style={{width: '166px'}} min="2000-01-01" max="3000-01-01" placeholder="0" required />
                   </div>
                   <div className="w-25 d-inline">
                     <label htmlFor="tourReservation" className="d-block small mt-1 mb-0">Anmälningsavgift</label>
-                    <input id="tourReservation" name="tourReservation" value={Number(insuranceprice).toFixed(0)} onChange={() => {}} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
+                    <input id="tourReservation" name="insuranceprice" value={Number(insuranceprice).toFixed(0)} onChange={(e) => {this.handleChange(e.target)}} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
                   </div>
                   <div className="w-25 d-inline">
                     <label htmlFor="tourInsurance" className="d-block small mt-1 mb-0">Avbeställningskydd</label>
-                    <input id="tourInsurance" name="tourInsurance" value={Number(reservationfeeprice).toFixed(0)} onChange={() => {}} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
+                    <input id="tourInsurance" name="reservationfeeprice" value={Number(reservationfeeprice).toFixed(0)} onChange={(e) => {this.handleChange(e.target)}} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
                   </div>
                 </fieldset>
                 <fieldset>
@@ -169,7 +230,7 @@ class NewTour extends Component {
                         </td>
                         <td className="p-2 text-right align-middle" colSpan="2">
                           <button onClick={this.handleSave} disabled={isSubmitting} type="button" title="Spara resan" className="btn btn-primary custom-scale">
-                            <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faSave} size="lg" />&nbsp;Spara</span>
+                            <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={isSubmitting ? faSpinner : faSave} size="lg" />&nbsp;Spara</span>
                           </button>
                         </td>
                       </tr>
@@ -188,6 +249,7 @@ class NewTour extends Component {
 NewTour.propTypes = {
   getItem   : PropTypes.func,
   postItem  : PropTypes.func,
+  putItem   : PropTypes.func,
   categories: PropTypes.array,
   tours     : PropTypes.array,
   match     : PropTypes.object
@@ -200,7 +262,8 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => bindActionCreators({
   getItem,
-  postItem
+  postItem,
+  putItem
 }, dispatch)
 
 export default connect(mapStateToProps, mapDispatchToProps)(NewTour)

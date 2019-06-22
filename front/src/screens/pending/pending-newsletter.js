@@ -4,7 +4,7 @@ import {getItem, postItem, putItem} from '../../actions'
 import { bindActionCreators } from 'redux'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
-import {faSave, faSpinner, faTrash} from '@fortawesome/free-solid-svg-icons'
+import {faSave, faSpinner, faTrash, faArrowLeft} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import moment from 'moment'
 import 'moment/locale/sv'
@@ -56,7 +56,7 @@ class PendingNewsletter extends Component {
   }
 
   render () {
-    const {pendingfromweb: {newsletter = []}, existingEmails = []} = this.props
+    const {pendingfromweb: {newsletter = []}, existingEmails = [], history} = this.props
     const {isSubmitting, showExtended, showProcessed} = this.state
     const processed = newsletter.filter(row => { return Number(row.processed) === 1 }).map(row => {
       const found = existingEmails.includes(row.email)
@@ -97,6 +97,9 @@ class PendingNewsletter extends Component {
 
     return (
       <div className="PendingNewsletter">
+              <button onClick={() => {history.goBack()}} disabled={isSubmitting} type="button" title="Tillbaka till meny" className="mr-4 btn btn-primary btn-sm custom-scale position-absolute" style={{right: 0}}>
+                <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faArrowLeft} size="1x" />&nbsp;Meny</span>
+              </button>
         <div className="container text-left" style={{maxWidth: '850px'}}>
           <h3 className="mt-3 mb-2 w-100 mx-auto text-center">Nyhetsbrevsprenumerationer</h3>
           <h4 className="mb-3 w-100 mx-auto text-center">från hemsidan</h4>

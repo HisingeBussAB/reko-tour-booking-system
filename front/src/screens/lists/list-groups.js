@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {faSave, faSpinner, faEraser, faTrash, faCalendarCheck, faSortDown, faSortUp} from '@fortawesome/free-solid-svg-icons'
+import {faSave, faSpinner, faEraser, faTrash, faCalendarCheck, faSortDown, faSortUp, faArrowLeft} from '@fortawesome/free-solid-svg-icons'
 import PropTypes from 'prop-types'
 import {getItem, putItem, postItem, deleteItem} from '../../actions'
 import { Typeahead, Menu, MenuItem } from 'react-bootstrap-typeahead'
@@ -200,7 +200,7 @@ class GroupList extends Component {
 
   render () {
     const { sortIsDown, showList, sortBy, isConfirming, isSubmitting, orgSelected, catSelected, firstname, lastname, organisation, street, city, zip, phone, email, personalnumber, date, catFilterSelected } = this.state
-    const { groupcustomers, categories } = this.props
+    const { groupcustomers, categories, history } = this.props
 
     const activecategories = getActivePlusSelectedCategories(categories, orgSelected[0])
 
@@ -233,8 +233,12 @@ class GroupList extends Component {
       <div className="ListView GroupList">
         {isConfirming && typeof orgSelected[0] !== 'undefined' && <ConfirmPopup doAction={this.doDelete} message={`Vill du verkligen ta bort:\n${orgSelected[0].organisation}\n${orgSelected[0].firstname} ${orgSelected[0].lastname}`} />}
         <form>
+        <button onClick={() => {history.goBack()}} disabled={isSubmitting} type="button" title="Tillbaka till meny" className="mr-4 btn btn-primary btn-sm custom-scale position-absolute" style={{right: 0}}>
+                <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faArrowLeft} size="1x" />&nbsp;Meny</span>
+              </button>
           <fieldset disabled={isSubmitting}>
             <div className="container text-left" style={{maxWidth: '850px'}}>
+
               <h3 className="my-3 w-50 mx-auto text-center">Gruppkunder</h3>
               <div className="container-fluid" style={{width: '85%'}}>
                 <div className="row m-0 p-0">
