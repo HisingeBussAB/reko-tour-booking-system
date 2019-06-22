@@ -84,9 +84,9 @@ class NewsletterList extends Component {
       <div className="ListView NewsletterList">
 
         <form>
-        <button onClick={() => {history.goBack()}} disabled={isSubmitting} type="button" title="Tillbaka till meny" className="mr-4 btn btn-primary btn-sm custom-scale position-absolute" style={{right: 0}}>
-                <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faArrowLeft} size="1x" />&nbsp;Meny</span>
-              </button>
+          <button onClick={() => { history.goBack() }} disabled={isSubmitting} type="button" title="Tillbaka till meny" className="mr-4 btn btn-primary btn-sm custom-scale position-absolute" style={{right: 0}}>
+            <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faArrowLeft} size="1x" />&nbsp;Meny</span>
+          </button>
           <fieldset disabled={isSubmitting}>
             <div className="container text-left" style={{maxWidth: '850px'}}>
 
@@ -148,7 +148,8 @@ NewsletterList.propTypes = {
   getItem   : PropTypes.func,
   postItem  : PropTypes.func,
   deleteItem: PropTypes.func,
-  newsletter: PropTypes.array
+  newsletter: PropTypes.array,
+  history   : PropTypes.object
 }
 
 const mapStateToProps = state => ({

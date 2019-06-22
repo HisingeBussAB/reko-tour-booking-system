@@ -233,9 +233,9 @@ class GroupList extends Component {
       <div className="ListView GroupList">
         {isConfirming && typeof orgSelected[0] !== 'undefined' && <ConfirmPopup doAction={this.doDelete} message={`Vill du verkligen ta bort:\n${orgSelected[0].organisation}\n${orgSelected[0].firstname} ${orgSelected[0].lastname}`} />}
         <form>
-        <button onClick={() => {history.goBack()}} disabled={isSubmitting} type="button" title="Tillbaka till meny" className="mr-4 btn btn-primary btn-sm custom-scale position-absolute" style={{right: 0}}>
-                <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faArrowLeft} size="1x" />&nbsp;Meny</span>
-              </button>
+          <button onClick={() => { history.goBack() }} disabled={isSubmitting} type="button" title="Tillbaka till meny" className="mr-4 btn btn-primary btn-sm custom-scale position-absolute" style={{right: 0}}>
+            <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faArrowLeft} size="1x" />&nbsp;Meny</span>
+          </button>
           <fieldset disabled={isSubmitting}>
             <div className="container text-left" style={{maxWidth: '850px'}}>
 
@@ -461,7 +461,8 @@ GroupList.propTypes = {
   postItem      : PropTypes.func,
   deleteItem    : PropTypes.func,
   groupcustomers: PropTypes.array,
-  categories    : PropTypes.array
+  categories    : PropTypes.array,
+  history       : PropTypes.object
 }
 
 const mapStateToProps = state => ({

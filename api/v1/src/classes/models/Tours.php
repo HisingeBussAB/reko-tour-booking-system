@@ -301,6 +301,7 @@ class Tours extends Model {
     }
     
     if (isset($params['categories']) && is_array($params['categories'])) {
+      $result['categories'] = array();
       foreach($params['categories'] as $key=>$category) {
         if (isset($category['id'])) {
           $result['categories'][$key]['id'] = Functions::sanatizeStringUnsafe($category['id']);

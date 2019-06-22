@@ -24,7 +24,8 @@ const initialState = {
   },
   tours: {
     categories: [],
-    tours     : []
+    tours     : [],
+    bookings  : []
   },
   lists: {
     groupcustomers: [],

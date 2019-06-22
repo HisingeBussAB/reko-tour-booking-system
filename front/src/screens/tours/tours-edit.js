@@ -1,14 +1,15 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import {faPlus, faSave, faMinus, faSpinner, faArrowLeft} from '@fortawesome/free-solid-svg-icons'
+import {faPlus, faSave, faMinus, faSpinner, faArrowLeft, faTrash} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import {getItem, putItem, postItem, deleteItem} from '../../actions'
 import { Typeahead } from 'react-bootstrap-typeahead'
 import update from 'immutability-helper'
 import { findByKey, getActivePlusSelectedCategories } from '../../utils'
-import { Redirect } from "react-router-dom";
+import { Redirect } from 'react-router-dom'
+import ConfirmPopup from '../../components/global/confirm-popup'
 import moment from 'moment'
 import 'moment/locale/sv'
 
@@ -28,8 +29,9 @@ class NewTour extends Component {
           price          : '0',
           size           : '0',
           numberavaliable: '0'}],
-      catSelected: [],
-      redirectTo: false
+      catSelected : [],
+      redirectTo  : false,
+      isConfirming: false
     }
   }
 
@@ -51,7 +53,8 @@ class NewTour extends Component {
         reservationfeeprice: tour.reservationfeeprice,
         rooms              : tour.rooms,
         catSelected        : tour.categories,
-        redirectTo         : false
+        redirectTo         : false,
+        isConfirming       : false
       })
     }
   }
@@ -73,14 +76,14 @@ class NewTour extends Component {
           price          : Number(item.price).toString(),
           size           : Number(item.size).toString(),
           numberavaliable: Number(item.numberavaliable).toString()
-        } 
+        }
       })
     }
     const reply = id === 'new' ? await postItem('tours', tourData) : await putItem('tours', id, tourData)
     if (reply !== false && !isNaN(reply)) {
       getItem('categories', 'all')
-      if(id === 'new') {
-        this.setState({redirectTo: '/bokningar/resa/' + reply}, () => {this.setState({redirectTo: false})})
+      if (id === 'new') {
+        this.setState({redirectTo: '/bokningar/resa/' + reply}, () => { this.setState({redirectTo: false}) })
       }
     }
     this.setState({isSubmitting: false})
@@ -94,6 +97,28 @@ class NewTour extends Component {
     const {rooms} = this.state
     const newroom = update(rooms, {[[i]]: {[e.name]: {$set: e.value}}})
     this.setState({rooms: newroom})
+  }
+
+  deleteConfirm = (e) => {
+    if (typeof e !== 'undefined') { e.preventDefault() }
+    this.setState({isSubmitting: true, isConfirming: true})
+  }
+
+  doDelete = async (choice) => {
+    const { id } = this.state
+    const { deleteItem } = this.props
+    this.setState({ isConfirming: false })
+    if (!isNaN(id)) {
+      if (choice === true) {
+        if (typeof id !== 'undefined') {
+          if (await deleteItem('tours', id)) {
+            this.setState({isSubmitting: false, redirectTo: '/bokningar/'})
+            return null
+          } 
+        }
+      }
+    } 
+    this.setState({isSubmitting: false})
   }
 
   addRow = () => {
@@ -118,7 +143,7 @@ class NewTour extends Component {
   }
 
   render () {
-    const {id, isSubmitting, label, departuredate, insuranceprice, reservationfeeprice, rooms, catSelected, redirectTo} = this.state
+    const {id, isSubmitting, label, departuredate, insuranceprice, reservationfeeprice, rooms, catSelected, redirectTo, isConfirming} = this.state
     const {categories, tours, history} = this.props
 
     if (redirectTo !== false) { return <Redirect to={redirectTo} /> }
@@ -137,13 +162,13 @@ class NewTour extends Component {
             id={'roomOpt' + i}
             name="label"
             minLength={0}
-            maxResults={30}
+            maxResults={15}
             flip
             emptyLabel=""
             disabled={isSubmitting}
             options={roomtypes}
             placeholder="Rumstyp/Dagsresa"
-            defaultSelected={(typeof item.label === 'undefined') ? [] : [item.label]}
+            defaultSelected={typeof item.label === 'undefined' ? [] : [item.label]}
             // eslint-disable-next-line no-return-assign
             ref={(ref) => this['roomOpt' + i] = ref}
           />
@@ -156,54 +181,62 @@ class NewTour extends Component {
 
     return (
       <div className="TourView NewTour">
+        {isConfirming && <ConfirmPopup doAction={this.doDelete} message={`Vill du verkligen ta bort resan:\n${label} ${moment(departuredate).format('D/M')}.\nGör bara detta om bokningar inte påbörjats, annars rekommenderas att bara inaktivera resan från huvudmenyn för bokningar.`} />}
+
         <form>
-        <button onClick={() => {history.goBack()}} disabled={isSubmitting} type="button" title="Tillbaka till meny" className="mr-4 btn btn-primary btn-sm custom-scale position-absolute" style={{right: 0}}>
-                <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faArrowLeft} size="1x" />&nbsp;Meny</span>
-              </button>
+          <button onClick={() => { history.goBack() }} disabled={isSubmitting} type="button" title="Tillbaka till meny" className="mr-4 btn btn-primary btn-sm custom-scale position-absolute" style={{right: 0}}>
+            <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faArrowLeft} size="1x" />&nbsp;Meny</span>
+          </button>
           <fieldset disabled={isSubmitting}>
             <div className="container text-left" style={{maxWidth: '850px'}}>
 
               <h3 className="my-3 w-50 mx-auto text-center">{id !== 'new' ? 'Ändra resa: ' + label + ' ' + moment(departuredate).format('D/M') : 'Skapa ny resa'}</h3>
               <div className="container-fluid" style={{width: '85%'}}>
                 <fieldset>
-
-                    <div className="text-left col-12 px-0 py-0 m-0">
-                      <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="tourName">Resans namn</label>
-                      <input id="tourName" name="label" value={label} onChange={(e) => {this.handleChange(e.target)}} className="rounded w-100 d-inline-block m-0" placeholder="Resans namn" maxLength="99" type="text" required />
-                    </div>
- 
-                    <div className="text-left col-12 px-0 py-0 m-0">
-                      <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="tourCategories">Resekategorier:</label>
-                      <Typeahead className="rounded w-100 d-inline-block m-0"
-                        id="tourCategories"
-                        name="tourCategories"
-                        minLength={0}
-                        maxResults={30}
-                        flip
-                        multiple
-                        emptyLabel=""
-                        disabled={isSubmitting}
-                        onChange={(catSelected) => { this.setState({ catSelected: catSelected }) }}
-                        labelKey="label"
-                        filterBy={['label']}
-                        options={activecategories}
-                        selected={catSelected}
-                        placeholder="Kategorier"
-                        // eslint-disable-next-line no-return-assign
-                        ref={(ref) => this._Category = ref}
-                      />
-                    </div>
+                  <div className="text-center col-12 p-0 m-0">
+                    {!isNaN(id) ? <button onClick={(e) => this.deleteConfirm(e)} disabled={isSubmitting} type="button" title="Radera resan med alla bokningar" className="btn btn-danger btn-sm custom-scale mr-5">
+                      <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={isSubmitting ? faSpinner : faTrash} size="1x" />&nbsp;Radera</span>
+                    </button> : null }
+                    <button onClick={this.handleSave} disabled={isSubmitting} type="button" title="Radera resan med alla bokningar" className="btn btn-primary btn-sm custom-scale ml-5">
+                      <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={isSubmitting ? faSpinner : faSave} size="1x" />&nbsp;Spara</span>
+                    </button>
+                  </div>
+                  <div className="text-left col-12 px-0 py-0 m-0">
+                    <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="tourName">Resans namn</label>
+                    <input id="tourName" name="label" value={label} onChange={(e) => { this.handleChange(e.target) }} className="rounded w-100 d-inline-block m-0" placeholder="Resans namn" maxLength="99" type="text" required />
+                  </div>
+                  <div className="text-left col-12 px-0 py-0 m-0">
+                    <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="tourCategories">Resekategorier:</label>
+                    <Typeahead className="rounded w-100 d-inline-block m-0"
+                      id="tourCategories"
+                      name="tourCategories"
+                      minLength={0}
+                      maxResults={30}
+                      flip
+                      multiple
+                      emptyLabel=""
+                      disabled={isSubmitting}
+                      onChange={(catSelected) => { this.setState({ catSelected: catSelected }) }}
+                      labelKey="label"
+                      filterBy={['label']}
+                      options={activecategories}
+                      selected={catSelected}
+                      placeholder="Kategorier"
+                      // eslint-disable-next-line no-return-assign
+                      ref={(ref) => this._Category = ref}
+                    />
+                  </div>
                   <div className="w-50 d-inline">
                     <label htmlFor="tourDate" className="d-block small mt-1 mb-0">Avresedatum (åååå-mm-dd)</label>
-                    <input id="tourDate" name="departuredate" value={departuredate} onChange={(e) => {this.handleChange(e.target)}} className="rounded" type="date" style={{width: '166px'}} min="2000-01-01" max="3000-01-01" placeholder="0" required />
+                    <input id="tourDate" name="departuredate" value={departuredate} onChange={(e) => { this.handleChange(e.target) }} className="rounded" type="date" style={{width: '166px'}} min="2000-01-01" max="3000-01-01" placeholder="0" required />
                   </div>
                   <div className="w-25 d-inline">
                     <label htmlFor="tourReservation" className="d-block small mt-1 mb-0">Anmälningsavgift</label>
-                    <input id="tourReservation" name="insuranceprice" value={Number(insuranceprice).toFixed(0)} onChange={(e) => {this.handleChange(e.target)}} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
+                    <input id="tourReservation" name="insuranceprice" value={Number(insuranceprice).toFixed(0)} onChange={(e) => { this.handleChange(e.target) }} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
                   </div>
                   <div className="w-25 d-inline">
                     <label htmlFor="tourInsurance" className="d-block small mt-1 mb-0">Avbeställningskydd</label>
-                    <input id="tourInsurance" name="reservationfeeprice" value={Number(reservationfeeprice).toFixed(0)} onChange={(e) => {this.handleChange(e.target)}} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
+                    <input id="tourInsurance" name="reservationfeeprice" value={Number(reservationfeeprice).toFixed(0)} onChange={(e) => { this.handleChange(e.target) }} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
                   </div>
                 </fieldset>
                 <fieldset>
@@ -250,9 +283,11 @@ NewTour.propTypes = {
   getItem   : PropTypes.func,
   postItem  : PropTypes.func,
   putItem   : PropTypes.func,
+  deleteItem: PropTypes.func,
   categories: PropTypes.array,
   tours     : PropTypes.array,
-  match     : PropTypes.object
+  match     : PropTypes.object,
+  history   : PropTypes.object
 }
 
 const mapStateToProps = state => ({
@@ -263,7 +298,8 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => bindActionCreators({
   getItem,
   postItem,
-  putItem
+  putItem,
+  deleteItem
 }, dispatch)
 
 export default connect(mapStateToProps, mapDispatchToProps)(NewTour)

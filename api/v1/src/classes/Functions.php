@@ -97,6 +97,18 @@ final class Functions {
     return (string)$m->format('Y-m-d');
   }
 
+  public static function validateTime($date) {
+    if (gettype($date) != "integer" && gettype($date) != "string") { return NULL; }
+    Moment::setDefaultTimezone('CET');
+    Moment::setLocale('sv_SE');
+    try {
+      $m = new \Moment\Moment($date);
+    } catch (\Exception $e) {
+      return NULL;
+    }
+    return (string)$m->format('H:m:s');
+  }
+
   public static function sanatizeStringUnsafe($string, $len = 255) {
     //Just make sure it is a string, trim and casted as such. 
     //statements should be prepared and the API should not be excplicilty trusted in front-end ie. do not dangerously set innerHTML.
@@ -125,7 +137,7 @@ final class Functions {
     if (gettype($email) != "integer" && gettype($email) != "string") { return NULL; }
     $new = substr(filter_var(trim($email), FILTER_VALIDATE_EMAIL),0,60); //Cut to 60 chars
     if(empty($new)) { return NULL; }
-    return (string)$new;
+    return $new;
   }
 
   public static function validatePersonalNumber($pnumb) {
