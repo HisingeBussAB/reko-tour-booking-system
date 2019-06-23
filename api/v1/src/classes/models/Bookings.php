@@ -2,19 +2,20 @@
 namespace RekoBooking\classes\models;
 
 use RekoBooking\classes\models\Model;
-use RekoBooking\classes\models\Categories;
+use RekoBooking\classes\models\Tours;
 use RekoBooking\classes\Functions;
 
 class Bookings extends Model {
 
   public function get(array $params) {
+    $params['number'] = $params['id'];
     if ($params['number'] > 0 || $params['number'] == -1) {
       try {
         $sql = '';
         if ($params['number'] == -1) {
-          $sql = "SELECT id, number, tourid, group, cancelled, cancelleddate, paydate1, paydate2, bookingdate FROM Bookings WHERE bookingdate > '" . date('Y-m-d H:i.s', strtotime('-4 years'))->format(Y-m-d) . "' ORDER BY id DESC;";
+          $sql = "SELECT id, number, tourid, `group`, cancelled, cancelleddate, paydate1, paydate2, bookingdate FROM Bookings WHERE bookingdate > '" . date('Y-m-d H:i.s', strtotime('-5 years')) . "' ORDER BY bookingdate DESC;";
         } else {
-          $sql = "SELECT id, number, tourid, group, cancelled, cancelleddate, paydate1, paydate2, bookingdate FROM Bookings WHERE number = :number ORDER BY id DESC;";
+          $sql = "SELECT id, number, tourid, `group`, cancelled, cancelleddate, paydate1, paydate2, bookingdate FROM Bookings WHERE number = :number ORDER BY bookingdate DESC;";
         }
         $sth = $this->pdo->prepare($sql);
         if ($params['number'] != -1) { $sth->bindParam(':number', $params['number'], \PDO::PARAM_INT); }
@@ -34,15 +35,15 @@ class Bookings extends Model {
           $result[$key]['group']     = filter_var($result[$key]['group'], FILTER_VALIDATE_BOOLEAN);
           try {
             $sql = "SELECT Customers.id as id, firstName, lastName, street, zip, city, phone,	email, personalNumber, date, compare,	isAnonymized,
-                              Bookings_Customers.id as BookingsCustomersid, custNumber, bookingId, customerId, roomId, requests, priceAdjustment, departureLocation, departureTime, cancellationInsurance
-                              label, price, size, isDeleted
+                              Bookings_Customers.id as BookingsCustomersid, custNumber, bookingId, customerId, roomId, requests, priceAdjustment, cancelledCust, departureLocation, departureTime, cancellationinsurance,
+                              label, price, size, Rooms.isDeleted as roomDeleted
                       FROM Customers 
                       INNER JOIN Bookings_Customers 
-                        ON Bookings_Customers.customerid = Customers.id 
+                        ON Bookings_Customers.customerid = Customers.id AND Customers.isAnonymized = 0
                       INNER JOIN Rooms
                         ON Bookings_Customers.roomid = Rooms.id 
                       WHERE Bookings_Customers.bookingid = :id
-                      ORDER BY departureTime ASC;";
+                      ORDER BY custNumber ASC;";
             $sth = $this->pdo->prepare($sql);
             $sth->bindParam(':id', $booking['id'], \PDO::PARAM_INT);
             $sth->execute();
@@ -51,10 +52,16 @@ class Bookings extends Model {
             $this->response->DBError($e, __CLASS__, $sql);
             $this->response->Exit(500);
           }
-          $bookingresult['cancellationInsurance'] = filter_var($result[$key]['cancellationInsurance'], FILTER_VALIDATE_BOOLEAN);
+          foreach ($customersresult as $k=>$r) {
+            $customersresult[$k]['custnumber']              = str_pad($customersresult[$k]['custnumber'], 2, '0', STR_PAD_LEFT);
+            $customersresult[$k]['cancellationinsurance']   = filter_var($customersresult[$k]['cancellationinsurance'], FILTER_VALIDATE_BOOLEAN);
+            $customersresult[$k]['isanonymized']            = filter_var($customersresult[$k]['isanonymized'], FILTER_VALIDATE_BOOLEAN);
+            $customersresult[$k]['cancelledcust']           = filter_var($customersresult[$k]['cancelledcust'], FILTER_VALIDATE_BOOLEAN);
+            $customersresult[$k]['roomdeleted']             = filter_var($customersresult[$k]['roomdeleted'], FILTER_VALIDATE_BOOLEAN);
+          }
           $result[$key]['customers'] = $customersresult;
         }
-        return array('tours' => $result);
+        return array('bookings' => $result);
       }
     } else {
       $this->response->AddResponse('error', 'Bokningsid kan bara anges som ett positivt heltal, eller inte anges alls för alla bokningar.');
@@ -66,20 +73,16 @@ class Bookings extends Model {
 
   public function post(array $_params) {
     $params = $this->paramsValidationWithExit($_params);
-    
-
-    $sql = "LOCK TABLES Bookings WRITE, Customers WRITE;";
     try {     
       $this->pdo->beginTransaction();
+      $this->pdo->exec("LOCK TABLES Bookings WRITE, Customers WRITE, Bookings_Customers WRITE;"); 
+      $sql = "INSERT INTO Bookings(tourid, `group`, paydate1, paydate2, bookingdate) VALUES (:tourid, :group, :paydate1, :paydate2, :bookingdate);";
       $sth = $this->pdo->prepare($sql);
-      $sth->execute(); 
-      $sql = "INSERT INTO Bookings(tourId, group, payDate1, payDate2)
-      VALUES (:tourId,:group,:payDate1,:payDate2)"
-      $sth = $this->pdo->prepare($sql);
-      $sth->bindParam(':tourId',    $params['tourId'],   \PDO::PARAM_INT);
-      $sth->bindParam(':group',     $params['group'],    \PDO::PARAM_INT);
-      $sth->bindParam(':payDate1',  $params['payDate1'], \PDO::PARAM_STR);
-      $sth->bindParam(':payDate2',  $params['payDate2'], \PDO::PARAM_STR);
+      $sth->bindParam(':tourid',      $params['tourid'],      \PDO::PARAM_INT);
+      $sth->bindParam(':group',       $params['group'],       \PDO::PARAM_INT);
+      $sth->bindParam(':paydate1',    $params['paydate1'],    \PDO::PARAM_STR);
+      $sth->bindParam(':paydate2',    $params['paydate2'],    \PDO::PARAM_STR);
+      $sth->bindParam(':bookingdate', $params['bookingdate'], \PDO::PARAM_STR);
       $sth->execute(); 
 
       $sql = "SELECT LAST_INSERT_ID() as id;";
@@ -88,33 +91,37 @@ class Bookings extends Model {
 
       $bookingid = $sth->fetch(\PDO::FETCH_ASSOC); 
       $nr = ($params['group'] == 1) ? '2' : '1';
-      $nr .= str_pad($bookingid['id'], 5, "0", STR_PAD_LEFT);
-      $sql = "UPDATE Bookings SET number = :nr WHERE id = :id;"
+      $nr .= str_pad($bookingid['id'], 6, "0", STR_PAD_LEFT);
+      $sql = "UPDATE Bookings SET number = :nr WHERE id = :id;";
       $sth = $this->pdo->prepare($sql);
       $sth->bindParam(':nr',    $nr,                 \PDO::PARAM_INT);
       $sth->bindParam(':id',    $bookingid['id'],    \PDO::PARAM_INT);
       $sth->execute(); 
       $i = 0;
-      foreach($params['customer'] as $customer) {
-        $comp = Functions::getCompString($customer['firstName'],$customer['lastName'],$customer['zip'],$customer['street']);
-        $sql = "INSERT INTO Customers(firstname, lastname, street, zip, city, phone, email, personalnumber, date, compare) 
-        VALUES (:firstname, :lastname, :street, :zip, :city, :phone, :email, :personalnumber, date, compare);";
-        $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':firstname',         $customer['firstname'],      \PDO::PARAM_STR);
-        $sth->bindParam(':lastname',          $customer['lastname'],       \PDO::PARAM_STR);
-        $sth->bindParam(':street',            $customer['street'],         \PDO::PARAM_STR);
-        $sth->bindParam(':zip',               $customer['zip'],            \PDO::PARAM_INT);
-        $sth->bindParam(':city',              $customer['city'],           \PDO::PARAM_STR);
-        $sth->bindParam(':phone',             $customer['phone'],          \PDO::PARAM_STR);
-        $sth->bindParam(':email',             $customer['email'],          \PDO::PARAM_STR);
-        $sth->bindParam(':personalnumber',    $customer['personalnumber'], \PDO::PARAM_STR);
-        $sth->bindParam(':date',              $customer['date'],           \PDO::PARAM_STR);
-        $sth->bindParam(':compare',           $comp,                     \PDO::PARAM_STR);
-        $sth->execute(); 
-        $sql = "SELECT LAST_INSERT_ID() as id;";
-        $sth = $this->pdo->prepare($sql);
-        $sth->execute(); 
-        $customerid = $sth->fetch(\PDO::FETCH_ASSOC); 
+      foreach($params['customers'] as $customer) {
+        $customerid = 0;
+        if (is_numeric($customer['id']) && $customer['id'] >= 0) {
+          $customerid = $customer['id'];
+        } else {
+          $comp = Functions::getCompString($customer['firstname'],$customer['lastname'],$customer['zip'],$customer['street']);
+          $sql = "INSERT INTO Customers(firstname, lastname, street, zip, city, phone, email, personalnumber, compare) 
+          VALUES (:firstname, :lastname, :street, :zip, :city, :phone, :email, :personalnumber, :compare);";
+          $sth = $this->pdo->prepare($sql);
+          $sth->bindParam(':firstname',         $customer['firstname'],      \PDO::PARAM_STR);
+          $sth->bindParam(':lastname',          $customer['lastname'],       \PDO::PARAM_STR);
+          $sth->bindParam(':street',            $customer['street'],         \PDO::PARAM_STR);
+          $sth->bindParam(':zip',               $customer['zip'],            \PDO::PARAM_INT);
+          $sth->bindParam(':city',              $customer['city'],           \PDO::PARAM_STR);
+          $sth->bindParam(':phone',             $customer['phone'],          \PDO::PARAM_STR);
+          $sth->bindParam(':email',             $customer['email'],          \PDO::PARAM_STR);
+          $sth->bindParam(':personalnumber',    $customer['personalnumber'], \PDO::PARAM_STR);
+          $sth->bindParam(':compare',           $comp,                       \PDO::PARAM_STR);
+          $sth->execute(); 
+          $sql = "SELECT LAST_INSERT_ID() as id;";
+          $sth = $this->pdo->prepare($sql);
+          $sth->execute(); 
+          $customerid = $sth->fetch(\PDO::FETCH_ASSOC); 
+        }
         $sql = "INSERT INTO Bookings_Customers(bookingid, customerid, roomid, requests, priceadjustment, departurelocation, departuretime, custnumber)
         VALUES (:bookingid, :customerid, :roomid, :requests, :priceadjustment, :departurelocation, :departuretime, :custnumber);";
         $sth = $this->pdo->prepare($sql);
@@ -129,103 +136,145 @@ class Bookings extends Model {
         $sth->execute(); 
         $i++;
       }
-      $sql = "UNLOCK TABLES;";
-      $sth = $this->pdo->prepare($sql);
-      $sth->execute(); 
+      $this->pdo->exec("UNLOCK TABLES;");
       $this->pdo->commit();
     } catch(\PDOException $e) {
       $this->response->DBError($e, __CLASS__, $sql);
       $this->pdo->rollBack();
       try {
-        $sql = "UNLOCK TABLES;";
-        $sth = $this->pdo->prepare($sql);
-        $sth->execute();
+        $this->pdo->exec("UNLOCK TABLES;");
       } catch(\PDOException $e) {
         $this->response->Exit(500);
       }
       $this->response->Exit(500);
     }
-    return array('updatedid' => $result['id']);   
+    return array('updatedid' => $nr);
   }
 
   public function put(array $_params) {
+    $_params['number'] = $_params['id'];
     $params = $this->paramsValidationWithExit($_params, 'put');
-    $sql = "UPDATE Tours SET 
-        label = :lab, 
-        insuranceprice = :ins, 
-        reservationfeeprice = :res, 
-        departuredate = :dep, 
-        isDisabled = :act
-        WHERE id=:id;";
     try {     
       $this->pdo->beginTransaction();
+      $this->pdo->exec("LOCK TABLES Bookings WRITE, Customers WRITE, Bookings_Customers WRITE;"); 
+      $sql = "UPDATE Bookings SET tourid = :tourid, `group` = :group, paydate1 = :paydate1, paydate2 = :paydate2, bookingdate = :bookingdate, cancelled = :cancelled, cancelleddate = :cancelleddate
+      WHERE number = :number;";
       $sth = $this->pdo->prepare($sql);
-      $sth->bindParam(':id',  $params['id'],                  \PDO::PARAM_INT);
-      $sth->bindParam(':lab', $params['label'],               \PDO::PARAM_STR);
-      $sth->bindParam(':ins', $params['insuranceprice'],      \PDO::PARAM_INT);
-      $sth->bindParam(':res', $params['reservationfeeprice'], \PDO::PARAM_INT);
-      $sth->bindParam(':dep', $params['departuredate'],       \PDO::PARAM_STR);
-      $sth->bindParam(':act', $params['isDisabled'],          \PDO::PARAM_INT);
+      $sth->bindParam(':tourid',        $params['tourid'],        \PDO::PARAM_INT);
+      $sth->bindParam(':group',         $params['group'],         \PDO::PARAM_INT);
+      $sth->bindParam(':paydate1',      $params['paydate1'],      \PDO::PARAM_STR);
+      $sth->bindParam(':paydate2',      $params['paydate2'],      \PDO::PARAM_STR);
+      $sth->bindParam(':bookingdate',   $params['bookingdate'],   \PDO::PARAM_STR);
+      $sth->bindParam(':cancelled',     $params['cancelled'],     \PDO::PARAM_INT);
+      $sth->bindParam(':cancelleddate', $params['cancelleddate'], \PDO::PARAM_STR);
+      $sth->bindParam(':number',        $params['number'],        \PDO::PARAM_INT);
       $sth->execute(); 
-      $sql = "DELETE FROM Categories_Tours WHERE tourId = :id;";
+      $sql = "SELECT id from Bookings where number = :number;";
       $sth = $this->pdo->prepare($sql);
-      $sth->bindParam(':id',  $params['id'],                  \PDO::PARAM_INT);        
-      $sth->execute();
-      $sentRoomIds = '';
-      foreach ($params['rooms'] as $room) { 
-        if (is_numeric($room['id'])) {
-          $sentRoomIds .=  $room['id'] . ',';
-        }
+      $sth->bindParam(':number',        $params['number'],        \PDO::PARAM_INT);
+      $sth->execute(); 
+      $bookingsr = $sth->fetch(\PDO::FETCH_ASSOC);
+      $bookingsid = $bookingsr['id'];
+      $idsonly = array_column($params['customers'], 'id');
+      $customerids = '';
+      foreach ($idsonly as $id) {
+        $customerids .= filter_var($id, FILTER_SANITIZE_NUMBER_INT) . ','; 
       }
-      $sentRoomIds = trim($sentRoomIds, ',');
-      if (strlen($sentRoomIds) > 0) {
-        $sql = "UPDATE Rooms SET isDeleted = 1 WHERE tourId = :id AND id not in (" . $sentRoomIds . ");";
-        $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':id',  $params['id'],                  \PDO::PARAM_INT);        
-        $sth->execute();
-      }
-      foreach ($params['rooms'] as $room) {
-        $sql = "SELECT id FROM Rooms WHERE tourid = :tid AND id = :rid";
-        $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':tid',  $params['id'],                  \PDO::PARAM_INT);   
-        $sth->bindParam(':rid',  $room['id'],                    \PDO::PARAM_INT);       
-        $sth->execute();  
-        $result = $sth->fetch(\PDO::FETCH_ASSOC); 
-        if (!$result) {
-          $sql = "INSERT INTO Rooms (tourid, label, price, size, numberavaliable) VALUES (:tid, :lab, :pri, :siz, :num);";
+      $customerids = trim($customerids, ',');
+      $sql = "UPDATE Bookings_Customers SET cancelledCust = 1 WHERE customerid not in (" . $customerids . ") AND bookingid = :id;"; 
+      $sth = $this->pdo->prepare($sql);
+      $sth->bindParam(':id', $bookingsid, \PDO::PARAM_INT);
+      $sth->execute(); 
+      $sql = "SELECT customerid as id FROM Bookings_Customers WHERE bookingid = :id;"; 
+      $sth = $this->pdo->prepare($sql);
+      $sth->bindParam(':id', $bookingsid, \PDO::PARAM_INT);
+      $sth->execute(); 
+      $existingcustomerids = $sth->fetchAll(\PDO::FETCH_ASSOC);
+      $sql = "SELECT max(custNumber) as nr FROM Bookings_Customers WHERE bookingid = :id;"; 
+      $sth = $this->pdo->prepare($sql);
+      $sth->bindParam(':id', $bookingsid, \PDO::PARAM_INT);
+      $sth->execute(); 
+      $maxcustnr = $sth->fetch(\PDO::FETCH_ASSOC);
+      $i = is_numeric($maxcustnr) ? $maxcustnr + 1 : 0;
+      foreach ($params['customers'] as $customer) {
+        $exists = in_array($customer['id'], array_column($existingcustomerids, 'id'));
+        if ($customer['id'] == -1) {
+          $comp = Functions::getCompString($customer['firstname'],$customer['lastname'],$customer['zip'],$customer['street']);
+          $sql = "INSERT INTO Customers(firstname, lastname, street, zip, city, phone, email, personalnumber, compare) 
+          VALUES (:firstname, :lastname, :street, :zip, :city, :phone, :email, :personalnumber, :compare);";
           $sth = $this->pdo->prepare($sql);
-          $sth->bindParam(':tid', $params['id'],                  \PDO::PARAM_INT);
-          $sth->bindParam(':lab', $room['label'],                 \PDO::PARAM_STR);
-          $sth->bindParam(':pri', $room['price'],                 \PDO::PARAM_INT);
-          $sth->bindParam(':siz', $room['size'],                  \PDO::PARAM_INT);
-          $sth->bindParam(':num', $room['numberavaliable'],       \PDO::PARAM_INT);
+          $sth->bindParam(':firstname',         $customer['firstname'],      \PDO::PARAM_STR);
+          $sth->bindParam(':lastname',          $customer['lastname'],       \PDO::PARAM_STR);
+          $sth->bindParam(':street',            $customer['street'],         \PDO::PARAM_STR);
+          $sth->bindParam(':zip',               $customer['zip'],            \PDO::PARAM_INT);
+          $sth->bindParam(':city',              $customer['city'],           \PDO::PARAM_STR);
+          $sth->bindParam(':phone',             $customer['phone'],          \PDO::PARAM_STR);
+          $sth->bindParam(':email',             $customer['email'],          \PDO::PARAM_STR);
+          $sth->bindParam(':personalnumber',    $customer['personalnumber'], \PDO::PARAM_STR);
+          $sth->bindParam(':compare',           $comp,                       \PDO::PARAM_STR);
+          $sth->execute(); 
+          $sql = "SELECT LAST_INSERT_ID() as id;";
+          $sth = $this->pdo->prepare($sql);
+          $sth->execute(); 
+          $newcustomerid = $sth->fetch(\PDO::FETCH_ASSOC); 
+          $sql = "INSERT INTO Bookings_Customers(bookingid, customerid, roomid, requests, priceadjustment, departurelocation, departuretime, custnumber)
+          VALUES (:bookingid, :customerid, :roomid, :requests, :priceadjustment, :departurelocation, :departuretime, :custnumber);";
+          $sth = $this->pdo->prepare($sql);
+          $sth->bindParam(':bookingid',         $bookingsid,                   \PDO::PARAM_INT);
+          $sth->bindParam(':customerid',        $newcustomerid['id'],          \PDO::PARAM_INT);
+          $sth->bindParam(':roomid',            $customer['roomid'],           \PDO::PARAM_INT);
+          $sth->bindParam(':requests',          $customer['requests'],         \PDO::PARAM_STR);
+          $sth->bindParam(':priceadjustment',   $customer['priceadjustment'],  \PDO::PARAM_INT);
+          $sth->bindParam(':departurelocation', $customer['departurelocation'],\PDO::PARAM_STR);
+          $sth->bindParam(':departuretime',     $customer['departuretime'],    \PDO::PARAM_STR);
+          $sth->bindParam(':custnumber',        $i,                            \PDO::PARAM_INT);
           $sth->execute(); 
         } else {
-          $sql = "UPDATE Rooms SET label = :lab, price = :pri, size = :siz, numberavaliable = :num, isDeleted = 0 WHERE id = :rid AND tourid = :tid;";
-          $sth = $this->pdo->prepare($sql);
-          $sth->bindParam(':tid', $params['id'],                  \PDO::PARAM_INT);
-          $sth->bindParam(':rid', $result['id'],                  \PDO::PARAM_INT);
-          $sth->bindParam(':lab', $room['label'],                 \PDO::PARAM_STR);
-          $sth->bindParam(':pri', $room['price'],                 \PDO::PARAM_INT);
-          $sth->bindParam(':siz', $room['size'],                  \PDO::PARAM_INT);
-          $sth->bindParam(':num', $room['numberavaliable'],       \PDO::PARAM_STR);
-          $sth->execute(); 
+          if ($exists) {
+            $sql = "UPDATE Bookings_Customers SET roomid = :roomid, requests = :requests, priceadjustment = :priceadjustment, departurelocation = :departurelocation, 
+            departuretime = :departuretime, cancellationinsurance = :cancellationinsurance, cancelledcust = :cancelledcust
+            WHERE bookingid = :bookingid AND customerid = :customerid;";
+            $sth = $this->pdo->prepare($sql);
+            $sth->bindParam(':bookingid',               $bookingsid,                        \PDO::PARAM_INT);
+            $sth->bindParam(':customerid',              $customer['id'],                    \PDO::PARAM_INT);
+            $sth->bindParam(':roomid',                  $customer['roomid'],                \PDO::PARAM_INT);
+            $sth->bindParam(':requests',                $customer['requests'],              \PDO::PARAM_STR);
+            $sth->bindParam(':priceadjustment',         $customer['priceadjustment'],       \PDO::PARAM_INT);
+            $sth->bindParam(':departurelocation',       $customer['departurelocation'],     \PDO::PARAM_STR);
+            $sth->bindParam(':departuretime',           $customer['departuretime'],         \PDO::PARAM_STR);
+            $sth->bindParam(':cancellationinsurance',   $customer['cancellationinsurance'], \PDO::PARAM_INT);
+            $sth->bindParam(':cancelledcust',           $customer['cancelledcust'],         \PDO::PARAM_INT);
+            $sth->execute(); 
+          } else {
+            $sql = "INSERT INTO Bookings_Customers(bookingid, customerid, roomid, requests, priceadjustment, departurelocation, departuretime, custnumber)
+            VALUES (:bookingid, :customerid, :roomid, :requests, :priceadjustment, :departurelocation, :departuretime, :custnumber);";
+            $sth = $this->pdo->prepare($sql);
+            $sth->bindParam(':bookingid',         $bookingsid,                   \PDO::PARAM_INT);
+            $sth->bindParam(':customerid',        $customer['id'],               \PDO::PARAM_INT);
+            $sth->bindParam(':roomid',            $customer['roomid'],           \PDO::PARAM_INT);
+            $sth->bindParam(':requests',          $customer['requests'],         \PDO::PARAM_STR);
+            $sth->bindParam(':priceadjustment',   $customer['priceadjustment'],  \PDO::PARAM_INT);
+            $sth->bindParam(':departurelocation', $customer['departurelocation'],\PDO::PARAM_STR);
+            $sth->bindParam(':departuretime',     $customer['departuretime'],    \PDO::PARAM_STR);
+            $sth->bindParam(':custnumber',        $i,                            \PDO::PARAM_INT);
+            $sth->execute(); 
+            $i++;
+          }
         }
       }
-      foreach ($params['categories'] as $category) {
-        $sql = "INSERT INTO Categories_Tours (tourid, categoryid) VALUES (:tid, :cid);";
-        $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':tid', $params['id'],                  \PDO::PARAM_INT);
-        $sth->bindParam(':cid', $category['id'],                \PDO::PARAM_INT);
-        $sth->execute();
-      } 
+      $this->pdo->exec("UNLOCK TABLES;");
       $this->pdo->commit();
     } catch(\PDOException $e) {
       $this->response->DBError($e, __CLASS__, $sql);
       $this->pdo->rollBack();
+      try {
+        $this->pdo->exec("UNLOCK TABLES;");
+      } catch(\PDOException $e) {
+        $this->response->Exit(500);
+      }
       $this->response->Exit(500);
     }
-    return array('updatedid' => $params['id']);   
+    return array('updatedid' => $params['number']);   
 
   }
 
@@ -235,26 +284,7 @@ class Bookings extends Model {
       //Start debug deleter
       try {
         $this->pdo->beginTransaction();
-        $sql = "SELECT * FROM Tours WHERE id = :id;";
-        $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
-        $sth->execute();
-        $result = $sth->fetch(\PDO::FETCH_ASSOC); 
-        if (count($result) < 1) {
-          return false;        
-        }
-        $sql = "DELETE FROM Rooms WHERE tourid = :id;";
-        $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
-        $sth->execute();
-        $sql = "DELETE FROM Categories_Tours WHERE tourid = :id;";
-        $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
-        $sth->execute();
-        $sql = "DELETE FROM Tours WHERE id = :id;";
-        $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
-        $sth->execute();
+        
         $this->pdo->commit();
       } catch(\PDOException $e) {
         $this->response->DBError($e, __CLASS__, $sql);
@@ -284,21 +314,42 @@ class Bookings extends Model {
     $passed = true;
     $result = array();
 
-    if (isset($params['payDate2'])) {
-      $result['payDate2'] = Functions::validateDate($params['payDate2']);
+    if (isset($params['cancelled'])) {
+      $result['cancelled'] = Functions::validateBoolToBit($params['cancelled']);
     } else {
-      $result['payDate2'] = NULL;
+      $result['cancelled'] = NULL;
     }
-    if (is_null($result['payDate2'])) {
-      $this->response->AddResponse('error', 'Betalningsdatum för slutlikvid måste anges i formatet ÅÅÅÅ-MM-DD.');
-      $this->response->AddResponsePushToArray('invalidFields', array('payDate2'));
+    if (is_null($result['cancelled'])) {
+      //default to not cancelled
+      $result['cancelled'] = 0;
+    }
+
+    if (isset($params['cancelleddate'])) {
+      $result['cancelleddate'] = Functions::validateDate($params['cancelleddate']);
+    } else {
+      $result['cancelleddate'] = NULL;
+    }
+    if (is_null($result['cancelleddate']) && $req = 'put' && $result['cancelled'] == 1) {
+      $this->response->AddResponse('error', 'Datum för avbokning måste anges.');
+      $this->response->AddResponsePushToArray('invalidFields', array('cancelleddate'));
       $passed = false;
     }
 
-    if (isset($params['payDate1'])) {
-      $result['payDate1'] = Functions::validateDate($params['payDate1']);
+    if (isset($params['paydate2'])) {
+      $result['paydate2'] = Functions::validateDate($params['paydate2']);
     } else {
-      $result['payDate1'] = NULL;
+      $result['paydate2'] = NULL;
+    }
+    if (is_null($result['paydate2'])) {
+      $this->response->AddResponse('error', 'Betalningsdatum för slutlikvid måste anges i formatet ÅÅÅÅ-MM-DD.');
+      $this->response->AddResponsePushToArray('invalidFields', array('paydate2'));
+      $passed = false;
+    }
+
+    if (isset($params['paydate1'])) {
+      $result['paydate1'] = Functions::validateDate($params['paydate1']);
+    } else {
+      $result['paydate1'] = NULL;
     }
     
     if (isset($params['group'])) {
@@ -313,7 +364,13 @@ class Bookings extends Model {
     }
 
     if (isset($params['tourid'])) {
-      $result['tourid'] = Functions::validateInt($room['price']);
+      $result['tourid'] = Functions::validateInt($params['tourid']);
+      $Tours = new Tours($this->response, $this->pdo);
+      if ($Tours->get(array('id' => $result['tourid'])) == false) { 
+        $this->response->AddResponse('error', 'Kan inte hitta resan bokningen skall tillhöra, är den borttagen?');
+        $this->response->AddResponsePushToArray('invalidFields', array('tourid'));
+        $passed = false;
+      }
     } else {
       $result['tourid'] = NULL;
     }
@@ -321,6 +378,16 @@ class Bookings extends Model {
       $this->response->AddResponse('error', 'Vilken resa bokingen tillhör måste anges.');
       $this->response->AddResponsePushToArray('invalidFields', array('tourid'));
       $passed = false;
+    }
+
+    if (isset($params['bookingdate'])) {
+      $result['bookingdate'] = Functions::validateDateTime($params['bookingdate']);
+    } else {
+      $result['bookingdate'] = Functions::validateDateTime((string)date_create()->format('Y-m-d H:i:s'));
+    }
+    if (is_null($result['bookingdate'])) {
+      //default to today
+      $result['bookingdate'] = Functions::validateDateTime((string)date_create()->format('Y-m-d H:i:s'));
     }
 
     if (isset($params['customers']) && is_array($params['customers'])) {
@@ -341,7 +408,7 @@ class Bookings extends Model {
         } else {
           $result['customers'][$key]['lastname'] = '';
         }
-        if (empty($result['customers'][$key]['lastName'])) {
+        if (empty($result['customers'][$key]['lastname'])) {
           $this->response->AddResponse('error', 'Efternamn måste anges.');
           $this->response->AddResponsePushToArray('invalidFields', array('customers.' . $key . '.lastname'));
           $passed = false;
@@ -419,9 +486,8 @@ class Bookings extends Model {
           $result['customers'][$key]['date'] = Functions::validateDate((string)date_create()->format('Y-m-d'));
         }
         if (is_null($result['customers'][$key]['date'])) {
-          $this->response->AddResponse('error', 'Datumet är ogiltigt. Ange i format YYYY-MM-DD.');
-          $this->response->AddResponsePushToArray('invalidFields', array('customers.' . $key . '.date'));
-          $passed = false;
+          //default to today
+          $result['customers'][$key]['date'] = Functions::validateDate((string)date_create()->format('Y-m-d'));
         }
 
         if (isset($customer['isanonymized'])) {
@@ -464,6 +530,17 @@ class Bookings extends Model {
           $passed = false;
         }
 
+        if (isset($customer['id'])) {
+          $result['customers'][$key]['id'] = Functions::validateInt($customer['id']);
+        } else {
+          $result['customers'][$key]['id'] = -1;
+        }
+        if (is_null($result['customers'][$key]['id']) && $req == 'put') {
+          $this->response->AddResponse('error', 'Kund id är inte ett heltal för en eller flera kunder.');
+          $this->response->AddResponsePushToArray('invalidFields', array('customers.' . $key . '.id'));
+          $passed = false;
+        }
+
         if (isset($customer['departurelocation']) && !empty($customer['departurelocation'])) {
           $result['customers'][$key]['departurelocation'] = Functions::sanatizeStringUnsafe($customer['departurelocation'], 100);
           if (is_null($result['customers'][$key]['departurelocation'])) {
@@ -493,6 +570,13 @@ class Bookings extends Model {
           $result['customers'][$key]['cancellationinsurance'] = 0;
         }
 
+        if (isset($customer['cancelledcust'])) {
+          $result['customers'][$key]['cancelledcust'] = Functions::validateBoolToBit($customer['cancelledcust']);
+        } else {
+          //default to 0
+          $result['customers'][$key]['cancelledcust'] = 0;
+        }
+
 
       }
     } else {
@@ -500,8 +584,25 @@ class Bookings extends Model {
       $this->response->AddResponsePushToArray('invalidFields', array('customers'));
       $passed = false;
     }
-    $result['number'] = $params['number'];
-    $result['id'] = $params['id'];
+
+    if (isset($params['number'])) {
+      $result['number'] = Functions::validateInt($params['number']);
+      if (empty($result['number'])) {
+        $result['number'] = -1;
+      }
+    } else {
+      $result['number'] = -1;
+    }
+
+    if (isset($params['id'])) {
+      $result['id'] = Functions::validateInt($params['id']);
+      if (empty($result['id'])) {
+        $result['id'] = -1;
+      }
+    } else {
+      $result['id'] = -1;
+    }
+
     if ($passed) {
       return $result;
     } else {
