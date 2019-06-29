@@ -226,6 +226,7 @@ class Tours extends Model {
         $this->pdo->rollBack();
         $this->response->Exit(500);
       }
+      return array('updatedid' => $params['id']);
     }
     //End debug deleter
 

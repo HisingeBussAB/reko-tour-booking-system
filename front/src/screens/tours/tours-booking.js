@@ -17,9 +17,12 @@ class NewTourBooking extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      isSubmitting       : false,
-      id                 : 'new',
-      
+      isSubmitting: false,
+      id          : 'new',
+      number      : 'new',
+      tourid      : 'new',   
+      tour        : {label: ''},       
+      customers   : [], 
       redirectTo  : false,
       isConfirming: false
     }
@@ -33,14 +36,21 @@ class NewTourBooking extends Component {
   }
 
   componentWillReceiveProps (nextProps) {
-    const {match, bookings} = this.props
-    if (Number(match.params.id) >= 0 && bookings !== nextProps.bookings && typeof nextProps.bookings === 'object' && nextProps.bookings.length > 0) {
-      const tour = findByKey(match.params.id, 'id', nextProps.bookings)
-      this.setState({
-        id                 : bookings.id,
-        redirectTo         : false,
-        isConfirming       : false
-      })
+    const {match, bookings, tours} = this.props
+    const $newState = {
+      redirectTo         : false,
+      isConfirming       : false
+    }
+    if (Number(match.params.number) >= 0 && bookings !== nextProps.bookings && typeof nextProps.bookings === 'object' && nextProps.bookings.length > 0) {
+      const booking = findByKey(match.params.number, 'number', nextProps.bookings)
+      $newState.id = booking.id
+      $newState.number = booking.number
+      if (Number(booking.tourid) >= 0 && typeof nextProps.tours === 'object' && nextProps.tours.length > 0) {
+        const tour = findByKey(booking.tourid, 'id', nextProps.tours)
+        $newState.tourid = booking.id
+        $newState.tour = tour
+      }
+      this.setState($newState)
     }
   }
 
@@ -114,8 +124,8 @@ class NewTourBooking extends Component {
   }
 
   render () {
-    const {id, isSubmitting, label, departuredate, insuranceprice, reservationfeeprice, rooms, catSelected, redirectTo, isConfirming} = this.state
-    const {categories, tours, history} = this.props
+    const { id, isSubmitting, number, tour, redirectTo, isConfirming } = this.state
+    const { history } = this.props
 
     if (redirectTo !== false) { return <Redirect to={redirectTo} /> }
 
@@ -123,7 +133,7 @@ class NewTourBooking extends Component {
 
     return (
       <div className="TourView NewTour">
-        {isConfirming && <ConfirmPopup doAction={this.doDelete} message={`Vill du verkligen ta bort resan:\n${label} ${moment(departuredate).format('D/M')}.\nGör bara detta om bokningar inte påbörjats, annars rekommenderas att bara inaktivera resan från huvudmenyn för bokningar.`} />}
+        {isConfirming && <ConfirmPopup doAction={this.doDelete} message={`Vill du verkligen markulera bokning:\n${number} ${tour.label}.\nBokningen makuleras för alla resenärer. Det går också att byta ut enskilda resenärer istället.`} />}
 
         <form>
           <button onClick={() => { history.goBack() }} disabled={isSubmitting} type="button" title="Tillbaka till meny" className="mr-4 btn btn-primary btn-sm custom-scale position-absolute" style={{right: 0}}>
@@ -132,7 +142,7 @@ class NewTourBooking extends Component {
           <fieldset disabled={isSubmitting}>
             <div className="container text-left" style={{maxWidth: '850px'}}>
 
-              <h3 className="my-3 w-50 mx-auto text-center">{id !== 'new' ? 'Ändra resa: ' + label + ' ' + moment(departuredate).format('D/M') : 'Skapa ny resa'}</h3>
+              <h3 className="my-3 w-100 mx-auto text-center">{id !== 'new' ? 'Ändra bokning: ' + number + ' på ' + tour.label : 'Skapa ny bokning'}</h3>
               <div className="container-fluid" style={{width: '85%'}}>
                 <fieldset>
                   
@@ -151,15 +161,15 @@ NewTourBooking.propTypes = {
   postItem  : PropTypes.func,
   putItem   : PropTypes.func,
   deleteItem: PropTypes.func,
-  categories: PropTypes.array,
   tours     : PropTypes.array,
+  bookings  : PropTypes.array,
   match     : PropTypes.object,
   history   : PropTypes.object
 }
 
 const mapStateToProps = state => ({
-  tours     : state.tours.tours,
-  bookings  : state.tours.bookings
+  tours   : state.tours.tours,
+  bookings: state.tours.bookings
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({

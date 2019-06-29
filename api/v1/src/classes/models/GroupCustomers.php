@@ -192,8 +192,11 @@ class GroupCustomers extends Model {
     if (ENV_DEBUG_MODE && !empty($_GET["forceReal"]) && Functions::validateBoolToBit($_GET["forceReal"])) {
       //Allows true deletes while running tests or after debugging, does not validate exiting ID
       try {
-
         $sql = "DELETE FROM GroupCustomers WHERE id = :id;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
+        $sth->execute();
+        $sql = "DELETE FROM Categories_GroupCustomers WHERE groupid = :id;";
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
         $sth->execute();
@@ -201,6 +204,7 @@ class GroupCustomers extends Model {
         $this->response->DBError($e, __CLASS__, $sql);
         $this->response->Exit(500);
       }
+      return array('updatedid' => $params['id']);
     }
     if ($this->get(array('id' => $params['id'])) !== false) {
       try {

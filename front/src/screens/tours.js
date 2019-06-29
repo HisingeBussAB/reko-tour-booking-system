@@ -13,7 +13,7 @@ class TourView extends Component {
         <Route exact path="/bokningar" component={TourViewMain} />
         <Route exact path="/bokningar/resa/:id" component={NewTour} />
         <Route exact path="/bokningar/kategorier" component={Categories} />
-        <Route exact path="/bokningar/bokning/:id" component={NewTourBooking} />
+        <Route exact path="/bokningar/bokning/:number" component={NewTourBooking} />
       </div>
     )
   }

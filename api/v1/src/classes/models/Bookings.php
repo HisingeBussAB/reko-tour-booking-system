@@ -168,7 +168,7 @@ class Bookings extends Model {
       $sth->bindParam(':cancelled',     $params['cancelled'],     \PDO::PARAM_INT);
       $sth->bindParam(':cancelleddate', $params['cancelleddate'], \PDO::PARAM_STR);
       $sth->bindParam(':number',        $params['number'],        \PDO::PARAM_INT);
-      $sth->execute(); 
+      $sth->execute();
       $sql = "SELECT id from Bookings where number = :number;";
       $sth = $this->pdo->prepare($sql);
       $sth->bindParam(':number',        $params['number'],        \PDO::PARAM_INT);
@@ -278,33 +278,70 @@ class Bookings extends Model {
 
   }
 
-  public function delete(array $params) {
+  public function delete(array $_params) {
+    $_params['number'] = $_params['id'];
+    $params['number'] = Functions::validateInt($_params['number']);
+    if (is_null($params['number'])) {
+      $this->response->AddResponse('error', 'Bokningsnummret är ogiltigt.');
+      $this->response->AddResponsePushToArray('invalidFields', array('number'));
+      return false;
+    }
     if (ENV_DEBUG_MODE && !empty($_GET["forceReal"]) && Functions::validateBoolToBit($_GET["forceReal"])) {
       //Allows true deletes while running tests or after debugging
-      //Start debug deleter
+      //Start debug deleter, WARNING! Hard deletes all associed customers and all associated data and connections to other trips and payments
+      //ONLY FOR AUTOMATED TESTING
       try {
         $this->pdo->beginTransaction();
-        
+        $sql = "SELECT id FROM Bookings WHERE number = :number;"; 
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':number', $params['number'], \PDO::PARAM_INT);
+        $sth->execute(); 
+        $bookingid = $sth->fetch(\PDO::FETCH_ASSOC);
+        $sql = "SELECT customerid FROM Bookings_Customers WHERE bookingid = :id;"; 
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $bookingid['id'], \PDO::PARAM_INT);
+        $sth->execute(); 
+        $customerids = $sth->fetchAll(\PDO::FETCH_ASSOC);
+        foreach($customerids as $id) {
+          $this->pdo->exec("DELETE FROM Payments WHERE customerid = " . $id['customerid'] . ";"); 
+          $this->pdo->exec("DELETE FROM Bookings_Customers WHERE customerid = " . $id['customerid'] . ";"); 
+          $this->pdo->exec("DELETE FROM Customers WHERE id = " . $id['customerid'] . ";"); 
+        }
+        $this->pdo->exec("DELETE FROM Bookings WHERE id = " . $bookingid['id'] . ";"); 
         $this->pdo->commit();
       } catch(\PDOException $e) {
         $this->response->DBError($e, __CLASS__, $sql);
         $this->pdo->rollBack();
         $this->response->Exit(500);
       }
+      return array('updatedid' => $params['number']);
     }
     //End debug deleter
 
-    if ($this->get(array('id' => $params['id'])) !== false) {
+    if ($this->get(array('id' => $params['number'])) !== false) {
       try {
-        $sql = "UPDATE Tours SET isDeleted = 1 WHERE id = :id;";
+        $this->pdo->beginTransaction();
+        $sql = "SELECT id FROM Bookings WHERE number = :number;"; 
         $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
+        $sth->bindParam(':number', $params['number'], \PDO::PARAM_INT);
+        $sth->execute(); 
+        $r = $sth->fetch(\PDO::FETCH_ASSOC);
+        $bid = $r['id'];
+        $sql = "UPDATE Bookings SET cancelled = 1, cancelleddate = '" . date("Y-m-d H:i:s") . "' WHERE id = :id;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $bid,     \PDO::PARAM_INT);
         $sth->execute();
+        $sql = "UPDATE Bookings_Customers SET cancelledcust = 1 WHERE bookingid = :bookingid;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':bookingid', $bid,     \PDO::PARAM_INT);
+        $sth->execute();
+        $this->pdo->commit();
       } catch(\PDOException $e) {
         $this->response->DBError($e, __CLASS__, $sql);
+        $this->pdo->rollBack();
         $this->response->Exit(500);
       }
-      return array('updatedid' => $params['id']);
+      return array('updatedid' => $params['number']);
     }
     
     return false;    
