@@ -7,7 +7,7 @@ import PropTypes from 'prop-types'
 import {getItem, putItem, postItem, deleteItem} from '../../actions'
 import { Typeahead } from 'react-bootstrap-typeahead'
 import update from 'immutability-helper'
-import { findByKey, getActivePlusSelectedCategories } from '../../utils'
+import { findByKey, getActivePlusSelectedTours } from '../../utils'
 import { Redirect } from 'react-router-dom'
 import ConfirmPopup from '../../components/global/confirm-popup'
 import moment from 'moment'
@@ -20,9 +20,9 @@ class NewTourBooking extends Component {
       isSubmitting: false,
       id          : 'new',
       number      : 'new',
-      tourid      : 'new',   
-      tour        : {label: ''},       
-      customers   : [], 
+      customers   : [],
+      tourSelected: [{'label': ''}],
+      tourOrig    : [{'label': ''}],
       redirectTo  : false,
       isConfirming: false
     }
@@ -38,17 +38,19 @@ class NewTourBooking extends Component {
   componentWillReceiveProps (nextProps) {
     const {match, bookings, tours} = this.props
     const $newState = {
-      redirectTo         : false,
-      isConfirming       : false
+      redirectTo  : false,
+      isConfirming: false
     }
-    if (Number(match.params.number) >= 0 && bookings !== nextProps.bookings && typeof nextProps.bookings === 'object' && nextProps.bookings.length > 0) {
+    if (Number(match.params.number) >= 0 && typeof nextProps.bookings === 'object' && nextProps.bookings.length > 0) {
       const booking = findByKey(match.params.number, 'number', nextProps.bookings)
-      $newState.id = booking.id
-      $newState.number = booking.number
-      if (Number(booking.tourid) >= 0 && typeof nextProps.tours === 'object' && nextProps.tours.length > 0) {
+      if (typeof booking !== 'undefined') {
+        $newState.id = booking.id
+        $newState.number = booking.number
+      }
+      if (Number(booking.tourid) >= 0 && (bookings !== nextProps.bookings || tours !== nextProps.tours) && typeof nextProps.tours === 'object' && nextProps.tours.length > 0) {
         const tour = findByKey(booking.tourid, 'id', nextProps.tours)
-        $newState.tourid = booking.id
-        $newState.tour = tour
+        $newState.tourSelected = [tour]
+        $newState.tourOrig = [tour]
       }
       this.setState($newState)
     }
@@ -95,10 +97,10 @@ class NewTourBooking extends Component {
           if (await deleteItem('bookings', id)) {
             this.setState({isSubmitting: false, redirectTo: '/bokningar/'})
             return null
-          } 
+          }
         }
       }
-    } 
+    }
     this.setState({isSubmitting: false})
   }
 
@@ -124,16 +126,15 @@ class NewTourBooking extends Component {
   }
 
   render () {
-    const { id, isSubmitting, number, tour, redirectTo, isConfirming } = this.state
-    const { history } = this.props
+    const { id, isSubmitting, number, tourSelected, tourOrig, redirectTo, isConfirming } = this.state
+    const { history, tours } = this.props
+    const toursActivePlusSelected = getActivePlusSelectedTours(tours, tourSelected, tourOrig)
 
     if (redirectTo !== false) { return <Redirect to={redirectTo} /> }
 
-    
-
     return (
       <div className="TourView NewTour">
-        {isConfirming && <ConfirmPopup doAction={this.doDelete} message={`Vill du verkligen markulera bokning:\n${number} ${tour.label}.\nBokningen makuleras för alla resenärer. Det går också att byta ut enskilda resenärer istället.`} />}
+        {isConfirming && <ConfirmPopup doAction={this.doDelete} message={`Vill du verkligen markulera bokning:\n${number} ${tourOrig[0].label}.\nBokningen makuleras för alla resenärer. Det går också att byta ut enskilda resenärer istället.`} />}
 
         <form>
           <button onClick={() => { history.goBack() }} disabled={isSubmitting} type="button" title="Tillbaka till meny" className="mr-4 btn btn-primary btn-sm custom-scale position-absolute" style={{right: 0}}>
@@ -142,11 +143,37 @@ class NewTourBooking extends Component {
           <fieldset disabled={isSubmitting}>
             <div className="container text-left" style={{maxWidth: '850px'}}>
 
-              <h3 className="my-3 w-100 mx-auto text-center">{id !== 'new' ? 'Ändra bokning: ' + number + ' på ' + tour.label : 'Skapa ny bokning'}</h3>
-              <div className="container-fluid" style={{width: '85%'}}>
-                <fieldset>
-                  
-                </fieldset>
+              <h3 className="my-3 w-100 mx-auto text-center">{id !== 'new' ? `Ändra bokning: ${number} på ${tourOrig[0].label}.` : 'Skapa ny bokning'}</h3>
+              <div className="container-fluid w-100">
+                <div className="row">
+                  <div className="col-12">
+                    <label htmlFor="bookingTour" className="d-block small mt-1 mb-0">Resa</label>
+                    <Typeahead className="rounded w-100 d-inline-block m-0"
+                      id="bookingTour"
+                      name="bookingTour"
+                      minLength={0}
+                      maxResults={30}
+                      flip
+                      emptyLabel=""
+                      disabled={isSubmitting}
+                      onChange={(tourSelected) => { this.setState({ tourSelected: tourSelected }) }}
+                      labelKey="label"
+                      filterBy={['label']}
+                      options={toursActivePlusSelected}
+                      selected={tourSelected}
+                      placeholder="Välj resa"
+                      allowNew={false}
+                      // eslint-disable-next-line no-return-assign
+                      ref={(ref) => this._Tour = ref}
+                    />
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="col-12">
+                    <label htmlFor="resa" className="d-block small mt-1 mb-0">Avresedatum (åååå-mm-dd)</label>
+                    <input id="tourDate" name="departuredate" value="0" onChange={(e) => { this.handleChange(e.target) }} className="rounded" type="date" style={{width: '166px'}} min="2000-01-01" max="3000-01-01" placeholder="0" required />
+                  </div>
+                </div>
               </div>
             </div>
           </fieldset>

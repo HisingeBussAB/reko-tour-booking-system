@@ -16,6 +16,7 @@ export function findByKey (value, key, array) {
       return array[i]
     }
   }
+  return undefined;
 }
 
 export function strictObjectCompare (obj1, obj2) {
@@ -82,4 +83,19 @@ export function getActivePlusSelectedCategories (categories, selectedItemThatHas
     }
   }
   return activecategories
+}
+
+export function getActivePlusSelectedTours (tours, selectedTour, extraTour) { 
+  const allActiveTours = tours.filter(tours => !tours.isdisabled)
+  if (typeof selectedTour === 'object' && selectedTour.length > 0 && typeof selectedTour[0].id !== 'undefined' ) {
+    if (typeof findByKey(selectedTour[0].id, 'id', allActiveTours) === 'undefined') {
+      allActiveTours.push(selectedTour[0])
+    }
+  }
+  if (typeof extraTour === 'object' && extraTour.length > 0 && typeof extraTour[0].id !== 'undefined' ) {
+    if (typeof findByKey(extraTour[0].id, 'id', allActiveTours) === 'undefined') {
+      allActiveTours.push(extraTour[0])
+    }
+  }
+  return allActiveTours
 }

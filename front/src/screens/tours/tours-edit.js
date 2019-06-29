@@ -45,17 +45,19 @@ class NewTour extends Component {
     const {match, tours} = this.props
     if (Number(match.params.id) >= 0 && tours !== nextProps.tours && typeof nextProps.tours === 'object' && nextProps.tours.length > 0) {
       const tour = findByKey(match.params.id, 'id', nextProps.tours)
-      this.setState({
-        id                 : tour.id,
-        label              : tour.label,
-        departuredate      : moment(tour.departuredate).format('YYYY-MM-DD'),
-        insuranceprice     : tour.insuranceprice,
-        reservationfeeprice: tour.reservationfeeprice,
-        rooms              : tour.rooms,
-        catSelected        : tour.categories,
-        redirectTo         : false,
-        isConfirming       : false
-      })
+      if (typeof tour !== 'undefined') {
+        this.setState({
+          id                 : tour.id,
+          label              : tour.label,
+          departuredate      : moment(tour.departuredate).format('YYYY-MM-DD'),
+          insuranceprice     : tour.insuranceprice,
+          reservationfeeprice: tour.reservationfeeprice,
+          rooms              : tour.rooms,
+          catSelected        : tour.categories,
+          redirectTo         : false,
+          isConfirming       : false
+        })
+      }
     }
   }
 
@@ -192,7 +194,7 @@ class NewTour extends Component {
 
               <h3 className="my-3 w-50 mx-auto text-center">{id !== 'new' ? 'Ändra resa: ' + label + ' ' + moment(departuredate).format('D/M') : 'Skapa ny resa'}</h3>
               <div className="container-fluid" style={{width: '85%'}}>
-                <fieldset>
+                <fieldset disabled={isSubmitting}>
                   <div className="text-center col-12 p-0 m-0">
                     {!isNaN(id) ? <button onClick={(e) => this.deleteConfirm(e)} disabled={isSubmitting} type="button" title="Radera resan med alla bokningar" className="btn btn-danger btn-sm custom-scale mr-5">
                       <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={isSubmitting ? faSpinner : faTrash} size="1x" />&nbsp;Radera</span>
@@ -222,6 +224,7 @@ class NewTour extends Component {
                       options={activecategories}
                       selected={catSelected}
                       placeholder="Kategorier"
+                      allowNew={false}
                       // eslint-disable-next-line no-return-assign
                       ref={(ref) => this._Category = ref}
                     />
@@ -239,7 +242,7 @@ class NewTour extends Component {
                     <input id="tourInsurance" name="reservationfeeprice" value={Number(reservationfeeprice).toFixed(0)} onChange={(e) => { this.handleChange(e.target) }} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
                   </div>
                 </fieldset>
-                <fieldset>
+                <fieldset disabled={isSubmitting}>
                   <table className="table table-borderless table-sm table-hover w-100 mx-auto mt-3">
                     <thead>
                       <tr>

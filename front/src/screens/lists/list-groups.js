@@ -345,6 +345,7 @@ class GroupList extends Component {
                       options={activecategories}
                       selected={catSelected}
                       placeholder="Kategorier"
+                      allowNew={false}
                       // eslint-disable-next-line no-return-assign
                       ref={(ref) => this._Category = ref}
                     />

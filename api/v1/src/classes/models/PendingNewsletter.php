@@ -12,14 +12,6 @@ class PendingNewsletter extends Model {
       $this->response->Exit(500);
     }
     try {
-      $sql = "DELETE FROM newsletter WHERE processed = 1 AND arrived < '" . date("Y-m-d", strtotime("-5 weeks")) . "';";
-      $sth = $this->pdo->prepare($sql);
-      $sth->execute(); 
-    } catch(\PDOException $e) {
-      $this->response->DBError($e, __CLASS__, $sql);
-      $this->response->Exit(500);
-    }
-    try {
         $sql = "SELECT id, email, processed, arrived, ip FROM newsletter ORDER BY arrived ASC;";
         $sth = $this->pdo->prepare($sql);
         $sth->execute(); 
@@ -29,6 +21,14 @@ class PendingNewsletter extends Model {
         $this->response->Exit(500);
       }
       if ($result !== false && is_array($result)) {
+        try {
+          $sql = "DELETE FROM newsletter WHERE processed = 1 AND arrived < '" . date("Y-m-d", strtotime("-5 weeks")) . "';";
+          $sth = $this->pdo->prepare($sql);
+          $sth->execute(); 
+        } catch(\PDOException $e) {
+          $this->response->DBError($e, __CLASS__, $sql);
+          $this->response->Exit(500);
+        }
         return array('pendingnewsletter' => $result);
       }
       return array('pendingnewsletter' => array());
