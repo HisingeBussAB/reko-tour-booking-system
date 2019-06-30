@@ -4,10 +4,10 @@ import { bindActionCreators } from 'redux'
 import {faPlus, faSave, faMinus, faSpinner, faArrowLeft, faTrash} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
-import {getItem, putItem, postItem, deleteItem} from '../../actions'
+import {getItem, putItem, postItem, deleteItem, getItemWeb} from '../../actions'
 import { Typeahead } from 'react-bootstrap-typeahead'
 import update from 'immutability-helper'
-import { findByKey, getActivePlusSelectedCategories } from '../../utils'
+import { findByKey, getActivePlusSelectedCategories, dynamicSort } from '../../utils'
 import { Redirect } from 'react-router-dom'
 import ConfirmPopup from '../../components/global/confirm-popup'
 import moment from 'moment'
@@ -29,22 +29,37 @@ class NewTour extends Component {
           price          : '0',
           size           : '0',
           numberavaliable: '0'}],
-      catSelected : [],
-      redirectTo  : false,
-      isConfirming: false
+      catSelected    : [],
+      webtourSelected: [],
+      redirectTo     : false,
+      isConfirming   : false
     }
   }
 
   componentWillMount () {
-    const {getItem} = this.props
+    const {getItem, getItemWeb} = this.props
     getItem('categories', 'all')
     getItem('tours', 'all')
+    getItemWeb('resor')
+    getItemWeb('boenden')
+  }
+
+  componentDidMount () {
+    const {...props} = this.props
+    this.Initiate(props)
   }
 
   componentWillReceiveProps (nextProps) {
-    const {match, tours} = this.props
-    if (Number(match.params.id) >= 0 && tours !== nextProps.tours && typeof nextProps.tours === 'object' && nextProps.tours.length > 0) {
-      const tour = findByKey(match.params.id, 'id', nextProps.tours)
+    const {tours, webtours} = this.props
+    if (tours !== nextProps.tours || webtours !== nextProps.webtours) {
+      this.Initiate(nextProps)
+    }
+  }
+
+  Initiate = (nextProps) => {
+    try {
+      const tour = findByKey(nextProps.match.params.id, 'id', nextProps.tours)
+      const webtour = findByKey(tour.webid, 'id', nextProps.webtours)
       if (typeof tour !== 'undefined') {
         this.setState({
           id                 : tour.id,
@@ -54,23 +69,28 @@ class NewTour extends Component {
           reservationfeeprice: tour.reservationfeeprice,
           rooms              : tour.rooms,
           catSelected        : tour.categories,
+          webtourSelected    : typeof webtour === 'undefined' ? [] : [webtour],
           redirectTo         : false,
           isConfirming       : false
         })
       }
+    } catch (e) {
+      // To early or bad imput, do nothing use default state.
     }
   }
 
   handleSave = async () => {
-    const {id, rooms, label, departuredate, reservationfeeprice, insuranceprice, catSelected} = this.state
+    const {id, rooms, label, departuredate, reservationfeeprice, insuranceprice, catSelected, webtourSelected} = this.state
     const {postItem, putItem, getItem} = this.props
     this.setState({isSubmitting: true})
+    const webid = typeof webtourSelected !== 'undefined' && typeof webtourSelected[0] !== 'undefined' && typeof webtourSelected[0].id !== 'undefined' ? webtourSelected[0].id : null
     const tourData = {
       label              : label,
       insuranceprice     : insuranceprice,
       reservationfeeprice: reservationfeeprice,
       departuredate      : moment(departuredate).format('YYYY-MM-DD'),
       categories         : catSelected.map(cat => { return {id: cat.id} }),
+      webid              : webid,
       rooms              : rooms.map((item, i) => {
         return {
           id             : item.id,
@@ -116,10 +136,10 @@ class NewTour extends Component {
           if (await deleteItem('tours', id)) {
             this.setState({isSubmitting: false, redirectTo: '/bokningar/'})
             return null
-          } 
+          }
         }
       }
-    } 
+    }
     this.setState({isSubmitting: false})
   }
 
@@ -145,8 +165,8 @@ class NewTour extends Component {
   }
 
   render () {
-    const {id, isSubmitting, label, departuredate, insuranceprice, reservationfeeprice, rooms, catSelected, redirectTo, isConfirming} = this.state
-    const {categories, tours, history} = this.props
+    const {id, isSubmitting, label, departuredate, insuranceprice, reservationfeeprice, rooms, catSelected, redirectTo, isConfirming, webtourSelected} = this.state
+    const {categories, tours, history, webtours, webrooms = []} = this.props
 
     if (redirectTo !== false) { return <Redirect to={redirectTo} /> }
 
@@ -156,7 +176,14 @@ class NewTour extends Component {
     }).map(tour => {
       return tour.rooms.map(room => { return room.label })
     })
-    const roomtypes = [...new Set(roomtypesRaw.flat())]
+    const roomsFromWeb = webrooms.map(t => { return t.boende })
+    const roomtypes = [...new Set(roomtypesRaw.concat(roomsFromWeb).flat())]
+    const activecategoriesSorted = [...activecategories]
+    const webtoursSorted = [...webtours]
+    const roomtypesSorted = [...roomtypes]
+    roomtypesSorted.sort()
+    webtoursSorted.sort(dynamicSort('namn'))
+    activecategoriesSorted.sort(dynamicSort('label'))
     const roomRows = rooms.map((item, i) => {
       return (<tr key={item.id.toString() + i.toString()}>
         <td className="p-2 w-50 align-middle">
@@ -166,9 +193,11 @@ class NewTour extends Component {
             minLength={0}
             maxResults={15}
             flip
+            clearButton
+            paginationText="Visa fler resultat"
             emptyLabel=""
             disabled={isSubmitting}
-            options={roomtypes}
+            options={roomtypesSorted}
             placeholder="Rumstyp/Dagsresa"
             defaultSelected={typeof item.label === 'undefined' ? [] : [item.label]}
             // eslint-disable-next-line no-return-assign
@@ -185,7 +214,7 @@ class NewTour extends Component {
       <div className="TourView NewTour">
         {isConfirming && <ConfirmPopup doAction={this.doDelete} message={`Vill du verkligen ta bort resan:\n${label} ${moment(departuredate).format('D/M')}.\nGör bara detta om bokningar inte påbörjats, annars rekommenderas att bara inaktivera resan från huvudmenyn för bokningar.`} />}
 
-        <form>
+        <form autoComplete="off">
           <button onClick={() => { history.goBack() }} disabled={isSubmitting} type="button" title="Tillbaka till meny" className="mr-4 btn btn-primary btn-sm custom-scale position-absolute" style={{right: 0}}>
             <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faArrowLeft} size="1x" />&nbsp;Meny</span>
           </button>
@@ -207,7 +236,7 @@ class NewTour extends Component {
                     <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="tourName">Resans namn</label>
                     <input id="tourName" name="label" value={label} onChange={(e) => { this.handleChange(e.target) }} className="rounded w-100 d-inline-block m-0" placeholder="Resans namn" maxLength="99" type="text" required />
                   </div>
-                  <div className="text-left col-12 px-0 py-0 m-0">
+                  <div className="text-left col-12 px-0 py-0 m-0" style={{height: '57px'}}>
                     <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="tourCategories">Resekategorier:</label>
                     <Typeahead className="rounded w-100 d-inline-block m-0"
                       id="tourCategories"
@@ -216,14 +245,38 @@ class NewTour extends Component {
                       maxResults={30}
                       flip
                       multiple
+                      paginationText="Visa fler resultat"
                       emptyLabel=""
                       disabled={isSubmitting}
                       onChange={(catSelected) => { this.setState({ catSelected: catSelected }) }}
                       labelKey="label"
                       filterBy={['label']}
-                      options={activecategories}
+                      options={activecategoriesSorted}
                       selected={catSelected}
                       placeholder="Kategorier"
+                      allowNew={false}
+                      // eslint-disable-next-line no-return-assign
+                      ref={(ref) => this._Category = ref}
+                    />
+                  </div>
+                  <div className="text-left col-12 px-0 py-0 m-0">
+                    <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="tourWeb">Kopplas till resa på hemsidan (valfritt):</label>
+                    <Typeahead className="rounded w-100 d-inline-block m-0"
+                      id="tourWeb"
+                      name="tourWeb"
+                      minLength={0}
+                      maxResults={30}
+                      flip
+                      emptyLabel=""
+                      clearButton
+                      paginationText="Visa fler resultat"
+                      disabled={isSubmitting}
+                      onChange={(webtourSelected) => { this.setState({ webtourSelected: webtourSelected }) }}
+                      labelKey="namn"
+                      filterBy={['namn']}
+                      options={webtoursSorted}
+                      selected={webtourSelected}
+                      placeholder="Fylls i om motsvarande resa finns och är aktiv på hemsidan"
                       allowNew={false}
                       // eslint-disable-next-line no-return-assign
                       ref={(ref) => this._Category = ref}
@@ -286,23 +339,29 @@ NewTour.propTypes = {
   getItem   : PropTypes.func,
   postItem  : PropTypes.func,
   putItem   : PropTypes.func,
+  getItemWeb: PropTypes.func,
   deleteItem: PropTypes.func,
   categories: PropTypes.array,
   tours     : PropTypes.array,
+  webtours  : PropTypes.array,
+  webrooms  : PropTypes.array,
   match     : PropTypes.object,
   history   : PropTypes.object
 }
 
 const mapStateToProps = state => ({
   categories: state.tours.categories,
-  tours     : state.tours.tours
+  tours     : state.tours.tours,
+  webtours  : state.web.webtours,
+  webrooms  : state.web.webrooms
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
   getItem,
   postItem,
   putItem,
-  deleteItem
+  deleteItem,
+  getItemWeb
 }, dispatch)
 
 export default connect(mapStateToProps, mapDispatchToProps)(NewTour)

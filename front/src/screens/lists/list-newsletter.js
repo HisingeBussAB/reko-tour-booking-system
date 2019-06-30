@@ -6,6 +6,7 @@ import { Typeahead } from 'react-bootstrap-typeahead'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import {getItem, postItem, deleteItem} from '../../actions'
+import { dynamicSort } from '../../utils'
 
 class NewsletterList extends Component {
   constructor (props) {
@@ -77,13 +78,14 @@ class NewsletterList extends Component {
   render () {
     const {newsletter, history} = this.props
     const {isSubmitting, emailSelected, validEmailEntry, showList, wasDeleted, existEmailEntry, wasSaved, showSepList} = this.state
-
-    const EmailList = newsletter.map(nl => { return <tr key={nl.id}><td>{nl.email}</td></tr> })
-    const EmailSepList = newsletter.map(nl => { return nl.email + '; ' })
+    const newsletterSorted = [...newsletter]
+    newsletterSorted.sort(dynamicSort('email'))
+    const EmailList = newsletterSorted.map(nl => { return <tr key={nl.id}><td>{nl.email}</td></tr> })
+    const EmailSepList = newsletterSorted.map(nl => { return nl.email + '; ' })
     return (
       <div className="ListView NewsletterList">
 
-        <form>
+        <form autoComplete="off">
           <button onClick={() => { history.goBack() }} disabled={isSubmitting} type="button" title="Tillbaka till meny" className="mr-4 btn btn-primary btn-sm custom-scale position-absolute" style={{right: 0}}>
             <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faArrowLeft} size="1x" />&nbsp;Meny</span>
           </button>
@@ -102,7 +104,7 @@ class NewsletterList extends Component {
                   emptyLabel=""
                   disabled={isSubmitting}
                   onChange={(emailSelected) => { this.setState({ emailSelected: emailSelected, validEmailEntry: true, wasSaved: false, existEmailEntry: true }) }}
-                  options={newsletter.map(nl => { return nl.email })}
+                  options={newsletterSorted.map(nl => { return nl.email })}
                   selected={emailSelected}
                   placeholder="Skriv en e-postadress..."
                   // eslint-disable-next-line no-return-assign

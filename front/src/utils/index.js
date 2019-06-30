@@ -11,12 +11,16 @@ export function mergeObjectArrays (arr1, arr2, match) {
 }
 
 export function findByKey (value, key, array) {
-  for (let i = 0; i < array.length; i++) {
-    if (array[i][key].toString() === value.toString()) {
-      return array[i]
+  try {
+    for (let i = 0; i < array.length; i++) {
+      if (array[i][key].toString() === value.toString()) {
+        return array[i]
+      }
     }
+    return undefined;
+  } catch (e) {
+    return undefined;
   }
-  return undefined;
 }
 
 export function strictObjectCompare (obj1, obj2) {
@@ -52,16 +56,20 @@ export function looseObjectCompare (obj1, obj2) {
 // https://stackoverflow.com/questions/1129216/sort-array-of-objects-by-string-property-value
 export function dynamicSort (property) {
   let sortOrder = 1
+  try {
   if (property[0] === '-') {
     sortOrder = -1
     property = property.substr(1)
   }
-  return function (a, b) {
-    /* next line works with strings and numbers,
-       * and you may want to customize it to your needs
-       */
-    const result = a[property].toString().toLowerCase() < b[property].toString().toLowerCase() ? -1 : a[property].toString().toLowerCase() > b[property].toString().toLowerCase() ? 1 : 0
-    return result * sortOrder
+  return function (a,b) {
+    if(sortOrder === -1){
+        return b[property].localeCompare(a[property]);
+    }else{
+        return a[property].localeCompare(b[property]);
+    }        
+  }
+  } catch (e) {
+    return 0  
   }
 }
 

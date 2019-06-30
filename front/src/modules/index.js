@@ -5,12 +5,14 @@ import tours from '../reducers/tours'
 import lists from '../reducers/lists'
 import networkOperations from '../reducers/network-icon'
 import pendingfromweb from '../reducers/pendingfromweb'
+import web from '../reducers/web'
 
 export default combineReducers({
   login,
   errorPopup,
-  networkOperations,
   tours,
   lists,
-  pendingfromweb
+  pendingfromweb,
+  web,
+  networkOperations
 })

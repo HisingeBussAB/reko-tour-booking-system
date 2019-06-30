@@ -12,9 +12,9 @@ class Tours extends Model {
       try {
         $sql = '';
         if ($params['id'] == -1) {
-          $sql = "SELECT id, label, insuranceprice, reservationfeeprice, departuredate, isDisabled FROM Tours WHERE isDeleted = 0 ORDER BY departuredate DESC;";
+          $sql = "SELECT id, label, insuranceprice, reservationfeeprice, departuredate, webid, isDisabled FROM Tours WHERE isDeleted = 0 ORDER BY departuredate DESC;";
         } else {
-          $sql = "SELECT id, label, insuranceprice, reservationfeeprice, departuredate, isDisabled FROM Tours WHERE id = :id AND isDeleted = 0 ORDER BY departuredate DESC;";
+          $sql = "SELECT id, label, insuranceprice, reservationfeeprice, departuredate, webid, isDisabled FROM Tours WHERE id = :id AND isDeleted = 0 ORDER BY departuredate DESC;";
         }
         $sth = $this->pdo->prepare($sql);
         if ($params['id'] != -1) { $sth->bindParam(':id', $params['id'], \PDO::PARAM_INT); }
@@ -74,13 +74,14 @@ class Tours extends Model {
     $params = $this->paramsValidationWithExit($_params);
     
 
-    $sql = "INSERT INTO Tours (label, insuranceprice, reservationfeeprice, departuredate, isDisabled, isDeleted) VALUES (:lab, :ins, :res, :dep, 0, 0);";
+    $sql = "INSERT INTO Tours (label, insuranceprice, reservationfeeprice, departuredate, webid, isDisabled, isDeleted) VALUES (:lab, :ins, :res, :dep, :webid, 0, 0);";
     try {     
       $this->pdo->beginTransaction();
       $sth = $this->pdo->prepare($sql);
       $sth->bindParam(':lab', $params['label'],               \PDO::PARAM_STR);
       $sth->bindParam(':ins', $params['insuranceprice'],      \PDO::PARAM_INT);
       $sth->bindParam(':res', $params['reservationfeeprice'], \PDO::PARAM_INT);
+      $sth->bindParam(':webid', $params['webid'], \PDO::PARAM_INT);
       $sth->bindParam(':dep', $params['departuredate'],       \PDO::PARAM_STR);
       $sth->execute(); 
       $sql = "SELECT LAST_INSERT_ID() as id;";
@@ -120,6 +121,7 @@ class Tours extends Model {
         insuranceprice = :ins, 
         reservationfeeprice = :res, 
         departuredate = :dep, 
+        webid = :webid,
         isDisabled = :act
         WHERE id=:id;";
     try {     
@@ -131,6 +133,7 @@ class Tours extends Model {
       $sth->bindParam(':res', $params['reservationfeeprice'], \PDO::PARAM_INT);
       $sth->bindParam(':dep', $params['departuredate'],       \PDO::PARAM_STR);
       $sth->bindParam(':act', $params['isDisabled'],          \PDO::PARAM_INT);
+      $sth->bindParam(':webid', $params['webid'], \PDO::PARAM_INT);
       $sth->execute(); 
       $sql = "DELETE FROM Categories_Tours WHERE tourId = :id;";
       $sth = $this->pdo->prepare($sql);
@@ -270,6 +273,12 @@ class Tours extends Model {
       $this->response->AddResponse('error', 'Avbeställningsavgift måste anges med ett heltal.');
       $this->response->AddResponsePushToArray('invalidFields', array('insuranceprice'));
       $passed = false;
+    }
+
+    if (isset($params['webid'])) {
+      $result['webid'] = Functions::validateInt($params['webid']);
+    } else {
+      $result['webid'] = NULL;
     }
 
     if (isset($params['reservationfeeprice'])) {

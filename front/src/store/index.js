@@ -31,6 +31,11 @@ const initialState = {
     groupcustomers: [],
     newsletter    : []
   },
+  web: {
+    webtours: [],
+    webcategories: [],
+    webrooms: []
+  },
   pendingfromweb: {
     count     : {},
     bookings  : [],

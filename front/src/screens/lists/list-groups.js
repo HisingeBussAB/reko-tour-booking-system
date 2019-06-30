@@ -202,7 +202,8 @@ class GroupList extends Component {
     const { sortIsDown, showList, sortBy, isConfirming, isSubmitting, orgSelected, catSelected, firstname, lastname, organisation, street, city, zip, phone, email, personalnumber, date, catFilterSelected } = this.state
     const { groupcustomers, categories, history } = this.props
 
-    const activecategories = getActivePlusSelectedCategories(categories, orgSelected[0])
+    const activecategories = [...getActivePlusSelectedCategories(categories, orgSelected[0])]
+    activecategories.sort(dynamicSort('label'))
 
     const isEdited = this.getEditState()
     const isEmpty = this.getEmptyState()
@@ -232,7 +233,7 @@ class GroupList extends Component {
     return (
       <div className="ListView GroupList">
         {isConfirming && typeof orgSelected[0] !== 'undefined' && <ConfirmPopup doAction={this.doDelete} message={`Vill du verkligen ta bort:\n${orgSelected[0].organisation}\n${orgSelected[0].firstname} ${orgSelected[0].lastname}`} />}
-        <form>
+        <form autoComplete="off">
           <button onClick={() => { history.goBack() }} disabled={isSubmitting} type="button" title="Tillbaka till meny" className="mr-4 btn btn-primary btn-sm custom-scale position-absolute" style={{right: 0}}>
             <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faArrowLeft} size="1x" />&nbsp;Meny</span>
           </button>
@@ -251,11 +252,12 @@ class GroupList extends Component {
                       maxResults={6}
                       flip
                       emptyLabel=""
+                      paginationText='Visa fler resultat'
                       disabled={isSubmitting}
                       onChange={(orgSelected) => this.changeOrg(orgSelected)}
                       labelKey="organisation"
                       filterBy={['organisation', 'firstname', 'lastname', 'phone', 'email', 'personalnumber']}
-                      options={groupcustomers}
+                      options={groupcustomersSorted}
                       selected={orgSelected}
                       placeholder="Sök gruppkund"
                       renderMenu={(results, menuProps) => (
@@ -338,6 +340,7 @@ class GroupList extends Component {
                       flip
                       multiple
                       emptyLabel=""
+                      paginationText='Visa fler resultat'
                       disabled={isSubmitting}
                       onChange={(catSelected) => { this.setState({ catSelected: catSelected }) }}
                       labelKey="label"
