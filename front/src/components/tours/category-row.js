@@ -17,18 +17,20 @@ class CategoriesRow extends Component {
 
   constructor (props) {
     super(props)
-    const {category = ''} = this.props
+    const {category = '', forceSave = false, title = ''} = this.props
     this.state = {
       updatingSave  : false,
       updatingActive: false,
       deleting      : false,
       category      : category,
-      isConfirming  : false
+      isConfirming  : false,
+      forceSave     : forceSave,
+      title         : title
     }
   }
 
   componentWillReceiveProps (nextProps) {
-    const {id = 'new', category = 'new', isDisabled = false} = this.props
+    const {id = 'new', category = 'new', isDisabled = false, forceSave = false, title = ''} = this.props
     if (nextProps.id !== id) {
       // for some reason id changed, component state needs reset.
       this.setState({
@@ -36,7 +38,9 @@ class CategoriesRow extends Component {
         updatingSave  : false,
         updatingActive: false,
         deleting      : false,
-        isConfirming  : false
+        isConfirming  : false,
+        forceSave     : nextProps.forceSave,
+        title         : nextProps.title
       })
     }
     // cancel loaders on changes recived
@@ -54,7 +58,7 @@ class CategoriesRow extends Component {
 
   saveCategory = async (e) => {
     e.preventDefault()
-    this.setState({updatingSave: true})
+    this.setState({updatingSave: true, forceSave: false})
     const {putItem, postItem, isNew = false, isDisabled, id = 'new', remove = () => {}, index = null, submitToggle} = this.props
     const {category} = this.state
     submitToggle(true)
@@ -130,24 +134,26 @@ class CategoriesRow extends Component {
   }
 
   render () {
-    const {category: propsCategory = 'new', isDisabled: propsActiveReversed = false, isNew} = this.props
+    const {category: propsCategory = 'new', isDisabled: propsActiveReversed = false, isNew, title = ''} = this.props
     const propsActive = !propsActiveReversed
     const {
       category: stateCategory = 'new',
       updatingSave = false,
       updatingActive = false,
       deleting = false,
-      isConfirming
+      isConfirming,
+      forceSave
     } = this.state
+console.log(forceSave)
     return (
 
-      <tr>
+      <tr title={title}>
         <td className="align-middle pr-3 py-2 w-50">
           {isConfirming && <ConfirmPopup doAction={this.doDelete} message={'Vill du verkligen ta bort kategorin:\n' + propsCategory} />}
           <input value={stateCategory} onChange={(e) => this.handleCategoryChange(e.target.value)} placeholder="Kategorinamn" type="text" className="rounded w-100" maxLength="35" style={{minWidth: '200px'}} />
         </td>
         <td className="align-middle px-3 py-2 text-center">
-          {(((stateCategory === '' || stateCategory) !== undefined && stateCategory !== propsCategory)) && !updatingSave &&
+          {(((stateCategory === '' || stateCategory === undefined) || (stateCategory !== propsCategory || forceSave))) && !updatingSave &&
             <span title="Spara ändring i kategorin" className="primary-color custom-scale cursor-pointer"><FontAwesomeIcon icon={faSave} size="2x" onClick={(e) => this.saveCategory(e)} /></span>}
           {updatingSave &&
             <span title="Sparar ändring i kategorin..." className="primary-color"><FontAwesomeIcon icon={faSpinner} size="2x" pulse /></span> }

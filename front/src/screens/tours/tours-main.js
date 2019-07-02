@@ -50,6 +50,8 @@ class TourViewMain extends Component {
           submitToggle={this.submitToggle}
           insuranceprice={tour.insuranceprice}
           reservationfeeprice={tour.reservationfeeprice}
+          rooms={tour.rooms}
+          categories={tour.categories}
         />
       })
     } catch (e) {
@@ -65,15 +67,15 @@ class TourViewMain extends Component {
           <div className="row">
             <div className="col-lg-4 col-md-12">
               <h4 className="w-75 my-3 mx-auto">Bokningar</h4>
-              <Link to={'/bokningar/nybokning'} className="btn w-75 btn-primary my-3 mx-auto py-2">Skapa ny bokning</Link>
+              <Link to={'/bokningar/bokning/ny'} className="btn w-75 btn-primary my-3 mx-auto py-2">Skapa ny bokning</Link>
               <button className="btn w-75 btn-primary my-3 mx-auto py-2">Skapa ny reservation</button>
               <button className="btn w-75 btn-primary my-4 mx-auto py-2">Spara programbeställningar</button>
-              <p className="w-75 my-3 py-2 mx-auto px-1 text-justify d-block">Reservation används för att boka upp platser för förare/reseledare, preliminärbokningar &amp; grupper.</p>
+              <p className="w-75 my-3 py-2 mx-auto px-1 text-justify d-block">Reservation används för att boka upp platser för förare och reseledare, samt för preliminärbokningar och grupper.</p>
             </div>
             <div className="col-lg-4 col-md-12">
               <h4 className="w-75 my-3 mx-auto">Betalningar</h4>
               <button className="btn w-75 btn-primary my-3 mx-auto py-2">Registrera betalning</button>
-              <p className="w-75 my-3 py-2 mx-auto px-1 text-justify d-block">Senaste registrerad betalning:</p>
+              <p className="w-75 my-3 py-2 mx-auto px-1 text-justify d-block">Senaste registrerade betalning:</p>
             </div>
             <div className="col-lg-4 col-md-12">
               <h4 className="w-75 my-3 mx-auto">Resor</h4>
@@ -95,9 +97,9 @@ class TourViewMain extends Component {
                     </thead>
                     <tbody>
                       {tourRows}
-                      <tr>
+                      {tours.filter(tour => { return !(tour.isdisabled && showOnlyActive) }).length >= tourRowLimit ? <tr>
                         <td colSpan="3" className="py-3"><button className="btn btn-primary btn-sm mt-1 px-2 py-1 w-100" onClick={(e) => { e.preventDefault(); this.setState({tourRowLimit: tourRowLimit + 10}) }}>Visa fler resor</button></td>
-                      </tr>
+                      </tr> : null}
                     </tbody>
                   </table>
                 </fieldset>

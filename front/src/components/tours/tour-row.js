@@ -37,7 +37,7 @@ class TourRow extends Component {
 
   toggleDisabled = async (choice) => {
     this.setState({isConfirming: false})
-    const {label, putItem, isDisabled, id, submitToggle, reservationfeeprice, insuranceprice, departuredate} = this.props
+    const {label, putItem, isDisabled, id, submitToggle, reservationfeeprice, insuranceprice, departuredate, rooms, categories} = this.props
     if (choice === true) {
       this.setState({isUpdatingDisabled: true})
       
@@ -47,7 +47,9 @@ class TourRow extends Component {
         isDisabled          : !isDisabled,
         reservationfeeprice : reservationfeeprice,
         insuranceprice      : insuranceprice,
-        departuredate       : departuredate
+        departuredate       : departuredate,
+        rooms               : rooms,              
+        categories          : categories
       }
       if (!await putItem('tours', id, data)) {
         this.setState({isUpdatingDisabled: false})

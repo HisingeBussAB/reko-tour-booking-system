@@ -100,10 +100,23 @@ class Categories extends Model {
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
         $sth->execute();
+        $sql = "DELETE FROM Categories_GroupCustomers WHERE categoryId = :id;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
+        $sth->execute();
+        $sql = "DELETE FROM Categories_Leads WHERE categoryId = :id;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
+        $sth->execute();
+        $sql = "DELETE FROM Categories_Tours WHERE categoryId = :id;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
+        $sth->execute();
       } catch(\PDOException $e) {
         $this->response->DBError($e, __CLASS__, $sql);
         $this->response->Exit(500);
       }
+      return array('updatedid' => $params['id']);
     }
     if ($this->get(array('id' => $params['id'])) !== false) {
       try {

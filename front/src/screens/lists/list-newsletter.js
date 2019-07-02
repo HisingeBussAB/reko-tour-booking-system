@@ -1,11 +1,12 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import {faSave, faSpinner, faTrash} from '@fortawesome/free-solid-svg-icons'
+import {faSave, faSpinner, faTrash, faArrowLeft} from '@fortawesome/free-solid-svg-icons'
 import { Typeahead } from 'react-bootstrap-typeahead'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import {getItem, postItem, deleteItem} from '../../actions'
+import { dynamicSort } from '../../utils'
 
 class NewsletterList extends Component {
   constructor (props) {
@@ -75,17 +76,22 @@ class NewsletterList extends Component {
   }
 
   render () {
-    const {newsletter} = this.props
+    const {newsletter, history} = this.props
     const {isSubmitting, emailSelected, validEmailEntry, showList, wasDeleted, existEmailEntry, wasSaved, showSepList} = this.state
-
-    const EmailList = newsletter.map(nl => { return <tr key={nl.id}><td>{nl.email}</td></tr> })
-    const EmailSepList = newsletter.map(nl => { return nl.email + '; ' })
+    const newsletterSorted = [...newsletter]
+    newsletterSorted.sort(dynamicSort('email'))
+    const EmailList = newsletterSorted.map(nl => { return <tr key={nl.id}><td>{nl.email}</td></tr> })
+    const EmailSepList = newsletterSorted.map(nl => { return nl.email + '; ' })
     return (
       <div className="ListView NewsletterList">
 
-        <form>
+        <form autoComplete="off">
+          <button onClick={() => { history.goBack() }} disabled={isSubmitting} type="button" title="Tillbaka till meny" className="mr-4 btn btn-primary btn-sm custom-scale position-absolute" style={{right: 0}}>
+            <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faArrowLeft} size="1x" />&nbsp;Meny</span>
+          </button>
           <fieldset disabled={isSubmitting}>
             <div className="container text-left" style={{maxWidth: '850px'}}>
+
               <h3 className="my-4 w-50 mx-auto text-center">Nyhetsbrev</h3>
               <h6 className="m-3 p-2 text-center">Sök efter eller lägg till e-post i nyhetsbrevslistan</h6>
               <div>
@@ -98,7 +104,7 @@ class NewsletterList extends Component {
                   emptyLabel=""
                   disabled={isSubmitting}
                   onChange={(emailSelected) => { this.setState({ emailSelected: emailSelected, validEmailEntry: true, wasSaved: false, existEmailEntry: true }) }}
-                  options={newsletter.map(nl => { return nl.email })}
+                  options={newsletterSorted.map(nl => { return nl.email })}
                   selected={emailSelected}
                   placeholder="Skriv en e-postadress..."
                   // eslint-disable-next-line no-return-assign
@@ -144,7 +150,8 @@ NewsletterList.propTypes = {
   getItem   : PropTypes.func,
   postItem  : PropTypes.func,
   deleteItem: PropTypes.func,
-  newsletter: PropTypes.array
+  newsletter: PropTypes.array,
+  history   : PropTypes.object
 }
 
 const mapStateToProps = state => ({

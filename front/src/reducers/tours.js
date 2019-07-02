@@ -14,6 +14,12 @@ export default function tours (state = {}, action) {
       } else {
         return {...state, tours: mergeObjectArrays(state.tours, action.payload.tours, 'id')}
       }
+    case 'DATA_BOOKINGS_SAVE':
+      if (action.payload.id === 'all' || typeof state.bookings === 'undefined') {
+        return {...state, bookings: action.payload.bookings}
+      } else {
+        return {...state, bookings: mergeObjectArrays(state.bookings, action.payload.bookings, 'id')}
+      }
     default:
       return state
   }

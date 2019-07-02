@@ -190,7 +190,7 @@ $router->addRoutes(array(
   array('POST',           '/users/auth[/]?',                function()         { $start = new Controller; echo $start->auth('login');               }),
   array('POST',           '/users/auth/refresh[/]?',        function()         { $start = new Controller; echo $start->auth('refresh');             }),
   array('POST',           '/users/auth/revoke[/]?',         function()         { $start = new Controller; echo $start->auth('revoke');              }),
-  array('POST',           '/users/auth/revokeall[/]?',         function()         { $start = new Controller; echo $start->auth('revokeall');              }),
+  array('POST',           '/users/auth/revokeall[/]?',      function()         { $start = new Controller; echo $start->auth('revokeall');              }),
   array('GET|PUT|DELETE', '/tours/[i:id]?[/]?',             function($id = -1) { $start = new Controller; echo $start->start('Tours',            $id);   }),
   array('GET|POST',       '/tours[/]?',                     function()         { $start = new Controller; echo $start->start('Tours'                );   }),
   array('GET|PUT|DELETE', '/categories/[i:id]?[/]?',        function($id = -1) { $start = new Controller; echo $start->start('Categories',       $id);   }),
@@ -262,9 +262,11 @@ $router->addRoutes(array(
     $user_ips = array("Cloudflare reported IP" => $_SERVER["HTTP_CF_CONNECTING_IP"],"Connection remote IP" => $_SERVER['REMOTE_ADDR']);
     array_push($reply['ips'], $user_ips);
     header("Content-Type: text/html; charset=UTF-8");
-    echo '<html><head><META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW"></head><h1>Brandväggen har uppdaterats.</h1><h2><a href="https://bokningar.rekoresor.app" target="_top">Tillbaka till bokningssystemet</a></h2><pre>';
+    echo '<html><head><META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW"></head><body><div style="margin: 60px;"><h1>Brandväggen har uppdaterats.</h1><h2>';
+    echo ENV_DOMAIN == 'apitest.rekoresor.app' ? '<a href="https://bokningartest.rekoresor.app" target="_top">' : '<a href="https://bokningar.rekoresor.app" target="_top">';
+    echo 'Tillbaka till bokningssystemet</a></h2><pre style="margin-top: 60px;">';
     print_r($reply);
-    echo '</pre></body></html>';
+    echo '</pre></div></body></html>';
     http_response_code(200); 
     echo ob_get_clean(); 
     die();
