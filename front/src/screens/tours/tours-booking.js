@@ -21,6 +21,7 @@ class NewTourBooking extends Component {
       id          : 'new',
       number      : 'new',
       bookingdate : moment().format('YYYY-MM-DD'),
+      bookinggroup: false,
       paydate1    : moment().format('YYYY-MM-DD'),
       paydate2    : moment().format('YYYY-MM-DD'),
       customers   : [],
@@ -144,7 +145,7 @@ class NewTourBooking extends Component {
   
 
   render () {
-    const { id = 'new', isSubmitting, number = 'new', tourSelected, redirectTo, isConfirming, bookingdate } = this.state
+    const { id = 'new', isSubmitting, number = 'new', tourSelected, redirectTo, isConfirming, bookingdate, bookinggroup } = this.state
     const { history, tours } = this.props
     const toursActivePlusSelected = [...getActivePlusSelectedTours(tours, tourSelected)]
     const tourIsSelected = (typeof tourSelected === 'object' && tourSelected.length > 0 && typeof tourSelected[0].id !== 'undefined' && typeof tourSelected[0].label !== 'undefined' && Number(tourSelected[0].id).toString() === tourSelected[0].id)
@@ -191,12 +192,25 @@ class NewTourBooking extends Component {
                   </div>
                 </div>
                 {tourIsSelected
-                  ? <div className="row">
-                    <div className="col-12">
-                      <label htmlFor="bookingDate" className="d-block small mt-1 mb-0">Bokningsdatum (åååå-mm-dd)</label>
-                      <input id="bookingDate" name="bookingdate" value={bookingdate} onChange={(e) => { this.handleChange(e.target) }} className="rounded" type="date" style={{width: '166px'}} min="2000-01-01" max="3000-01-01" placeholder="0" required />
+                  ? <React.Fragment>
+                    <div className="row">
+                      <div className="col-12">
+                        <label htmlFor="bookingDate" className="d-block small mt-1 mb-0">Bokningsdatum (åååå-mm-dd)</label>
+                        <input id="bookingDate" name="bookingdate" value={bookingdate} onChange={(e) => { this.handleChange(e.target) }} className="rounded" type="date" style={{width: '166px'}} min="2000-01-01" max="3000-01-01" placeholder="0" required />
+                      </div>
                     </div>
-                  </div> 
+                    <div className="row">
+                      <div className="col-12">
+                        <label htmlFor="bookingGroup" className="d-block small mt-1 mb-0">Gruppresa</label>
+                        <div onChange={e => { this.handleChange(e.target)}} className="btn-group btn-group-toggle">
+                        <label class="btn btn-secondary active"></label>
+                          <input type="radio" defaultChecked value={false} name="bookingGroup"/> Individuell (anger att boknings skall bokföras på konto 3021)
+                          <label class="btn btn-secondary"></label>
+                          <input type="radio" value={true} name="bookingGroup"/> Grupp (anger att boknings skall bokföras på konto 3020)
+                          </div>
+                      </div>
+                    </div>
+                  </React.Fragment>
                   : <div className="row">
                     <div className="col-12 text-center my-5 py-2">
                       <h4>Välj en resa först</h4>
