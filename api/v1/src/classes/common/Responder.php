@@ -19,7 +19,7 @@ class Responder {
     $this->output = array();
     // create a log channel
     $this->logger = new Logger('response_logger');
-    $this->logger->pushHandler(new RotatingFileHandler(ENV_LOG_PATH, 10, Logger::WARNING));
+    $this->logger->pushHandler(new RotatingFileHandler(ENV_LOG_PATH, 14, Logger::NOTICE));
     if (!ENV_DEBUG_MODE) {
       ErrorHandler::register($this->logger);
     }
@@ -52,6 +52,10 @@ class Responder {
 
   public function LogError($message, $class) {
     $this->logger->error('Fel i ' . $class . ': ' . $message);
+  }
+
+  public function LogNotice($message, $class) {
+    $this->logger->notice('Event i ' . $class . ': ' . $message);
   }
 
   public function Exit($response_code) {

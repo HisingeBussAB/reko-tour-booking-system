@@ -1,3 +1,5 @@
+import { messaging } from "firebase";
+
 export function mergeObjectArrays (arr1, arr2, match) {
   const newarr = arr1.map(
     s => arr2.find(
@@ -13,13 +15,13 @@ export function mergeObjectArrays (arr1, arr2, match) {
 export function findByKey (value, key, array) {
   try {
     for (let i = 0; i < array.length; i++) {
-      if (array[i][key].toString() === value.toString()) {
+      if (typeof array[i] === 'object' && array[i][key].toString() === value.toString()) {
         return array[i]
       }
     }
-    return undefined;
+    return undefined
   } catch (e) {
-    return undefined;
+    return undefined
   }
 }
 
@@ -57,19 +59,19 @@ export function looseObjectCompare (obj1, obj2) {
 export function dynamicSort (property) {
   let sortOrder = 1
   try {
-  if (property[0] === '-') {
-    sortOrder = -1
-    property = property.substr(1)
-  }
-  return function (a,b) {
-    if(sortOrder === -1){
-        return b[property].localeCompare(a[property]);
-    }else{
-        return a[property].localeCompare(b[property]);
-    }        
-  }
+    if (property[0] === '-') {
+      sortOrder = -1
+      property = property.substr(1)
+    }
+    return function (a, b) {
+      if (sortOrder === -1) {
+        return b[property].localeCompare(a[property])
+    }else {
+        return a[property].localeCompare(b[property])
+    }
+    }
   } catch (e) {
-    return 0  
+    return 0
   }
 }
 
@@ -93,14 +95,14 @@ export function getActivePlusSelectedCategories (categories, selectedItemThatHas
   return activecategories
 }
 
-export function getActivePlusSelectedTours (tours, selectedTour, extraTour) { 
+export function getActivePlusSelectedTours (tours, selectedTour, extraTour) {
   const allActiveTours = tours.filter(tours => !tours.isdisabled)
-  if (typeof selectedTour === 'object' && selectedTour.length > 0 && typeof selectedTour[0].id !== 'undefined' ) {
+  if (typeof selectedTour === 'object' && selectedTour.length > 0 && typeof selectedTour[0].id !== 'undefined') {
     if (typeof findByKey(selectedTour[0].id, 'id', allActiveTours) === 'undefined') {
       allActiveTours.push(selectedTour[0])
     }
   }
-  if (typeof extraTour === 'object' && extraTour.length > 0 && typeof extraTour[0].id !== 'undefined' ) {
+  if (typeof extraTour === 'object' && extraTour.length > 0 && typeof extraTour[0].id !== 'undefined') {
     if (typeof findByKey(extraTour[0].id, 'id', allActiveTours) === 'undefined') {
       allActiveTours.push(extraTour[0])
     }

@@ -26,6 +26,7 @@ final class Auth {
     if (!self::HammerGuard($response, $pdo, false)) {
       $response->AddResponse('error', 'För många inloggningsförsök. Prova igen lite senare.');
       header('WWW-Authenticate: Basic');
+      $response->LogNotice('HammerGuard activated for: ' . ENV_REMOTE_ADDR, __CLASS__);
       $response->Exit(429);
       return false;
     }
@@ -56,6 +57,7 @@ final class Auth {
       //Generate JWT secret for login
       $session = self::getSession();
       if (!Maintenance::insertNewSecret($response, $pdo, md5($_SERVER['HTTP_USER_AGENT']))) {
+        $response->LogError('Kunde inte skapa ny JWT nyckel, kritiskt databasfel!', __CLASS__);
         $response->AddResponse('response', 'Kunde inte skapa ny JWT nyckel, kritiskt databasfel!');
         $response->AddResponse('error', 'Kunde inte skapa ny JWT nyckel, kritiskt databasfel!');
       };
@@ -72,6 +74,9 @@ final class Auth {
 
       //Clear HammerGuard for IP
       self::HammerGuard($response, $pdo, true);
+
+      //Log
+      $response->LogNotice('User logged in succefully: ' . $user, __CLASS__);
 
       //Write login status and tokens to response and return true
       $response->AddResponse('login', true);
@@ -189,7 +194,8 @@ final class Auth {
       //Generate Refresh Token
       $refreshToken = self::generateJWT('refresh', $response, $pdo, $userid, $user, $refreshExp, $now);
 
-
+      //Log
+      $response->LogNotice('User refreshed in succefully: ' . $user, __CLASS__);
       //Write login status and tokens to response and return true
       $response->AddResponse('login', true);
       $response->AddResponse('response', 'Nya tokens skapade och skickade. Inloggning lyckad!');
