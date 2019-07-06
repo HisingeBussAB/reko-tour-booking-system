@@ -144,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] == "OPTIONS") {
 }
 
 
-if ((empty($_SERVER["HTTP_X_API_KEY"]) || $_SERVER["HTTP_X_API_KEY"] != AUTH_API_KEY) && !$bypassLocks) {
+if ((empty($_SERVER["HTTP_X_API_KEY"]) || $_SERVER["HTTP_X_API_KEY"] != AUTH_API_KEY) && !$bypassLocks && !($_SERVER['REQUEST_METHOD'] == 'GET' && parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/generatehash')) {
   http_response_code(403);
   $a = array(
     'login' => false,
@@ -173,7 +173,7 @@ Moment::setLocale('sv_SE');
 
 
 //Final saftey kill setting check for only URLs it should apply to
-if ($bypassLocks != false && !(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/updatefirewall/' || parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/maintinance/'))
+if ($bypassLocks != false && !(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/updatefirewall/' || parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/maintinance/' || parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/generatehash'))
 {
   http_response_code(403);
   $a = array(
@@ -216,9 +216,11 @@ $router->addRoutes(array(
   array('GET',            '/pendingcount[/]?',              function()         { $start = new Controller; echo $start->start('PendingCount'         );   }),
   array('GET|PUT',        '/pendingnewsletter/[i:id]?[/]?', function($id = -1) { $start = new Controller; echo $start->start('PendingNewsletter',$id);   }),
   array('GET',            '/pendingnewsletter[/]?',         function()         { $start = new Controller; echo $start->start('PendingNewsletter'    );   }),
-  //CRON links
+  //UTILITES
+  array('GET',            '/generatehash?[**:trailing]?',   function($trailing = false) { die(json_encode(array('pwd' => trim($_SERVER['QUERY_STRING']), 'hash' => password_hash(trim($_SERVER['QUERY_STRING']) . AUTH_PWD_PEPPER, PASSWORD_DEFAULT)))); }),
+  //CRON
   array('GET',            '/maintinance[/]?',                 function()       { $start = new Controller; echo $start->Maintinance();               }),
-  
+  //FIREWALL
   array('GET|POST',       '/updatefirewall[/]?', function(){
     file_put_contents('cloudflareips.txt', file_get_contents('https://www.cloudflare.com/ips-v4'));
     updateDynamicIPBlock('dynamic_allowed_ips.txt', true);

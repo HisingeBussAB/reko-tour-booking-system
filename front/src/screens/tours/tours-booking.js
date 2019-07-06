@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import {faPlus, faSave, faMinus, faSpinner, faArrowLeft, faTrash} from '@fortawesome/free-solid-svg-icons'
+import {faPlus, faSave, faMinus, faSpinner, faArrowLeft, faTrash, faCheck} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import {getItem, putItem, postItem, deleteItem, getItemWeb} from '../../actions'
@@ -143,6 +143,9 @@ class NewTourBooking extends Component {
     this.setState({ tourSelected: tourSelected })
   }
   
+  toggleGroup = (b) => {
+    this.setState({ bookinggroup: !!b })
+  }
 
   render () {
     const { id = 'new', isSubmitting, number = 'new', tourSelected, redirectTo, isConfirming, bookingdate, bookinggroup } = this.state
@@ -201,13 +204,13 @@ class NewTourBooking extends Component {
                     </div>
                     <div className="row">
                       <div className="col-12">
-                        <label htmlFor="bookingGroup" className="d-block small mt-1 mb-0">Gruppresa</label>
-                        <div onChange={e => { this.handleChange(e.target)}} className="btn-group btn-group-toggle">
-                        <label class="btn btn-secondary active"></label>
-                          <input type="radio" defaultChecked value={false} name="bookingGroup"/> Individuell (anger att boknings skall bokföras på konto 3021)
-                          <label class="btn btn-secondary"></label>
-                          <input type="radio" value={true} name="bookingGroup"/> Grupp (anger att boknings skall bokföras på konto 3020)
+                        <label className="d-block small mt-1 mb-0 p-0 col-12">Gruppresa</label>
+                        <div className="container">
+                        <div className="row">
+                          <div className="col-6 p-0 text-left"><button type="button" name="bookingGroup" onClick={(e) => { e.preventDefault(); this.toggleGroup(false) }} className={bookinggroup ? 'btn btn-secondary' : 'btn btn-primary active'} aria-pressed={!bookinggroup}>{bookinggroup ? null : <FontAwesomeIcon icon={faCheck} size="1x" />}&nbsp;Individuell <p className="small m-0">(anger att bokningen skall bokföras på konto 3021)</p></button></div>
+                          <div className="col-6 p-0 text-right"><button type="button" name="bookingGroup" onClick={(e) => { e.preventDefault(); this.toggleGroup(true) }} className={bookinggroup ? 'btn btn-primary active' : 'btn btn-secondary'} aria-pressed={!bookinggroup}>{bookinggroup ? <FontAwesomeIcon icon={faCheck} size="1x" />: null}&nbsp;Grupp <p className="small m-0">(anger att bokningen skall bokföras på konto 3020)</p></button></div>
                           </div>
+                        </div>
                       </div>
                     </div>
                   </React.Fragment>
