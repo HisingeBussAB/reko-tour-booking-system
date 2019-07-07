@@ -62,7 +62,7 @@ class App extends Component {
       // Firebase
       firebase.auth().signInWithEmailAndPassword(Config.FirebaseLogin, Config.FirebasePwd)
         .then(() => {
-          firebaseItemSub(nextProps.login.user, nextProps.login.jwt)
+          firebaseItemSub()
         })
         .catch(() => {
           this.setState({

@@ -8,8 +8,8 @@ export function LoginRefresh (retry) {
     dispatch(networkAction(1, 'login auto refresh'))
     const userObject = localStorage.getObject('user')
     const usr = {
-      pwd           : Config.AutoLoginPwd,
-      user          : Config.AutoUsername,
+      pwd           : Config.AutoLogin ? Config.AutoLoginPwd : '',
+      user          : typeof userObject.user === 'string' ? userObject.user : Config.AutoUsername,
       refreshToken  : userObject.refreshToken,
       refreshExpires: userObject.refreshExpires
     }

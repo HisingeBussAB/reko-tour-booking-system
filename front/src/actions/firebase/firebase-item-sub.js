@@ -1,60 +1,37 @@
 import firebase from '../../config/firebase'
-import {apiPost} from '../../functions'
-import {networkAction} from '../'
+import {getItem} from '../'
+import {itemNameHuman} from '../../data/valid-api-calls'
 
-export function firebaseItemSub (user, itemType) {
+export function firebaseItemSub (itemType = 'all') {
   return function (dispatch) {
-    let temp = false
-    if (itemType === 'categories') {
-      temp = 'categoryid'
-    } else if (itemType === 'tours') {
-      temp = 'tourid'
+    const listenerTypeRefs = []
+    if (itemType === 'all') {
+      Object.entries(itemNameHuman).forEach(([key, value]) => {
+        listenerTypeRefs.push(key)
+      })
+    } else {
+      listenerTypeRefs.push(itemType)
     }
 
-    const itemTypeid = temp
-    temp = undefined
-    if (itemTypeid === false) {
-      return false
-    }
-
-    // TODO broken!
-
-    const toursCategories = firebase.database().ref('tours/' + itemType)
-    toursCategories.on('value', function (snapshot) {
-      const snap = snapshot.val()
-      try {
-        if (snap.id.indexOf('all') !== -1) {
-          dispatch(networkAction(1, 'get all ' + itemType))
-          apiPost('/tours/' + itemType + '/get', {
-            user        : user,
-            [itemTypeid]: 'all'
-          })
-            .then(response => {
-              dispatch(networkAction(0, 'get all ' + itemType))
+    listenerTypeRefs.forEach(type => {
+      const itemRef = firebase.database().ref('tours/' + type)
+      itemRef.on('value', function (snapshot) {
+        const snap = snapshot.val()
+        try {
+          if (snap.id.indexOf('all') !== -1) {
+            console.log('get all')
+            dispatch(getItem(type, 'all', true))
+          } else {
+            snap.id.forEach((item) => {
+              if (Number.isInteger(item)) {
+                dispatch(getItem(type, Number(item), true))
+              }
             })
-            .catch(error => {
-              dispatch(networkAction(0, 'get all ' + itemType))
-            })
-        } else {
-          snap.id.forEach((item) => {
-            if (Number.isInteger(item)) {
-              dispatch(networkAction(1, 'get ' + itemType + ' ' + item))
-              apiPost('/tours/' + itemType + '/get', {
-                user        : user,
-                [itemTypeid]: item
-              })
-                .then(response => {
-                  dispatch(networkAction(0, 'get ' + itemType + ' ' + item))
-                })
-                .catch(error => {
-                  dispatch(networkAction(0, 'get ' + itemType + ' ' + item))
-                })
-            }
-          })
+          }
+        } catch (e) {
+          /* firebase data malformated, just ignore for now, syncing is not essential */
         }
-      } catch (e) {
-      /* firebase data malformated, ignore */
-      }
+      })
     })
   }
 }

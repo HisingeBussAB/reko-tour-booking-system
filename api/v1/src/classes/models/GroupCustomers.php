@@ -11,8 +11,8 @@ class GroupCustomers extends Model {
       try {
         $sql = "SELECT id
                     ,organisation
-                    ,firstName
-                    ,lastName
+                    ,firstname
+                    ,lastname
                     ,street
                     ,zip
                     ,city
@@ -26,7 +26,7 @@ class GroupCustomers extends Model {
         $sql .= ($params['id'] != -1) 
                     ? " WHERE id = :id AND isAnonymized = 0"
                     : " WHERE isAnonymized = 0";
-        $sql .= " ORDER BY organisation, lastName, firstName, date ASC;";
+        $sql .= " ORDER BY organisation, lastname, firstname, date ASC;";
         $sth = $this->pdo->prepare($sql);
         if ($params['id'] != -1) { $sth->bindParam(':id', $params['id'], \PDO::PARAM_INT); }
         $sth->execute(); 
@@ -70,11 +70,11 @@ class GroupCustomers extends Model {
 
   public function post(array $_params) {
     $params = $this->paramsValidationWithExit($_params, true);
-    $comp = Functions::getCompString($params['firstName'],$params['lastName'],$params['zip'],$params['street']);
+    $comp = Functions::getCompString($params['firstname'],$params['lastname'],$params['zip'],$params['street']);
     $sql = "INSERT INTO GroupCustomers (
       organisation
-      ,firstName
-      ,lastName
+      ,firstname
+      ,lastname
       ,street
       ,zip
       ,city
@@ -86,8 +86,8 @@ class GroupCustomers extends Model {
       ,isAnonymized) 
     VALUES (
       :organisation
-      ,:firstName
-      ,:lastName
+      ,:firstname
+      ,:lastname
       ,:street
       ,:zip
       ,:city
@@ -101,8 +101,8 @@ class GroupCustomers extends Model {
       $this->pdo->beginTransaction();
       $sth = $this->pdo->prepare($sql);
       $sth->bindParam(':organisation',      $params['organisation'],   \PDO::PARAM_STR);
-      $sth->bindParam(':firstName',         $params['firstName'],      \PDO::PARAM_STR);
-      $sth->bindParam(':lastName',          $params['lastName'],       \PDO::PARAM_STR);
+      $sth->bindParam(':firstname',         $params['firstname'],      \PDO::PARAM_STR);
+      $sth->bindParam(':lastname',          $params['lastname'],       \PDO::PARAM_STR);
       $sth->bindParam(':street',            $params['street'],         \PDO::PARAM_STR);
       $sth->bindParam(':zip',               $params['zip'],            \PDO::PARAM_INT);
       $sth->bindParam(':city',              $params['city'],           \PDO::PARAM_STR);
@@ -134,13 +134,13 @@ class GroupCustomers extends Model {
 
   public function put(array $_params) {
     $params = $this->paramsValidationWithExit($_params, true);
-    $comp = Functions::getCompString($params['firstName'],$params['lastName'],$params['zip'],$params['street']);
+    $comp = Functions::getCompString($params['firstname'],$params['lastname'],$params['zip'],$params['street']);
     if ($this->get(array('id' => $params['id'])) !== false) {
       try {
         $sql = "UPDATE GroupCustomers SET 
         organisation  = :organisation
-        ,firstName    = :firstName
-        ,lastName     = :lastName
+        ,firstname    = :firstname
+        ,lastname     = :lastname
         ,street       = :street
         ,zip          = :zip 
         ,city         = :city
@@ -156,8 +156,8 @@ class GroupCustomers extends Model {
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id',                $params['id'],             \PDO::PARAM_INT);
         $sth->bindParam(':organisation',      $params['organisation'],   \PDO::PARAM_STR);
-        $sth->bindParam(':firstName',         $params['firstName'],      \PDO::PARAM_STR);
-        $sth->bindParam(':lastName',          $params['lastName'],       \PDO::PARAM_STR);
+        $sth->bindParam(':firstname',         $params['firstname'],      \PDO::PARAM_STR);
+        $sth->bindParam(':lastname',          $params['lastname'],       \PDO::PARAM_STR);
         $sth->bindParam(':street',            $params['street'],         \PDO::PARAM_STR);
         $sth->bindParam(':zip',               $params['zip'],            \PDO::PARAM_INT);
         $sth->bindParam(':city',              $params['city'],           \PDO::PARAM_STR);
@@ -209,20 +209,20 @@ class GroupCustomers extends Model {
     if ($this->get(array('id' => $params['id'])) !== false) {
       try {
         $params['organisation'] = substr(md5(mt_rand()),0,4);
-        $params['firstName'] = substr(md5(mt_rand()),0,4);
-        $params['lastName'] = substr(md5(mt_rand()),0,4);
+        $params['firstname'] = substr(md5(mt_rand()),0,4);
+        $params['lastname'] = substr(md5(mt_rand()),0,4);
         $params['street'] = substr(md5(mt_rand()),0,2);
         $params['zip'] = '0';
         $params['city'] = substr(md5(mt_rand()),0,2);
         $params['phone'] = '0';
         $params['email'] = substr(md5(mt_rand()),0,2);
         $params['personalNumber'] = '0';
-        $comp = Functions::getCompString($params['firstName'],$params['lastName'],$params['zip'],$params['street']);
+        $comp = Functions::getCompString($params['firstname'],$params['lastname'],$params['zip'],$params['street']);
 
         $sql = "UPDATE GroupCustomers SET 
         organisation  = :organisation
-        ,firstName    = :firstName
-        ,lastName     = :lastName
+        ,firstname    = :firstname
+        ,lastname     = :lastname
         ,street       = :street
         ,zip          = :zip 
         ,city         = :city
@@ -237,8 +237,8 @@ class GroupCustomers extends Model {
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id',                $params['id'],             \PDO::PARAM_INT);
         $sth->bindParam(':organisation',      $params['organisation'],   \PDO::PARAM_STR);
-        $sth->bindParam(':firstName',         $params['firstName'],      \PDO::PARAM_STR);
-        $sth->bindParam(':lastName',          $params['lastName'],       \PDO::PARAM_STR);
+        $sth->bindParam(':firstname',         $params['firstname'],      \PDO::PARAM_STR);
+        $sth->bindParam(':lastname',          $params['lastname'],       \PDO::PARAM_STR);
         $sth->bindParam(':street',            $params['street'],         \PDO::PARAM_STR);
         $sth->bindParam(':zip',               $params['zip'],            \PDO::PARAM_INT);
         $sth->bindParam(':city',              $params['city'],           \PDO::PARAM_STR);
@@ -270,26 +270,30 @@ class GroupCustomers extends Model {
     if (empty($result['organisation'])) {
       $result['organisation'] = 'Privat grupp';
     }
-
-    if (isset($params['firstname'])) {
-      $result['firstName'] = Functions::sanatizeStringUnsafe($params['firstname'], 100);
+    if (isset($params['firstname']) && !empty($params['firstname'])) {
+      $result['firstname'] = Functions::sanatizeStringUnsafe($params['firstname'], 100);
+      if (is_null($result['firstname'])) {
+        $this->response->AddResponse('error', 'Förnamn innehåller ogiltiga tecken.');
+        $this->response->AddResponsePushToArray('invalidFields', array('firstname'));
+        $passed = false;
+    } 
     } else {
-      $result['firstName'] = '';
+      $result['firstname'] = '';
     }
-    if (empty($result['firstName'])) {
-      $this->response->AddResponse('error', 'Förnamn måste anges.');
-      $this->response->AddResponsePushToArray('invalidFields', array('firstName'));
-      $passed = false;
+    if (isset($params['lastname']) && !empty($params['lastname'])) {
+      $result['lastname'] = Functions::sanatizeStringUnsafe($params['lastname'], 100);
+      if (is_null($result['lastname'])) {
+        $this->response->AddResponse('error', 'Efternamn innehåller ogiltiga tecken.');
+        $this->response->AddResponsePushToArray('invalidFields', array('lastname'));
+        $passed = false;
+      } 
+    } else {
+      $result['lastname'] = '';
     }
 
-    if (isset($params['lastname'])) {
-      $result['lastName'] = Functions::sanatizeStringUnsafe($params['lastname'], 100);
-    } else {
-      $result['lastName'] = '';
-    }
-    if (empty($result['lastName'])) {
-      $this->response->AddResponse('error', 'Efternamn måste anges.');
-      $this->response->AddResponsePushToArray('invalidFields', array('lastName'));
+    if (empty($result['lastname']) && empty($result['firstname']) && $result['organisation'] == 'Privat grupp') {
+      $this->response->AddResponse('error', 'Något av förnamn, efternamn eller organisation måste anges.');
+      $this->response->AddResponsePushToArray('invalidFields', array('firstname','lastname','organisation'));
       $passed = false;
     }
 
@@ -307,8 +311,8 @@ class GroupCustomers extends Model {
     if (isset($params['zip']) && !empty($params['zip'])) {
       $result['zip'] = Functions::validateZIP($params['zip']);
       if (is_null($result['street'])) {
-        $this->response->AddResponse('error', 'Gatunamnet innehåller ogiltiga tecken.');
-        $this->response->AddResponsePushToArray('invalidFields', array('street'));
+        $this->response->AddResponse('error', 'Postnummret innehåller ogiltiga tecken.');
+        $this->response->AddResponsePushToArray('invalidFields', array('zip'));
         $passed = false;
       }
     } else {

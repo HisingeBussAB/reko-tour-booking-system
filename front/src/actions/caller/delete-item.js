@@ -9,10 +9,9 @@ export function deleteItem (itemType, item, data) {
     if (itemNameHuman.hasOwnProperty(itemType)) {
       dispatch(networkAction(1, 'delete ' + itemType))
       try {
-        const response = await myAxios.delete('/' + itemType + '/' + item, data)
-        const id = response.data.response.updatedid
+        await myAxios.delete('/' + itemType + '/' + item, data)
         dispatch(getItem(itemType, 'all'))
-        firebaseSavedItem(id, itemType)
+        firebaseSavedItem('all', itemType)
         return true
       } catch (e) {
         try {

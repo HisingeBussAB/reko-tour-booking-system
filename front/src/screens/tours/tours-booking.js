@@ -206,10 +206,10 @@ class NewTourBooking extends Component {
                       <div className="col-12">
                         <label className="d-block small mt-1 mb-0 p-0 col-12">Gruppresa</label>
                         <div className="container">
-                        <div className="row">
+                          <div className="row">
                           <div className="col-6 p-0 text-left"><button type="button" name="bookingGroup" onClick={(e) => { e.preventDefault(); this.toggleGroup(false) }} className={bookinggroup ? 'btn btn-secondary' : 'btn btn-primary active'} aria-pressed={!bookinggroup}>{bookinggroup ? null : <FontAwesomeIcon icon={faCheck} size="1x" />}&nbsp;Individuell <p className="small m-0">(anger att bokningen skall bokföras på konto 3021)</p></button></div>
                           <div className="col-6 p-0 text-right"><button type="button" name="bookingGroup" onClick={(e) => { e.preventDefault(); this.toggleGroup(true) }} className={bookinggroup ? 'btn btn-primary active' : 'btn btn-secondary'} aria-pressed={!bookinggroup}>{bookinggroup ? <FontAwesomeIcon icon={faCheck} size="1x" />: null}&nbsp;Grupp <p className="small m-0">(anger att bokningen skall bokföras på konto 3020)</p></button></div>
-                          </div>
+                        </div>
                         </div>
                       </div>
                     </div>
@@ -218,8 +218,8 @@ class NewTourBooking extends Component {
                     <div className="col-12 text-center my-5 py-2">
                       <h4>Välj en resa först</h4>
                       <p className="mt-5">Vill du skriva ut en manuell resebekräftelse?<br />
-                        <a href="" target="_blank">Manuell resebekräftelse med anmälningsavgift</a><br />
-                        <a href="" target="_blank">Manuell resebekräftelse utan anmälningsavgift</a>
+                        <a href={window.location.hostname === 'bokningartest.rekoresor.app' ? "https://bokningartest.rekoresor.app/boka-manuell.php?anmavg=1" : "https://bokningar.rekoresor.app/boka-manuell.php?anmavg=1"} target="_blank">Manuell resebekräftelse med anmälningsavgift</a><br />
+                        <a href={window.location.hostname === 'bokningartest.rekoresor.app' ? "https://bokningartest.rekoresor.app/boka-manuell.php?anmavg=0" : "https://bokningar.rekoresor.app/boka-manuell.php?anmavg=0"} target="_blank">Manuell resebekräftelse utan anmälningsavgift</a>
                       </p>
                     </div>
                   </div>}

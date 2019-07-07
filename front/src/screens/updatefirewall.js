@@ -26,7 +26,6 @@ class UpdateFirewall extends Component {
 
   render () {
     const {response} = this.state
-    console.log(response)
     return (
       <div style={{margin: '50px'}}>
         <div dangerouslySetInnerHTML={{__html: response}} style={{margin: '30px'}} />
