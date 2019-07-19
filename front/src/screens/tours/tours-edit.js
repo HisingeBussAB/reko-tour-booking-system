@@ -288,11 +288,11 @@ class NewTour extends Component {
                   </div>
                   <div className="w-25 d-inline">
                     <label htmlFor="tourReservation" className="d-block small mt-1 mb-0">Anmälningsavgift</label>
-                    <input id="tourReservation" name="insuranceprice" value={Number(insuranceprice).toFixed(0)} onChange={(e) => { this.handleChange(e.target) }} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
+                    <input id="tourReservation" name="reservationfeeprice" value={Number(reservationfeeprice).toFixed(0)} onChange={(e) => { this.handleChange(e.target) }} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
                   </div>
                   <div className="w-25 d-inline">
                     <label htmlFor="tourInsurance" className="d-block small mt-1 mb-0">Avbeställningskydd</label>
-                    <input id="tourInsurance" name="reservationfeeprice" value={Number(reservationfeeprice).toFixed(0)} onChange={(e) => { this.handleChange(e.target) }} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
+                    <input id="tourInsurance" name="insuranceprice" value={Number(insuranceprice).toFixed(0)} onChange={(e) => { this.handleChange(e.target) }} className="rounded text-right" type="number" style={{width: '75px'}} min="0" max="9999" placeholder="0" maxLength="4" step="1" required /> kr
                   </div>
                 </fieldset>
                 <fieldset disabled={isSubmitting}>

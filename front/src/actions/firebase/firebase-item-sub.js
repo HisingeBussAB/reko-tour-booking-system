@@ -19,7 +19,6 @@ export function firebaseItemSub (itemType = 'all') {
         const snap = snapshot.val()
         try {
           if (snap.id.indexOf('all') !== -1) {
-            console.log('get all')
             dispatch(getItem(type, 'all', true))
           } else {
             snap.id.forEach((item) => {

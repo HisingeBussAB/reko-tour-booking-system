@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import {faPlus, faSave, faMinus, faSpinner, faArrowLeft, faTrash, faCheck} from '@fortawesome/free-solid-svg-icons'
+import {faPlus, faSave, faMinus, faSpinner, faArrowLeft, faTrash, faCheck, faCheckSquare, faSquare} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import {getItem, putItem, postItem, deleteItem, getItemWeb} from '../../actions'
@@ -24,6 +24,7 @@ class NewTourBooking extends Component {
       bookinggroup: false,
       paydate1    : moment().format('YYYY-MM-DD'),
       paydate2    : moment().format('YYYY-MM-DD'),
+      usepaydate1 : true,
       customers   : [],
       tourSelected: [{'label': ''}],
       redirectTo  : false,
@@ -40,6 +41,7 @@ class NewTourBooking extends Component {
   }
 
   componentDidMount () {
+    getItem('customers', 'all')
     const {...props} = this.props
     this.Initate(props)
   }
@@ -140,18 +142,60 @@ class NewTourBooking extends Component {
   }
 
   tourSelected = (tourSelected) => {
-    this.setState({ tourSelected: tourSelected })
+    const newState = { tourSelected: tourSelected }
+    newState.usepaydate1 = true
+    newState.paydate1 = moment().format('YYYY-MM-DD')
+    newState.paydate2 = moment().format('YYYY-MM-DD')
+    if (typeof tourSelected === 'object' && typeof tourSelected[0] === 'object' && typeof tourSelected[0].reservationfeeprice !== 'undefined') {
+      newState.usepaydate1 = tourSelected[0].reservationfeeprice > 0
+    }
+    if (typeof tourSelected === 'object' && typeof tourSelected[0] === 'object' && typeof tourSelected[0].departuredate !== 'undefined') {
+      if (moment().add(7, 'w').isBefore(tourSelected[0].departuredate)) {
+        newState.paydate2 = moment(tourSelected[0].departuredate).subtract(1, 'm').format('YYYY-MM-DD')
+      } else {
+        const d = moment.duration(moment().diff(moment(tourSelected[0].departuredate)))
+        newState.paydate2 = moment(tourSelected[0].departuredate).subtract(Math.abs(Number(d.asMilliseconds() / 2)), 'ms').format('YYYY-MM-DD')
+      }
+      if (newState.usepaydate1 === true) {
+        newState.usepaydate1 = moment().add(7, 'w').isBefore(tourSelected[0].departuredate)
+      }
+      if (newState.usepaydate1 === true) {
+        newState.paydate1 = moment().add(11, 'd').format('YYYY-MM-DD')
+      } else {
+        newState.paydate1 = newState.paydate2
+      }
+      // If trip was in the past paydates can be in the past, then reset dates
+      if (moment(newState.paydate1).isBefore(moment())) {
+        newState.usepaydate1 = false
+        newState.paydate1 = newState.paydate2
+      }
+      if (moment(newState.paydate2).isBefore(moment())) {
+        newState.usepaydate1 = false
+        newState.paydate1 = moment().format('YYYY-MM-DD')
+        newState.paydate2 = moment().format('YYYY-MM-DD')
+      }
+    }
+    this.setState(newState)
   }
-  
+
   toggleGroup = (b) => {
     this.setState({ bookinggroup: !!b })
   }
 
+  togglePayDate1 = () => {
+    const { usepaydate1, paydate2 } = this.state
+    const newState = { usepaydate1: !usepaydate1 }
+    if (usepaydate1) {
+      newState.paydate1 = paydate2
+    }
+    this.setState(newState)
+  }
+
   render () {
-    const { id = 'new', isSubmitting, number = 'new', tourSelected, redirectTo, isConfirming, bookingdate, bookinggroup } = this.state
+    const { id = 'new', isSubmitting, number = 'new', tourSelected, redirectTo, isConfirming, bookingdate, bookinggroup, usepaydate1, paydate1, paydate2, customers } = this.state
     const { history, tours } = this.props
     const toursActivePlusSelected = [...getActivePlusSelectedTours(tours, tourSelected)]
-    const tourIsSelected = (typeof tourSelected === 'object' && tourSelected.length > 0 && typeof tourSelected[0].id !== 'undefined' && typeof tourSelected[0].label !== 'undefined' && Number(tourSelected[0].id).toString() === tourSelected[0].id)
+    const tourIsSelected = typeof tourSelected === 'object' && tourSelected.length > 0 && typeof tourSelected[0].id !== 'undefined' && typeof tourSelected[0].label !== 'undefined' && Number(tourSelected[0].id).toString() === tourSelected[0].id
     toursActivePlusSelected.sort(dynamicSort('label'))
 
     if (redirectTo !== false) { return <Redirect to={redirectTo} /> }
@@ -207,19 +251,62 @@ class NewTourBooking extends Component {
                         <label className="d-block small mt-1 mb-0 p-0 col-12">Gruppresa</label>
                         <div className="container">
                           <div className="row">
-                          <div className="col-6 p-0 text-left"><button type="button" name="bookingGroup" onClick={(e) => { e.preventDefault(); this.toggleGroup(false) }} className={bookinggroup ? 'btn btn-secondary' : 'btn btn-primary active'} aria-pressed={!bookinggroup}>{bookinggroup ? null : <FontAwesomeIcon icon={faCheck} size="1x" />}&nbsp;Individuell <p className="small m-0">(anger att bokningen skall bokföras på konto 3021)</p></button></div>
-                          <div className="col-6 p-0 text-right"><button type="button" name="bookingGroup" onClick={(e) => { e.preventDefault(); this.toggleGroup(true) }} className={bookinggroup ? 'btn btn-primary active' : 'btn btn-secondary'} aria-pressed={!bookinggroup}>{bookinggroup ? <FontAwesomeIcon icon={faCheck} size="1x" />: null}&nbsp;Grupp <p className="small m-0">(anger att bokningen skall bokföras på konto 3020)</p></button></div>
-                        </div>
+                            <div className="col-6 p-0 text-left"><button type="button" name="bookingGroup" onClick={(e) => { e.preventDefault(); this.toggleGroup(false) }} className={bookinggroup ? 'btn btn-secondary' : 'btn btn-primary active'} aria-pressed={!bookinggroup}>{bookinggroup ? null : <FontAwesomeIcon icon={faCheck} size="1x" />}&nbsp;Individuell <p className="small m-0">(anger att bokningen skall bokföras på konto 3021)</p></button></div>
+                            <div className="col-6 p-0 text-left"><button type="button" name="bookingGroup" onClick={(e) => { e.preventDefault(); this.toggleGroup(true) }} className={bookinggroup ? 'btn btn-primary active' : 'btn btn-secondary'} aria-pressed={bookinggroup}>{bookinggroup ? <FontAwesomeIcon icon={faCheck} size="1x" /> : null}&nbsp;Grupp <p className="small m-0">(anger att bokningen skall bokföras på konto 3020)</p></button></div>
+                          </div>
                         </div>
                       </div>
                     </div>
+                    <div className="row">
+                      <div className="col-12">
+                        <label htmlFor="payDate1" className="d-block small mt-1 mb-0">Anmälningsavgift, sista betalningsdatum (åååå-mm-dd)</label>
+                        <input id="payDate1" name="paydate1" value={paydate1} onChange={(e) => { this.handleChange(e.target) }} className="rounded" type="date" style={{width: '166px'}} min="2000-01-01" max="3000-01-01" placeholder="0" disabled={!usepaydate1} />&nbsp;
+                        <button type="button" name="usePayDate1" title={usepaydate1 ? 'Använder anmälningsavgift' : 'Använder inte anmälningsavgift'} onClick={(e) => { e.preventDefault(); this.togglePayDate1() }} className={usepaydate1 ? 'btn btn-primary active small btn-sm' : 'btn btn-secondary small btn-sm'} aria-pressed={usepaydate1}><FontAwesomeIcon icon={usepaydate1 ? faCheckSquare : faSquare} size="1x" /></button>
+                      </div>
+                    </div>
+                    <div className="row">
+                      <div className="col-12">
+                        <label htmlFor="payDate2" className="d-block small mt-1 mb-0">Slutlikvid, sista betalningsdatum (åååå-mm-dd)</label>
+                        <input id="payDate2" name="paydate2" value={paydate2} onChange={(e) => { this.handleChange(e.target) }} className="rounded" type="date" style={{width: '166px'}} min="2000-01-01" max="3000-01-01" placeholder="0" required />
+                      </div>
+                    </div>
+                  <table className="table table-borderless table-sm table-hover w-100 mx-auto mt-3">
+                    <thead>
+                      <tr>
+                        <th span="col" className="p-2 text-center w-75 font-weight-normal">Boende</th>
+                        <th span="col" className="p-2 text-center font-weight-normal small">Pers/rum</th>
+                        <th span="col" className="p-2 text-center font-weight-normal small">Pris/pers</th>
+                        <th span="col" className="p-2 text-center font-weight-normal small">Antal bokade</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {null}
+                      <tr>
+                        <td className="p-2 align-middle" colSpan="2">
+                          <button onClick={this.addRow} disabled={isSubmitting} type="button" title="Lägg till flera boendealternativ" className="btn btn-primary custom-scale">
+                            <span className="mt-1"><FontAwesomeIcon icon={faPlus} size="lg" /></span>
+                          </button>
+                          {customers.length > 1 &&
+                          <button onClick={this.removeRow} disabled={isSubmitting} type="button" title="Ta bort sista raden boendealternativ" className="btn btn-danger custom-scale ml-3">
+                            <span className="mt-1"><FontAwesomeIcon icon={faMinus} size="lg" /></span>
+                          </button>}
+                        </td>
+                        <td className="p-2 text-right align-middle" colSpan="2">
+                          <button onClick={this.handleSave} disabled={isSubmitting} type="button" title="Spara resan" className="btn btn-primary custom-scale">
+                            <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={isSubmitting ? faSpinner : faSave} size="lg" />&nbsp;Spara</span>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
                   </React.Fragment>
                   : <div className="row">
                     <div className="col-12 text-center my-5 py-2">
                       <h4>Välj en resa först</h4>
                       <p className="mt-5">Vill du skriva ut en manuell resebekräftelse?<br />
-                        <a href={window.location.hostname === 'bokningartest.rekoresor.app' ? "https://bokningartest.rekoresor.app/boka-manuell.php?anmavg=1" : "https://bokningar.rekoresor.app/boka-manuell.php?anmavg=1"} target="_blank">Manuell resebekräftelse med anmälningsavgift</a><br />
-                        <a href={window.location.hostname === 'bokningartest.rekoresor.app' ? "https://bokningartest.rekoresor.app/boka-manuell.php?anmavg=0" : "https://bokningar.rekoresor.app/boka-manuell.php?anmavg=0"} target="_blank">Manuell resebekräftelse utan anmälningsavgift</a>
+                        <a href={'https://' + window.location.hostname + '/boka-manuell.php?anmavg=1'} target="_blank">Manuell resebekräftelse med anmälningsavgift</a><br />
+                        <a href={'https://' + window.location.hostname + '/boka-manuell.php?anmavg=0'} target="_blank">Manuell resebekräftelse utan anmälningsavgift</a>
                       </p>
                     </div>
                   </div>}

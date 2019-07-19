@@ -6,5 +6,6 @@ export const itemNameHuman = {
   newsletter       : 'newsletter',
   pendingcount     : 'pendingcount',
   pendingnewsletter: 'pendingnewsletter',
-  bookings         : 'bookings'
+  bookings         : 'bookings',
+  customers        : 'customers'
 }

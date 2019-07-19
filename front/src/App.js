@@ -67,7 +67,7 @@ class App extends Component {
         .catch(() => {
           this.setState({
             showStatus       : true,
-            showStatusMessage: 'Kunde inte ansluta till WebSocket för klientsynkronisering! Programmet går fortfarande att använda men undvik att använda det på flera datorer samtidigt.'
+            showStatusMessage: 'Kunde inte ansluta till Firebase för klientsynkronisering! Programmet går fortfarande att använda, men undvik att arbeta på flera datorer samtidigt.'
           })
           setTimeout(() => {
             this.setState({
