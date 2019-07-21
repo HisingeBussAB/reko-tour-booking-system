@@ -144,7 +144,6 @@ class CategoriesRow extends Component {
       isConfirming,
       forceSave
     } = this.state
-console.log(forceSave)
     return (
 
       <tr title={title}>

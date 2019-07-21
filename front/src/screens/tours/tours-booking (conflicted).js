@@ -12,7 +12,6 @@ import { Redirect } from 'react-router-dom'
 import ConfirmPopup from '../../components/global/confirm-popup'
 import moment from 'moment'
 import 'moment/locale/sv'
-import BookingsCustomer from '../../components/tours/booking-customer'
 
 class NewTourBooking extends Component {
   constructor (props) {
@@ -55,26 +54,21 @@ class NewTourBooking extends Component {
   }
 
   Initate = (nextProps) => {
-    const newState = {
+    const $newState = {
       redirectTo  : false,
       isConfirming: false
     }
     if (Number(nextProps.match.params.number) >= 0 && typeof nextProps.bookings === 'object' && nextProps.bookings.length > 0) {
       const booking = findByKey(nextProps.match.params.number, 'number', nextProps.bookings)
       if (typeof booking !== 'undefined') {
-        newState.id = booking.id
-        newState.number = booking.number
-        newState.paydate1 = booking.paydate1
-        newState.paydate2 = booking.paydate2
-        newState.bookinggroup = booking.bookinggroup
-        newState.customers = booking.customers
-        newState.usepaydate1 = booking.paydate1 !== booking.paydate2 && (booking.paydate1 !== null || booking.paydate1 !== 'null' || typeof booking.paydate1 !== 'undefined')
-        if (Number(booking.tourid) >= 0 && typeof nextProps.tours === 'object' && nextProps.tours.length > 0) {
-          const tour = findByKey(booking.tourid, 'id', nextProps.tours)
-          newState.tourSelected = [tour]
-        }
+        $newState.id = booking.id
+        $newState.number = booking.number
       }
-      this.setState(newState)
+      if (Number(booking.tourid) >= 0 && typeof nextProps.tours === 'object' && nextProps.tours.length > 0) {
+        const tour = findByKey(booking.tourid, 'id', nextProps.tours)
+        $newState.tourSelected = [tour]
+      }
+      this.setState($newState)
     }
   }
 
@@ -205,11 +199,8 @@ class NewTourBooking extends Component {
     toursActivePlusSelected.sort(dynamicSort('label'))
 
     if (redirectTo !== false) { return <Redirect to={redirectTo} /> }
-    let odd = -1
-    const customerForms = customers.map(c => {
-      odd++
-      return (<BookingsCustomer customer={c} key={c.custnumber} id={c.id} number={c.custnumber} odd={odd % 2 !== 0} />)
-    })
+
+    const customerForms = <div className="col-6"></div>
 
     return (
       <div className="TourView NewTour">
@@ -220,7 +211,7 @@ class NewTourBooking extends Component {
             <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faArrowLeft} size="1x" />&nbsp;Meny</span>
           </button>
           <fieldset disabled={isSubmitting}>
-            <div className="container text-left" style={{maxWidth: '1150px'}}>
+            <div className="container text-left" style={{maxWidth: '850px'}}>
 
               <h3 className="my-3 w-100 mx-auto text-center">{id !== 'new' ? `Ändra bokning: ${number} på ${tourSelected[0].label}.` : 'Skapa ny bokning'}</h3>
               <div className="container-fluid w-100">
@@ -270,8 +261,12 @@ class NewTourBooking extends Component {
                     <div className="row">
                       <div className="col-12">
                         <label className="d-block small mt-1 mb-0 p-0 col-12">Gruppresa</label>
-                        <button type="button" name="bookingGroup" onClick={(e) => { e.preventDefault(); this.toggleGroup(false) }} className={bookinggroup ? 'btn btn-secondary mr-2' : 'btn btn-primary active mr-2'} aria-pressed={!bookinggroup}>{bookinggroup ? null : <FontAwesomeIcon icon={faCheck} size="1x" />}&nbsp;Individuell <p className="small m-0">(anger att bokningen skall bokföras på konto 3021)</p></button>
-                        <button type="button" name="bookingGroup" onClick={(e) => { e.preventDefault(); this.toggleGroup(true) }} className={bookinggroup ? 'btn btn-primary active ml-2' : 'btn btn-secondary ml-2'} aria-pressed={bookinggroup}>{bookinggroup ? <FontAwesomeIcon icon={faCheck} size="1x" /> : null}&nbsp;Grupp <p className="small m-0">(anger att bokningen skall bokföras på konto 3020)</p></button>
+                        <div className="container">
+                          <div className="row">
+                            <div className="col-6 p-0 text-left"><button type="button" name="bookingGroup" onClick={(e) => { e.preventDefault(); this.toggleGroup(false) }} className={bookinggroup ? 'btn btn-secondary' : 'btn btn-primary active'} aria-pressed={!bookinggroup}>{bookinggroup ? null : <FontAwesomeIcon icon={faCheck} size="1x" />}&nbsp;Individuell <p className="small m-0">(anger att bokningen skall bokföras på konto 3021)</p></button></div>
+                            <div className="col-6 p-0 text-left"><button type="button" name="bookingGroup" onClick={(e) => { e.preventDefault(); this.toggleGroup(true) }} className={bookinggroup ? 'btn btn-primary active' : 'btn btn-secondary'} aria-pressed={bookinggroup}>{bookinggroup ? <FontAwesomeIcon icon={faCheck} size="1x" /> : null}&nbsp;Grupp <p className="small m-0">(anger att bokningen skall bokföras på konto 3020)</p></button></div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <div className="row">
@@ -288,14 +283,13 @@ class NewTourBooking extends Component {
                       </div>
                     </div>
                     <div className="row">
-                      {customerForms}
+                      {customers}
                     </div>
                     <div className="row">
                       <div className="col-6 text-left">
                         <button onClick={this.addRow} disabled={isSubmitting} type="button" title="Lägg till flera resenärer" className="btn btn-primary custom-scale mt-3">
                           <span className="mt-1"><FontAwesomeIcon icon={faPlus} size="lg" /></span>
                         </button>
-                       
                       </div>
                       <div className="col-6 text-right">
                         <button onClick={this.handleSave} disabled={isSubmitting} type="button" title="Spara resan" className="btn btn-primary custom-scale mt-3">
@@ -303,6 +297,7 @@ class NewTourBooking extends Component {
                         </button>
                       </div>
                     </div>
+
 
                   </React.Fragment>
                   : <div className="row">

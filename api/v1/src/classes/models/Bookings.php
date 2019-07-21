@@ -58,6 +58,7 @@ class Bookings extends Model {
             $customersresult[$k]['isanonymized']            = filter_var($customersresult[$k]['isanonymized'], FILTER_VALIDATE_BOOLEAN);
             $customersresult[$k]['cancelledcust']           = filter_var($customersresult[$k]['cancelledcust'], FILTER_VALIDATE_BOOLEAN);
             $customersresult[$k]['roomdeleted']             = filter_var($customersresult[$k]['roomdeleted'], FILTER_VALIDATE_BOOLEAN);
+            $customersresult[$k]['zip']                     = wordwrap($customersresult[$k]['zip'], 3, ' ', true );
           }
           $result[$key]['customers'] = $customersresult;
         }
