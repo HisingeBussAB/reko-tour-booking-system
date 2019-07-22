@@ -452,6 +452,12 @@ class Bookings extends Model {
           $passed = false;
         }
 
+        if (isset($customer['seperateinvoice'])) {
+          $result['customers'][$key]['seperateinvoice'] = Functions::validateBoolToBit($customer['seperateinvoice']);
+        } else {
+          $result['customers'][$key]['seperateinvoice'] = 0;
+        }
+
         if (isset($customer['street']) && !empty($customer['street'])) {
           $result['customers'][$key]['street'] = Functions::sanatizeStringUnsafe($customer['street'], 100);
           if (is_null($result['customers'][$key]['street'])) {

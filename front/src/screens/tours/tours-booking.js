@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import {faPlus, faSave, faMinus, faSpinner, faArrowLeft, faTrash, faCheck, faCheckSquare, faSquare} from '@fortawesome/free-solid-svg-icons'
+import {faPlus, faSave, faSpinner, faArrowLeft, faTrash, faCheck, faCheckSquare, faSquare} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import {getItem, putItem, postItem, deleteItem, getItemWeb} from '../../actions'
@@ -77,7 +77,7 @@ class NewTourBooking extends Component {
       this.setState(newState)
     }
   }
-
+  /*
   handleSave = async () => {
     const {id} = this.state
     const {postItem, putItem, getItem} = this.props
@@ -93,17 +93,17 @@ class NewTourBooking extends Component {
     }
     this.setState({isSubmitting: false})
   }
-
+*/
   handleChange = (e) => {
     this.setState({ [e.name]: e.value })
   }
 
-  handleChangePaxw = (e, i) => {
-    const {rooms} = this.state
-    const newroom = update(rooms, {[[i]]: {[e.name]: {$set: e.value}}})
-    this.setState({rooms: newroom})
+  handleChangePax = (e, i) => {
+    const {customers} = this.state
+    const newcustomer = update(customers, {[[i]]: {[e.name]: {$set: e.value}}})
+    this.setState({customers: newcustomer})
   }
-
+  /*
   deleteConfirm = (e) => {
     if (typeof e !== 'undefined') { e.preventDefault() }
     this.setState({isSubmitting: true, isConfirming: true})
@@ -125,25 +125,37 @@ class NewTourBooking extends Component {
     }
     this.setState({isSubmitting: false})
   }
-
-  addRow = () => {
-    const emptyRoom = {
-      id             : 'new',
-      label          : '',
-      price          : '0',
-      size           : '0',
-      numberavaliable: '0'
+*/
+  addCustomer = () => {
+    const {customers = []} = this.state
+    const maxCustomer = Math.max(...customers.map(c => Number(c.custnumber)), 0)
+    const emptyCustomer = {
+      id               : 'new',
+      custnumber       : typeof customers === 'object' ? Number(maxCustomer + 1).toString().padStart(2, '0') : '00',
+      firstname        : '',
+      lastname         : '',
+      street           : '',
+      zip              : '',
+      city             : '',
+      phone            : '',
+      email            : '',
+      priceadjustment  : 0,
+      label            : '',
+      price            : '',
+      departurelocation: '',
+      departuretime    : '',
+      personalnumber   : '',
+      requests         : ''
     }
-    const {rooms} = this.state
-    const newroom = update(rooms, {$push: [emptyRoom]})
-    this.setState({rooms: newroom})
+    const newcustomers = update(customers, {$push: [emptyCustomer]})
+    this.setState({customers: newcustomers})
   }
 
-  removeRow = () => {
-    const {rooms} = this.state
-    if (rooms.length > 1) {
-      const newrooms = update(rooms, {$splice: [[rooms.length - 1, 1]]})
-      this.setState({rooms: newrooms})
+  removeCustomer = () => {
+    const {customers} = this.state
+    if (customers.length > 1) {
+      const newcustomers = update(customers, {$splice: [[customers.length - 1, 1]]})
+      this.setState({customers: newcustomers})
     }
   }
 
@@ -206,9 +218,19 @@ class NewTourBooking extends Component {
 
     if (redirectTo !== false) { return <Redirect to={redirectTo} /> }
     let odd = -1
-    const customerForms = customers.map(c => {
+    const customerForms = customers.map((c, i) => {
       odd++
-      return (<BookingsCustomer customer={c} key={c.custnumber} id={c.id} number={c.custnumber} odd={odd % 2 !== 0} />)
+      return (<BookingsCustomer
+        index={i}
+        customer={c}
+        key={c.custnumber}
+        id={c.id}
+        number={c.custnumber}
+        isOdd={odd % 2 !== 0}
+        handleChange={this.handleChangePax}
+        removeCustomer={this.removeCustomer}
+        isSubmitting={isSubmitting}
+      />)
     })
 
     return (
@@ -292,10 +314,10 @@ class NewTourBooking extends Component {
                     </div>
                     <div className="row">
                       <div className="col-6 text-left">
-                        <button onClick={this.addRow} disabled={isSubmitting} type="button" title="Lägg till flera resenärer" className="btn btn-primary custom-scale mt-3">
+                        <button onClick={this.addCustomer} disabled={isSubmitting} type="button" title="Lägg till flera resenärer" className="btn btn-primary custom-scale mt-3">
                           <span className="mt-1"><FontAwesomeIcon icon={faPlus} size="lg" /></span>
                         </button>
-                       
+
                       </div>
                       <div className="col-6 text-right">
                         <button onClick={this.handleSave} disabled={isSubmitting} type="button" title="Spara resan" className="btn btn-primary custom-scale mt-3">
