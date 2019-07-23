@@ -1,8 +1,13 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import {faPlus, faSave, faMinus, faSpinner, faTrash, faCheck, faCheckSquare, faSquare} from '@fortawesome/free-solid-svg-icons'
+import { bindActionCreators } from 'redux'
+import {faPlus, faSave, faMinus, faSpinner, faTrash, faCheck, faCheckSquare, faSquare, faInfoCircle} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
+import { Typeahead } from 'react-bootstrap-typeahead'
+import moment from 'moment'
+import 'moment/locale/sv'
+import { infoPopup } from '../../actions';
 
 class BookingsCustomer extends Component {
   constructor (props) {
@@ -12,8 +17,24 @@ class BookingsCustomer extends Component {
     }
   }
 
+  showInvoiceInfo = () => {
+    const {infoPopup} = this.props
+    infoPopup({
+      visible: true,
+      message: `Välj nummer för att skicka separata fakturor.
+                Resernärer med samma fakturanummer grupperas ihop på samma faktura, fakturan skickas till den första resenären på fakturan som har en adress angiven.
+
+                Fakturanummret är de två sista siffrorna (efter bokningsnummret) av referensnummret för fakturan.
+                Fakturanummren börjar på 00.`,
+      suppressed: false})
+  }
+
   render () {
-    const {id, number, isOdd, handleChange, index, customer, isSubmitting, removeCustomer} = this.props
+    const {id, number, isOdd, handleChange, index, customer = {}, isSubmitting, removeCustomer, maxInvoice} = this.props
+
+    const invoiceSelector = <select name="invoicenr" value={customer.invoicenr} onChange={e => handleChange(e.target, index)} disabled={isSubmitting} className="rounded d-inline m-0 p-1">
+      {Array.from(Array(maxInvoice).keys()).map(i => { return (<option key={i} value={i}>{Number(i).toString().padStart(2, '0')}</option>) })}
+        </select>
 
     return (
 
@@ -21,21 +42,15 @@ class BookingsCustomer extends Component {
 
         <div className="container p-0 mt-2">
           <div className="row">
-            <div className="col-6 pr-1">
-            <h5 className="mb-1 p-0 mt-4 w-100">Resenär nr <b>{number}</b></h5>            </div>
-            <div className="col-6 pl-1 text-right">
-              <button onClick={(e) => this.removeCustomer(index)} disabled={isSubmitting} type="button" title="Makulera hela bokningen" className="btn btn-danger btn-sm custom-scale mb-1 py-1 px-2 mt-4">
+            <div className="col-7 pr-1">
+              <h5 className="mb-1 p-0 mt-4 w-100">Resenär {number} på faktura {invoiceSelector} <FontAwesomeIcon icon={faInfoCircle} size="1x" className="mt-1 primary-color" onClick={this.showInvoiceInfo} /></h5>
+            </div>
+            <div className="col-5 pl-1 text-right">
+              <button onClick={(e) => removeCustomer(index)} disabled={isSubmitting} type="button" title="Makulera hela bokningen" className="btn btn-danger btn-sm custom-scale mb-1 py-1 px-2 mt-4">
                 <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={isSubmitting ? faSpinner : faTrash} size="1x" />&nbsp;Ta bort resenär {number}</span>
               </button>
             </div>
           </div>
-          <div className="row">
-                      <div className="col-12">
-                        <label htmlFor="payDate1" className="d-block small mt-1 mb-0">Anmälningsavgift, sista betalningsdatum (åååå-mm-dd)</label>
-                        <input id="payDate1" name="paydate1" value={paydate1} onChange={(e) => { this.handleChange(e.target) }} className="rounded" type="date" style={{width: '166px'}} min="2000-01-01" max="3000-01-01" placeholder="0" disabled={!usepaydate1} />&nbsp;
-                        <button type="button" name="usePayDate1" title={seperateinvoice ? 'Använder anmälningsavgift' : 'Använder inte anmälningsavgift'} onClick={(e) => { e.preventDefault(); this.togglePayDate1() }} className={usepaydate1 ? 'btn btn-primary active small btn-sm' : 'btn btn-secondary small btn-sm'} aria-pressed={usepaydate1}><FontAwesomeIcon icon={usepaydate1 ? faCheckSquare : faSquare} size="1x" /></button>
-                      </div>
-                    </div>
           <div className="row">
             <div className="col-5 pr-1">
               <label htmlFor="firstname" className="d-block small mt-1 mb-0">Förnamn</label>
@@ -109,7 +124,7 @@ class BookingsCustomer extends Component {
           <div className="row">
             <div className="col-12">
               <label htmlFor="requests" className="d-block small mt-1 mb-0">Önskemål</label>
-              <textarea value={customer.requests} className="rounded w-100 d-inline-block m-0 rbt-input-main" style={{height: '100px'}} />
+              <textarea value={customer.requests} onChange={e => handleChange(e.target, index)} className="rounded w-100 d-inline-block m-0 rbt-input-main" style={{height: '100px'}} />
             </div>
           </div>
         </div>
@@ -127,7 +142,9 @@ BookingsCustomer.propTypes = {
   isSubmitting  : PropTypes.bool,
   handleChange  : PropTypes.func,
   removeCustomer: PropTypes.func,
-  index         : PropTypes.number
+  index         : PropTypes.number,
+  maxInvoice    : PropTypes.number,
+  infoPopup     : PropTypes.func
 
 }
 
@@ -135,4 +152,8 @@ const mapStateToProps = state => ({
   allCustomers: typeof state.lists.customers === 'object' ? state.lists.customers : []
 })
 
-export default connect(mapStateToProps, null)(BookingsCustomer)
+const mapDispatchToProps = dispatch => bindActionCreators({
+  infoPopup
+}, dispatch)
+
+export default connect(mapStateToProps, mapDispatchToProps)(BookingsCustomer)

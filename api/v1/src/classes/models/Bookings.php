@@ -35,7 +35,7 @@ class Bookings extends Model {
           $result[$key]['group']     = filter_var($result[$key]['group'], FILTER_VALIDATE_BOOLEAN);
           try {
             $sql = "SELECT Customers.id as id, firstName, lastName, street, zip, city, phone,	email, personalNumber, date, compare,	isAnonymized,
-                              Bookings_Customers.id as BookingsCustomersid, custNumber, bookingId, customerId, roomId, requests, priceAdjustment, cancelledCust, departureLocation, departureTime, cancellationinsurance,
+                              Bookings_Customers.id as BookingsCustomersid, custNumber, bookingId, customerId, roomId, requests, priceAdjustment, cancelledCust, departureLocation, departureTime, cancellationinsurance, invoicenr,
                               label, price, size, Rooms.isDeleted as roomDeleted
                       FROM Customers 
                       INNER JOIN Bookings_Customers 
@@ -43,7 +43,7 @@ class Bookings extends Model {
                       INNER JOIN Rooms
                         ON Bookings_Customers.roomid = Rooms.id 
                       WHERE Bookings_Customers.bookingid = :id
-                      ORDER BY custNumber ASC;";
+                      ORDER BY invoicenr, custNumber ASC;";
             $sth = $this->pdo->prepare($sql);
             $sth->bindParam(':id', $booking['id'], \PDO::PARAM_INT);
             $sth->execute();
@@ -53,7 +53,7 @@ class Bookings extends Model {
             $this->response->Exit(500);
           }
           foreach ($customersresult as $k=>$r) {
-            $customersresult[$k]['custnumber']              = str_pad($customersresult[$k]['custnumber'], 2, '0', STR_PAD_LEFT);
+            $customersresult[$k]['invoicenr']               = str_pad($customersresult[$k]['invoicenr'], 2, '0', STR_PAD_LEFT);
             $customersresult[$k]['cancellationinsurance']   = filter_var($customersresult[$k]['cancellationinsurance'], FILTER_VALIDATE_BOOLEAN);
             $customersresult[$k]['isanonymized']            = filter_var($customersresult[$k]['isanonymized'], FILTER_VALIDATE_BOOLEAN);
             $customersresult[$k]['cancelledcust']           = filter_var($customersresult[$k]['cancelledcust'], FILTER_VALIDATE_BOOLEAN);
@@ -123,8 +123,8 @@ class Bookings extends Model {
           $sth->execute(); 
           $customerid = $sth->fetch(\PDO::FETCH_ASSOC); 
         }
-        $sql = "INSERT INTO Bookings_Customers(bookingid, customerid, roomid, requests, priceadjustment, departurelocation, departuretime, custnumber)
-        VALUES (:bookingid, :customerid, :roomid, :requests, :priceadjustment, :departurelocation, :departuretime, :custnumber);";
+        $sql = "INSERT INTO Bookings_Customers(bookingid, customerid, roomid, requests, priceadjustment, departurelocation, departuretime, custnumber, invoicenr)
+        VALUES (:bookingid, :customerid, :roomid, :requests, :priceadjustment, :departurelocation, :departuretime, :custnumber, :invoicenr);";
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':bookingid',         $bookingid['id'],              \PDO::PARAM_INT);
         $sth->bindParam(':customerid',        $customerid['id'],             \PDO::PARAM_INT);
@@ -134,6 +134,7 @@ class Bookings extends Model {
         $sth->bindParam(':departurelocation', $customer['departurelocation'],\PDO::PARAM_STR);
         $sth->bindParam(':departuretime',     $customer['departuretime'],    \PDO::PARAM_STR);
         $sth->bindParam(':custnumber',        $i,                            \PDO::PARAM_INT);
+        $sth->bindParam(':invoicenr',         $customer['invoicenr'],        \PDO::PARAM_INT);
         $sth->execute(); 
         $i++;
       }
@@ -218,8 +219,8 @@ class Bookings extends Model {
           $sth = $this->pdo->prepare($sql);
           $sth->execute(); 
           $newcustomerid = $sth->fetch(\PDO::FETCH_ASSOC); 
-          $sql = "INSERT INTO Bookings_Customers(bookingid, customerid, roomid, requests, priceadjustment, departurelocation, departuretime, custnumber)
-          VALUES (:bookingid, :customerid, :roomid, :requests, :priceadjustment, :departurelocation, :departuretime, :custnumber);";
+          $sql = "INSERT INTO Bookings_Customers(bookingid, customerid, roomid, requests, priceadjustment, departurelocation, departuretime, custnumber, invoicenr)
+          VALUES (:bookingid, :customerid, :roomid, :requests, :priceadjustment, :departurelocation, :departuretime, :custnumber, :invoicenr);";
           $sth = $this->pdo->prepare($sql);
           $sth->bindParam(':bookingid',         $bookingsid,                   \PDO::PARAM_INT);
           $sth->bindParam(':customerid',        $newcustomerid['id'],          \PDO::PARAM_INT);
@@ -229,11 +230,12 @@ class Bookings extends Model {
           $sth->bindParam(':departurelocation', $customer['departurelocation'],\PDO::PARAM_STR);
           $sth->bindParam(':departuretime',     $customer['departuretime'],    \PDO::PARAM_STR);
           $sth->bindParam(':custnumber',        $i,                            \PDO::PARAM_INT);
+          $sth->bindParam(':invoicenr',         $customer['invoicenr'],        \PDO::PARAM_INT);
           $sth->execute(); 
         } else {
           if ($exists) {
             $sql = "UPDATE Bookings_Customers SET roomid = :roomid, requests = :requests, priceadjustment = :priceadjustment, departurelocation = :departurelocation, 
-            departuretime = :departuretime, cancellationinsurance = :cancellationinsurance, cancelledcust = :cancelledcust
+            departuretime = :departuretime, cancellationinsurance = :cancellationinsurance, cancelledcust = :cancelledcust, invoicenr = :invoicenr
             WHERE bookingid = :bookingid AND customerid = :customerid;";
             $sth = $this->pdo->prepare($sql);
             $sth->bindParam(':bookingid',               $bookingsid,                        \PDO::PARAM_INT);
@@ -245,10 +247,11 @@ class Bookings extends Model {
             $sth->bindParam(':departuretime',           $customer['departuretime'],         \PDO::PARAM_STR);
             $sth->bindParam(':cancellationinsurance',   $customer['cancellationinsurance'], \PDO::PARAM_INT);
             $sth->bindParam(':cancelledcust',           $customer['cancelledcust'],         \PDO::PARAM_INT);
+            $sth->bindParam(':invoicenr',               $customer['invoicenr'],             \PDO::PARAM_INT);
             $sth->execute(); 
           } else {
-            $sql = "INSERT INTO Bookings_Customers(bookingid, customerid, roomid, requests, priceadjustment, departurelocation, departuretime, custnumber)
-            VALUES (:bookingid, :customerid, :roomid, :requests, :priceadjustment, :departurelocation, :departuretime, :custnumber);";
+            $sql = "INSERT INTO Bookings_Customers(bookingid, customerid, roomid, requests, priceadjustment, departurelocation, departuretime, custnumber, invoicenr)
+            VALUES (:bookingid, :customerid, :roomid, :requests, :priceadjustment, :departurelocation, :departuretime, :custnumber, :invoicenr);";
             $sth = $this->pdo->prepare($sql);
             $sth->bindParam(':bookingid',         $bookingsid,                   \PDO::PARAM_INT);
             $sth->bindParam(':customerid',        $customer['id'],               \PDO::PARAM_INT);
@@ -258,6 +261,7 @@ class Bookings extends Model {
             $sth->bindParam(':departurelocation', $customer['departurelocation'],\PDO::PARAM_STR);
             $sth->bindParam(':departuretime',     $customer['departuretime'],    \PDO::PARAM_STR);
             $sth->bindParam(':custnumber',        $i,                            \PDO::PARAM_INT);
+            $sth->bindParam(':invoicenr',         $customer['invoicenr'],        \PDO::PARAM_INT);
             $sth->execute(); 
             $i++;
           }
@@ -452,10 +456,15 @@ class Bookings extends Model {
           $passed = false;
         }
 
-        if (isset($customer['seperateinvoice'])) {
-          $result['customers'][$key]['seperateinvoice'] = Functions::validateBoolToBit($customer['seperateinvoice']);
+        if (isset($customer['invoicenr'])) {
+          $result['customers'][$key]['invoicenr'] = Functions::validateInt($customer['invoicenr'], 0, 127);
+          if (is_null($result['customers'][$key]['invoicenr'])) {
+            $this->response->AddResponse('error', 'Fakturanummret måste vara ett heltal mellan 0 och 127.');
+            $this->response->AddResponsePushToArray('invalidFields', array('customers.' . $key . '.invoicenr'));
+            $passed = false;
+          }
         } else {
-          $result['customers'][$key]['seperateinvoice'] = 0;
+          $result['customers'][$key]['invoicenr'] = 0;
         }
 
         if (isset($customer['street']) && !empty($customer['street'])) {

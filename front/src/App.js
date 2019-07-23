@@ -11,6 +11,7 @@ import Config from './config/config'
 import firebase from './config/firebase'
 import {firebaseItemSub} from './actions/firebase/firebase-item-sub'
 import ErrorPopup from './components/global/error-popup'
+import InfoPopup from './components/global/info-popup'
 import {LoginRefresh} from './actions'
 
 /* eslint-disable react/display-name */
@@ -90,10 +91,10 @@ class App extends Component {
   }
 
   render () {
-    const {isSuppressedPopup = true, login = {login: {login: false}}} = this.props
+    const {isSuppressedInfo = true, isSuppressedPopup = true, login = {login: {login: false}}} = this.props
     const {showStatus = true, showStatusMessage = ''} = this.state
     return (
-      <div className="App h-100">
+      <div className="App h-100 mb-5">
         {login.login
           ? <div>
             {showStatus
@@ -110,6 +111,7 @@ class App extends Component {
           : <LoginScreen />
         }
         {!isSuppressedPopup && <ErrorPopup /> }
+        {!isSuppressedInfo && <InfoPopup /> }
         <NetworkIcon />
       </div>
     )
@@ -120,12 +122,14 @@ App.propTypes = {
   LoginRefresh     : PropTypes.func,
   login            : PropTypes.object,
   firebaseItemSub  : PropTypes.func,
-  isSuppressedPopup: PropTypes.bool
+  isSuppressedPopup: PropTypes.bool,
+  isSuppressedInfo : PropTypes.bool
 }
 
 const mapStateToProps = state => ({
   login            : state.login,
-  isSuppressedPopup: state.errorPopup.suppressed
+  isSuppressedPopup: state.errorPopup.suppressed,
+  isSuppressedInfo : state.infoPopup.suppressed
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({

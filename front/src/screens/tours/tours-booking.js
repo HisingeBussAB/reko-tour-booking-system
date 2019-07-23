@@ -128,10 +128,12 @@ class NewTourBooking extends Component {
 */
   addCustomer = () => {
     const {customers = []} = this.state
-    const maxCustomer = Math.max(...customers.map(c => Number(c.custnumber)), 0)
+    const maxCustomer = Math.max(...customers.map(c => Number(c.custnumber)), -1)
+    console.log(maxCustomer)
     const emptyCustomer = {
       id               : 'new',
-      custnumber       : typeof customers === 'object' ? Number(maxCustomer + 1).toString().padStart(2, '0') : '00',
+      custnumber       : typeof customers === 'object' ? Number(maxCustomer + 1) : 0,
+      invoicenr        : '00',
       firstname        : '',
       lastname         : '',
       street           : '',
@@ -151,10 +153,10 @@ class NewTourBooking extends Component {
     this.setState({customers: newcustomers})
   }
 
-  removeCustomer = () => {
+  removeCustomer = (index) => {
     const {customers} = this.state
-    if (customers.length > 1) {
-      const newcustomers = update(customers, {$splice: [[customers.length - 1, 1]]})
+    if (customers.length > 0) {
+      const newcustomers = update(customers, {$splice: [[index, 1]]})
       this.setState({customers: newcustomers})
     }
   }
@@ -210,11 +212,13 @@ class NewTourBooking extends Component {
   }
 
   render () {
-    const { id = 'new', isSubmitting, number = 'new', tourSelected, redirectTo, isConfirming, bookingdate, bookinggroup, usepaydate1, paydate1, paydate2, customers } = this.state
+    const { id = 'new', isSubmitting, number = 'new', tourSelected, redirectTo, isConfirming, bookingdate, bookinggroup, usepaydate1, paydate1, paydate2, customers = [] } = this.state
     const { history, tours } = this.props
     const toursActivePlusSelected = [...getActivePlusSelectedTours(tours, tourSelected)]
     const tourIsSelected = typeof tourSelected === 'object' && tourSelected.length > 0 && typeof tourSelected[0].id !== 'undefined' && typeof tourSelected[0].label !== 'undefined' && Number(tourSelected[0].id).toString() === tourSelected[0].id
     toursActivePlusSelected.sort(dynamicSort('label'))
+
+console.log(customers)
 
     if (redirectTo !== false) { return <Redirect to={redirectTo} /> }
     let odd = -1
@@ -225,11 +229,12 @@ class NewTourBooking extends Component {
         customer={c}
         key={c.custnumber}
         id={c.id}
-        number={c.custnumber}
+        number={Number(c.custnumber) + 1}
         isOdd={odd % 2 !== 0}
         handleChange={this.handleChangePax}
         removeCustomer={this.removeCustomer}
         isSubmitting={isSubmitting}
+        maxInvoice={customers.length > Math.max(...customers.map(c => Number(c.invoicenr)), 0) ? customers.length : Math.max(...customers.map(c => Number(c.invoicenr)), 0)}
       />)
     })
 
@@ -370,4 +375,4 @@ const mapDispatchToProps = dispatch => bindActionCreators({
   getItemWeb
 }, dispatch)
 
-export default connect(mapStateToProps, mapDispatchToProps)(NewTourBooking)
+export default connect(mapStateToProps, mapDispatchToProps)(NewTourBooking)

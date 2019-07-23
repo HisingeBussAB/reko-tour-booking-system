@@ -13,6 +13,11 @@ const initialState = {
     message   : '',
     suppressed: false
   },
+  infoPopup: {
+    visible   : false,
+    message   : '',
+    suppressed: false
+  },
   login: {
     login         : false,
     user          : 'anonymous',
