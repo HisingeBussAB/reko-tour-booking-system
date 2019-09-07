@@ -37,6 +37,10 @@ const initialState = {
     newsletter    : [],
     customers     : []
   },
+  budgets: {
+    budgetgroups: [],
+    budgets     : []
+  },
   web: {
     webtours     : [],
     webcategories: [],

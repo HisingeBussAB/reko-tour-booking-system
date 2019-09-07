@@ -7,5 +7,7 @@ export const itemNameHuman = {
   pendingcount     : 'pendingcount',
   pendingnewsletter: 'pendingnewsletter',
   bookings         : 'bookings',
-  customers        : 'customers'
+  customers        : 'customers',
+  budgetgroups     : 'budgetgroups',
+  budgets          : 'budgets'       
 }

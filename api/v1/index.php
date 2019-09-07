@@ -211,6 +211,8 @@ $router->addRoutes(array(
   array('GET|POST',       '/payments[/]?',                  function()         { $start = new Controller; echo $start->start('Payments'             );   }),
   array('GET|PUT|DELETE', '/budgets/[i:id]?[/]?',           function($id = -1) { $start = new Controller; echo $start->start('Budgets',          $id);   }),
   array('GET|POST',       '/budgets[/]?',                   function()         { $start = new Controller; echo $start->start('Budgets'              );   }),
+  array('GET|PUT|DELETE', '/budgetgroups/[i:id]?[/]?',      function($id = -1) { $start = new Controller; echo $start->start('BudgetGroups',     $id);   }),
+  array('GET|POST',       '/budgetgroups[/]?',              function()         { $start = new Controller; echo $start->start('BudgetGroups'         );   }),
   array('GET|PUT|DELETE', '/deadlines/[i:id]?[/]?',         function($id = -1) { $start = new Controller; echo $start->start('Deadlines',        $id);   }),
   array('GET|POST',       '/deadlines[/]?',                 function()         { $start = new Controller; echo $start->start('Deadlines'            );   }),
   array('GET',            '/pendingcount[/]?',              function()         { $start = new Controller; echo $start->start('PendingCount'         );   }),

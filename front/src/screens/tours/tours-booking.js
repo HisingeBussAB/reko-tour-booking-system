@@ -103,6 +103,20 @@ class NewTourBooking extends Component {
     const newcustomer = update(customers, {[[i]]: {[e.name]: {$set: e.value}}})
     this.setState({customers: newcustomer})
   }
+
+  handleChangeRoom = (room, i) => {
+    const {customers = {},tourSelected = {}} = this.state
+    
+    const roomSpecs = typeof room[0] === 'undefined' || typeof tourSelected[0] === 'undefined' ? {price: 0} : findByKey(room[0].id, 'id', tourSelected[0].rooms)
+    const roomid =  typeof room[0] === 'undefined' || typeof tourSelected[0] === 'undefined' ? '' : room[0].id
+    const newcustomer = update(customers, {[[i]]:
+                                  {selectedRoom: {$set: room},
+                                    roomid      : {$set: roomid},
+                                    price: {$set: roomSpecs.price}}
+    })
+    this.setState({customers: newcustomer})
+  }
+
   /*
   deleteConfirm = (e) => {
     if (typeof e !== 'undefined') { e.preventDefault() }
@@ -129,7 +143,6 @@ class NewTourBooking extends Component {
   addCustomer = () => {
     const {customers = []} = this.state
     const maxCustomer = Math.max(...customers.map(c => Number(c.custnumber)), -1)
-    console.log(maxCustomer)
     const emptyCustomer = {
       id               : 'new',
       custnumber       : typeof customers === 'object' ? Number(maxCustomer + 1) : 0,
@@ -147,7 +160,9 @@ class NewTourBooking extends Component {
       departurelocation: '',
       departuretime    : '',
       personalnumber   : '',
-      requests         : ''
+      requests         : '',
+      roomid           : '',
+      selectedRoom     : {label: ''}
     }
     const newcustomers = update(customers, {$push: [emptyCustomer]})
     this.setState({customers: newcustomers})
@@ -218,8 +233,6 @@ class NewTourBooking extends Component {
     const tourIsSelected = typeof tourSelected === 'object' && tourSelected.length > 0 && typeof tourSelected[0].id !== 'undefined' && typeof tourSelected[0].label !== 'undefined' && Number(tourSelected[0].id).toString() === tourSelected[0].id
     toursActivePlusSelected.sort(dynamicSort('label'))
 
-console.log(customers)
-
     if (redirectTo !== false) { return <Redirect to={redirectTo} /> }
     let odd = -1
     const customerForms = customers.map((c, i) => {
@@ -229,10 +242,12 @@ console.log(customers)
         customer={c}
         key={c.custnumber}
         id={c.id}
+        tour={typeof tourSelected === 'object' ? tourSelected[0] : {}}
         number={Number(c.custnumber) + 1}
         isOdd={odd % 2 !== 0}
         handleChange={this.handleChangePax}
         removeCustomer={this.removeCustomer}
+        handleChangeRoom={this.handleChangeRoom}
         isSubmitting={isSubmitting}
         maxInvoice={customers.length > Math.max(...customers.map(c => Number(c.invoicenr)), 0) ? customers.length : Math.max(...customers.map(c => Number(c.invoicenr)), 0)}
       />)
@@ -375,4 +390,4 @@ const mapDispatchToProps = dispatch => bindActionCreators({
   getItemWeb
 }, dispatch)
 
-export default connect(mapStateToProps, mapDispatchToProps)(NewTourBooking)
+export default connect(mapStateToProps, mapDispatchToProps)(NewTourBooking)

@@ -75,7 +75,7 @@ class Categories extends Component {
 
   removeExtraCategory = (i) => {
     const {extracategories} = this.state
-    delete extracategories[i]
+    delete extracategories[i]  //Statemutation!
   }
 
   submitToggle = (b) => {
