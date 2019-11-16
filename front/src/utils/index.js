@@ -107,3 +107,5 @@ export function getActivePlusSelectedTours (tours, selectedTour, extraTour) {
   }
   return allActiveTours
 }
+
+export const sumBy = (items, prop) => items.reduce((a, b) => +a + +b[prop], 0)

@@ -8,6 +8,10 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+input[type='number'] {
+  appearance: textfield;
+}
+
 .cursor-pointer {
   cursor: pointer;
 }
@@ -118,10 +122,17 @@ body {
 input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button {
     -webkit-appearance: none;
+    appearance: none;
     margin: 0;
 }
 input[type=number] {
     -moz-appearance: textfield;
+}
+
+table {
+  input {
+    padding: 2px 4px 1px 3px;
+  }
 }
 
 select,
@@ -337,4 +348,8 @@ select {
   }
  }
 
-
+@media print {
+  input {
+    border: 0
+  }
+}

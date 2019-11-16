@@ -24,7 +24,7 @@ export function getItemWeb (itemType) {
         dispatch(networkAction(0, 'get items ' + itemType))
       }
     } else {
-      dispatch(errorPopup({visible: true, message: 'Kan ignoreras. Fel i laddning från hemsidan. En felaktigt formaterad förfrågan till APIt har blockerats', suppressed: false}))
+      dispatch(errorPopup({visible: false, message: 'Kan ignoreras. Fel i laddning från hemsidan. En felaktigt formaterad förfrågan till APIt har blockerats', suppressed: true}))
       return false
     }
   }
@@ -38,7 +38,7 @@ function onThen (response, itemType, item = 'all') {
         const responseMsg = typeof response.data === 'undefined' ? ' Fel i laddning från hemsidan.\nKan ignoreras. Kunde inte hämta uppgifter.' : response.data
         const errorMsg = false
         const msg = errorMsg === false ? 'Kan ignoreras.\nFel i laddning från hemsidan. Ett fel har uppstått: ' + responseMsg : 'Kan ignoreras.\nFel i laddning från hemsidan. Ett fel har uppstått: ' + errorMsg
-        dispatch(errorPopup({visible: true, message: msg, suppressed: false}))
+        dispatch(errorPopup({visible: false, message: msg, suppressed: true}))
       } else {
         dispatch({
           type   : 'DATA_WEB_' + itemTypeUpper + '_SAVE',
@@ -46,7 +46,7 @@ function onThen (response, itemType, item = 'all') {
         })
       }
     } catch (e) {
-      dispatch(errorPopup({visible: true, message: '\nFel i laddning från hemsidan. Kan ignoreras.', suppressed: false}))
+      dispatch(errorPopup({visible: false, message: '\nFel i laddning från hemsidan. Kan ignoreras.', suppressed: true}))
     }
   }
 }
@@ -59,6 +59,6 @@ function onCatch (error, itemType) {
     } catch (e) {
       message = 'Ett fel har uppstått under hämtning från hemsidan av ' + itemType + '\n.Fel i laddning från hemsidan. Kan ignoreras.'
     }
-    dispatch(errorPopup({visible: true, message: message, suppressed: false}))
+    dispatch(errorPopup({visible: false, message: message, suppressed: true}))
   }
 }

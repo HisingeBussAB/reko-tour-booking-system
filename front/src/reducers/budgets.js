@@ -8,11 +8,11 @@ export default function budgets (state = {}, action) {
       } else {
         return {...state, budgetgroups: mergeObjectArrays(state.budgetgroups, action.payload.budgetgroups, 'id')}
       }
-    case 'DATA_BUDGET_SAVE':
+    case 'DATA_BUDGETS_SAVE':
       if (action.payload.id === 'all' || typeof state.budgets === 'undefined') {
-        return {...state, budget: action.payload.budgets}
+        return {...state, budgets: action.payload.budgets}
       } else {
-        return {...state, budget: mergeObjectArrays(state.budgets, action.payload.budgets, 'id')}
+        return {...state, budgets: mergeObjectArrays(state.budgets, action.payload.budgets, 'id')}
       }
     default:
       return state

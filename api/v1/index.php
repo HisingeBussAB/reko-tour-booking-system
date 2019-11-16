@@ -363,6 +363,7 @@ function Set_ENV_REMOTE_ADDR($cloudlfarefile) {
   function updateDynamicIPBlock($file = 'dynamic_allowed_ips.txt', $force = false) {
     $allowed_ips = '';
     if ($force || !file_exists($file) || (file_exists($file) && filemtime($file) < mktime(0, 0, 0, date("m"), date("d")-1, date("Y")))) {
+
       foreach(ENV_IP_DYNAMIC_LOCK_ALLOWED_IPS as $host) {
         $ip = gethostbyname($host);
         if ($ip != $host) {
