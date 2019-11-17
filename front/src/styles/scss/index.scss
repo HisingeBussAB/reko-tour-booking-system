@@ -159,6 +159,10 @@ input:invalid {
   color: $danger-color;
 }
 
+input:disabled {
+  background-color: lightgrey; 
+}
+
 select {
   &:invalid {
     color: $secondary-color;

@@ -15,13 +15,13 @@ class Budgets extends Model {
                   ,Budgets.label as label
                   ,Tours.label as tourLabelCalc
                   ,tourid
-                  ,nullif(estimatedpax,0) as estimatedpax
-                  ,nullif(actualpax,0) as actualpax
-                  ,nullif(estimatedsurplus,0) as estimatedsurplus
-                  ,nullif(actualprice,0) as actualprice
+                  ,estimatedpax
+                  ,actualpax
+                  ,estimatedsurplus
                   ,cast(createdDate as date) as createdDate
                   ,departureDate
                   ,cast(COALESCE(departureDate, createdDate) as date) as sortdateCalc
+                  ,isLocked
                   ,Budgets.isDisabled as isDisabled
                   ,Budgets.isDeleted as isDeleted
                   FROM Budgets
@@ -46,7 +46,7 @@ class Budgets extends Model {
         foreach ($result as $key=>$item) {
           $result[$key]['isdisabled'] = filter_var($result[$key]['isdisabled'], FILTER_VALIDATE_BOOLEAN);
           try {
-            $sql = "SELECT `id`, `budgetId`, `label`, nullif(estimatedamount,0) as estimatedamount, nullif(actualamount,0) as actualamount, `isfixed` FROM `Budgets_Costs` WHERE budgetId = :id;";
+            $sql = "SELECT `id`, `budgetId`, `label`, estimatedamount, actualamount, `isfixed` FROM `Budgets_Costs` WHERE budgetId = :id;";
             $sth = $this->pdo->prepare($sql);
             $sth->bindParam(':id', $item['id'], \PDO::PARAM_INT);
             $sth->execute();
@@ -56,7 +56,7 @@ class Budgets extends Model {
             $this->response->Exit(500);
           }
           try {
-            $sql = "SELECT `id`, `budgetid`, `label`, nullif(price,0) as price, nullif(amount,0) as amount FROM `Budgets_Sales` WHERE budgetId = :id;";
+            $sql = "SELECT `id`, `budgetid`, paymentid, `label`, price, amount FROM `Budgets_Sales` WHERE budgetId = :id;";
             $sth = $this->pdo->prepare($sql);
             $sth->bindParam(':id', $item['id'], \PDO::PARAM_INT);
             $sth->execute();
