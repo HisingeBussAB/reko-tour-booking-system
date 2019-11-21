@@ -130,13 +130,17 @@ class NewBudget extends Component {
 
   handleChangeCostRow = (e, i) => {
     const {costs} = this.state
-    const newcost = parseInt(e.value.replace(/[^\d.-]/g, ''), 10) === 0 ? update(costs, {[[i]]: {[e.name]: {$set: ''}}}) : update(costs, {[[i]]: {[e.name]: {$set: parseInt(e.value.replace(/[^\d.-]/g, ''), 10)}}})
+    const newcost = e.name === 'label' ? 
+      update(costs, {[[i]]: {[e.name]: {$set: e.value}}})
+      : parseInt(e.value.replace(/[^\d.-]/g, ''), 10) === 0 ? update(costs, {[[i]]: {[e.name]: {$set: ''}}}) : update(costs, {[[i]]: {[e.name]: {$set: parseInt(e.value.replace(/[^\d.-]/g, ''), 10)}}})
     this.setState({costs: newcost})
   }
 
   handleChangeSalesRow = (e, i) => {
     const {sales} = this.state
-    const newsale = parseInt(e.value.replace(/[^\d.-]/g, ''), 10) === 0 ? update(sales, {[[i]]: {[e.name]: {$set: ''}}}) : update(sales, {[[i]]: {[e.name]: {$set: parseInt(e.value.replace(/[^\d.-]/g, ''), 10)}}})
+    const newsale = e.name === 'label' ? 
+      update(sales, {[[i]]: {[e.name]: {$set: e.value}}})
+      : parseInt(e.value.replace(/[^\d.-]/g, ''), 10) === 0 ? update(sales, {[[i]]: {[e.name]: {$set: ''}}}) : update(sales, {[[i]]: {[e.name]: {$set: parseInt(e.value.replace(/[^\d.-]/g, ''), 10)}}})
     this.setState({sales: newsale})
   }
 
