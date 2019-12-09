@@ -60,7 +60,7 @@ class NewTour extends Component {
     try {
       const tour = findByKey(nextProps.match.params.id, 'id', nextProps.tours)
       const webtour = findByKey(tour.webid, 'id', nextProps.webtours)
-      if (typeof tour !== 'undefined') {
+      if (typeof tour === 'object') {
         this.setState({
           id                 : tour.id,
           label              : tour.label,

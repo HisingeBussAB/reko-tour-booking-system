@@ -20,6 +20,12 @@ export default function tours (state = {}, action) {
       } else {
         return {...state, bookings: mergeObjectArrays(state.bookings, action.payload.bookings, 'id')}
       }
+    case 'DATA_DEPARTURELISTS_SAVE':
+      if (action.payload.id === 'all' || typeof state.departurelists === 'undefined') {
+        return {...state, departurelists: action.payload.departurelists}
+      } else {
+        return {...state, departurelists: mergeObjectArrays(state.departurelists, action.payload.departurelists, 'id')}
+      }
     default:
       return state
   }

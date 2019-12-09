@@ -9,5 +9,6 @@ export const itemNameHuman = {
   bookings         : 'bookings',
   customers        : 'customers',
   budgetgroups     : 'budgetgroups',
-  budgets          : 'budgets'       
+  budgets          : 'budgets',
+  departurelists   : 'departurelists'       
 }

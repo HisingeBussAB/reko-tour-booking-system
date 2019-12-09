@@ -2,12 +2,12 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import {faPlus, faSave, faMinus, faSpinner, faTrash, faCheck, faCheckSquare, faSquare, faInfoCircle} from '@fortawesome/free-solid-svg-icons'
+import {faSpinner, faTrash, faInfoCircle} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import { Typeahead } from 'react-bootstrap-typeahead'
 import moment from 'moment'
 import 'moment/locale/sv'
-import { infoPopup } from '../../actions'
+import { infoPopup, getItem } from '../../actions'
 import toursBooking from '../../screens/tours/tours-booking'
 import { findByKey } from '../../utils'
 
@@ -16,7 +16,7 @@ class BookingsCustomer extends Component {
     super(props)
     this.state = {
       departurelocationList: [],
-      selectedRoom: {label: ''}
+      selectedRoom         : {label: ''}
     }
   }
 
@@ -33,12 +33,7 @@ class BookingsCustomer extends Component {
   }
 
   Initate = (nextProps) => {
-    const filteredBooking = nextProps.bookings.filter(b => { return (typeof b === 'object' ? Number(b.tourid) : false) === (typeof nextProps.tour === 'object' ? Number(nextProps.tour.id) : true) })
-    const departureList = filteredBooking.map(booking => {
-      return booking.customers.map(customer => { return customer.departurelocation })
-    }
-    ).flat()
-    this.setState({departurelocationList: Array.from(new Set(departureList))})
+    nextProps.getItem('departurelists', typeof nextProps.tour === 'object' ? nextProps.tour.id : -1)
   }
 
   showInvoiceInfo = () => {
@@ -56,10 +51,6 @@ class BookingsCustomer extends Component {
   render () {
     const {id, number, isOdd, handleChange, index, customer = {}, isSubmitting, removeCustomer, maxInvoice, tour, handleChangeRoom} = this.props
     const {departurelocationList, selectedRoom} = this.state
-
-console.log(selectedRoom)
-
-console.log(customer.departurelocation)
 
 
     const invoiceSelector = <select name="invoicenr" value={customer.invoicenr} onChange={e => handleChange(e.target, index)} disabled={isSubmitting} className="rounded d-inline m-0 p-1">
@@ -223,7 +214,8 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-  infoPopup
+  infoPopup,
+  getItem
 }, dispatch)
 
 export default connect(mapStateToProps, mapDispatchToProps)(BookingsCustomer)

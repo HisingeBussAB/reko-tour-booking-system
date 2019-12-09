@@ -55,7 +55,7 @@ export function Login (usr) {
       })
       let errormsg = errprep + 'Ett fel har uppstått i inloggningen.'
       try {
-        if (error.response.data.response !== undefined) {
+        if (typeof error.response.data.response !== 'undefined') {
           errormsg = errprep + error.response.data.response
         } else {
           errormsg = errprep + 'Felformaterat eller inget svar från server.'

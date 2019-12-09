@@ -76,7 +76,7 @@ class MainMenu extends Component {
             {tours}
             <span className="my-2 mx-3"><Link to={'/bokningar/'}><button style={{minWidth: '140px'}} type="button" title="Resor, bokningar och betalningar" className="text-uppercase font-weight-bold btn btn-primary custom-scale custom-wide-text">Bokningar</button></Link></span>
             <span className="my-2 mx-3"><Link to={'/kalkyler/'}><button style={{minWidth: '140px'}} type="button" title="Resekalkyler" className="text-uppercase font-weight-bold btn btn-primary custom-scale custom-wide-text">Kalkyler</button></Link></span>
-            <span className="my-2 mx-3"><Link to={'/utskick/'}><button style={{minWidth: '140px'}} title="Adresslistor för utskick" type="button" className="text-uppercase font-weight-bold btn btn-primary custom-scale custom-wide-text">Utskick</button></Link></span>
+            <span className="my-2 mx-3"><Link to={'/utskick/'}><button style={{minWidth: '180px'}} title="Adresslistor för utskick" type="button" className="text-uppercase font-weight-bold btn btn-primary custom-scale custom-wide-text">Utskick/Register</button></Link></span>
           </div>
         </nav>
 

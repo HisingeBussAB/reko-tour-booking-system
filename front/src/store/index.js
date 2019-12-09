@@ -30,7 +30,8 @@ const initialState = {
   tours: {
     categories: [],
     tours     : [],
-    bookings  : []
+    bookings  : [],
+    departurelists : []
   },
   lists: {
     groupcustomers: [],

@@ -82,7 +82,29 @@ class Budgets extends Model {
   }
 
   public function post(array $_params) {
-    
+    $params = $this->paramsValidationWithExit($_params);
+    if ($params['isDisabled'] == -1) {
+      $params['isDisabled'] = 0;
+    } 
+
+    $sql = "INSERT INTO Budgets_Group (label, isDisabled, isdeleted) VALUES (:cat, :act, 0);";
+    try {     
+      $this->pdo->beginTransaction();
+      $sth = $this->pdo->prepare($sql);
+      $sth->bindParam(':cat', $params['label'],          \PDO::PARAM_STR);
+      $sth->bindParam(':act', $params['isDisabled'],     \PDO::PARAM_INT);
+      $sth->execute(); 
+      $sql = "SELECT LAST_INSERT_ID() as id;";
+      $sth = $this->pdo->prepare($sql);
+      $sth->execute(); 
+      $result = $sth->fetch(\PDO::FETCH_ASSOC); 
+      $this->pdo->commit();
+    } catch(\PDOException $e) {
+      $this->pdo->rollBack();
+      $this->response->DBError($e, __CLASS__, $sql);
+      $this->response->Exit(500);
+    }
+    return array('updatedid' => $result['id']);   
   
     return false;    
   }

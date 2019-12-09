@@ -85,7 +85,7 @@ class NewBudget extends Component {
   Initiate = (nextProps) => {
     try {
       const budgets = findByKey(nextProps.match.params.id, 'id', nextProps.budgets)
-      if (typeof budgets !== 'undefined') {
+      if (typeof budgets === 'object') {
         this.setState({
           isSubmitting  : false,
           id            : budgets.id,
@@ -100,8 +100,8 @@ class NewBudget extends Component {
           departuredate : budgets.departuredate,
           sortdatecalc  : budgets.sortdatecalc,
           isdisabled    : budgets.isdisabled,
-          costs         : budgets.actualcosts,
-          sales         : budgets.sales,
+          costs         : typeof budgets.costs === 'object' ? budgets.costs : [],
+          sales         : typeof budgets.sales === 'object' ? budgets.sales : [],
           redirectTo    : false,
           isConfirming  : false,
           showSales     : false,
@@ -221,10 +221,9 @@ class NewBudget extends Component {
   render () {
     const {isLocked, redirectTo, isConfirming, sales, showSales, isSubmitting, label, sortdatecalc, id, departuredate, tourlabelcalc, estimatedpax, estimatedsurplus, actualpax, costs} = this.state
     const {history} = this.props
+    const salesTotal = sumBy(sales.map((sale) => { return { summed: isNaN(+sale.amount * +sale.price) ? '' : isLocked ? '' : +sale.amount * +sale.price } }), 'summed')
 
-    const salesTotal = sumBy(sales.map((sale) => { return { summed: isNaN(+sale.amount * +sale.price) ? '' : +sale.amount * +sale.price } }), 'summed')
-
-    const actualprice = isNaN(+salesTotal / +(+actualpax === 0 ? 1 : +actualpax)) ? '' : +salesTotal / +(+actualpax === 0 ? 1 : +actualpax)
+    const actualprice = isNaN(+salesTotal / +(+actualpax === 0 ? 1 : +actualpax)) ? '' : isLocked ? '' : +salesTotal / +(+actualpax === 0 ? 1 : +actualpax)
 
     const costsIndexed = costs.map((cost, i) => { cost.actindex = i; return cost })
     const fixedCostsRaw = costsIndexed.filter((cost) => { return cost.isfixed })
@@ -395,7 +394,7 @@ class NewBudget extends Component {
                       <caption style={{captionSide: 'top', fontWeight: 'normal', color: 'black', fontSize: '1.21em'}}>Försäljning</caption>
                       <thead>
                         <tr>
-                          <th scope="col" className="align-middle text-nowrap">Beskrivning</th>
+                          <th scope="col" className="align-middle text-nowrap">Artikel</th>
                           <th scope="col" className="text-center align-middle text-nowrap" style={{width: '10%', minWidth: '120px'}}>antal</th>
                           <th scope="col" className="text-center align-middle text-nowrap" style={{width: '10%', minWidth: '120px'}}>pris</th>
                           <th scope="col" className="text-center align-middle text-nowrap" style={{width: '10%', minWidth: '120px'}}>total</th>
@@ -496,7 +495,7 @@ class NewBudget extends Component {
                           <td className="align-middle text-nowrap" style={{width: '39%', minWidth: '170px'}}>Ber. intäkter totalt:</td>
                           <td className="text-right align-middle text-nowrap" style={{width: '10%', minWidth: '100px'}}>{Math.round(estTotIncome).toLocaleString()} kr</td>
                           <td className="pl-5 align-middle text-nowrap" style={{width: '33%', minWidth: '170px'}}>Resultat intäkter:</td>
-                          <td className="text-right align-middle text-nowrap" style={{width: '10%', minWidth: '100px'}}>{Math.round(salesTotal).toLocaleString()} kr</td>
+                          <td className="text-right align-middle text-nowrap" style={{width: '10%', minWidth: '100px'}}>{isLocked ? '0' : Math.round(salesTotal).toLocaleString()} kr</td>
                           <td className={'text-right align-middle text-nowrap ' + (diffsales >= 0 ? '' : 'text-danger')} style={{width: '5%', minWidth: '95px'}}>{Math.round(diffsales).toLocaleString()} +/-</td>
                         </tr>
                         <tr>
@@ -532,7 +531,7 @@ class NewBudget extends Component {
                       <caption style={{captionSide: 'top', fontWeight: 'normal', color: 'black', fontSize: '1.21em'}}>Fasta kostander</caption>
                       <thead>
                         <tr>
-                          <th scope="col" className="align-middle text-nowrap">Beskrivning</th>
+                          <th scope="col" className="align-middle text-nowrap">Fast kostnad</th>
                           <th scope="col" className="text-center align-middle text-nowrap" style={{width: '10%', minWidth: '120px'}}>bedömt kr</th>
                           <th scope="col" className="text-center align-middle text-nowrap" style={{width: '10%', minWidth: '120px'}}>resultat kr</th>
                         </tr>
@@ -562,7 +561,7 @@ class NewBudget extends Component {
                       <caption style={{captionSide: 'top', fontWeight: 'normal', color: 'black', fontSize: '1.21em'}}>Resenärbundna kostnader</caption>
                       <thead>
                         <tr>
-                          <th scope="col" className="align-middle text-nowrap">Kostnad beskrivning</th>
+                          <th scope="col" className="align-middle text-nowrap">Resenärbunden kostnad</th>
                           <th scope="col" className="text-center align-middle text-nowrap" style={{width: '10%', minWidth: '120px'}}>bedömt kr/pers</th>
                           <th scope="col" className="text-center align-middle text-nowrap" style={{width: '10%', minWidth: '120px'}}>resultat kr/pers</th>
                         </tr>
