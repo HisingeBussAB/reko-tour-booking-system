@@ -160,6 +160,19 @@ input[type=search] {
 
 input:invalid {
   color: #dc3545;
+  border: 1px solid #dc3545;
+}
+
+input.is-invalid {
+  color: #dc3545 !important;
+  border: 1px solid #dc3545 !important;
+  background: none !important;
+}
+
+input.is-valid {
+  color: #0856fb !important;
+  border: 1px solid #0856fb !important;
+  background: none !important;
 }
 
 input:disabled {

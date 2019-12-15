@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import {faSpinner, faTrash, faInfoCircle} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import { Typeahead } from 'react-bootstrap-typeahead'
+import { Typeahead, Menu, MenuItem } from 'react-bootstrap-typeahead'
 import moment from 'moment'
 import 'moment/locale/sv'
 import { infoPopup, getItem } from '../../actions'
@@ -16,7 +16,10 @@ class BookingsCustomer extends Component {
     super(props)
     this.state = {
       departurelocationList: [],
-      selectedRoom         : {label: ''}
+      selectedRoom         : props.customer.selectedRoom,
+      selectedCustomer     : props.customer,
+      selectedDeparture    : props.customer.selectedDeparture,
+      isRoomValid          : false
     }
   }
 
@@ -34,7 +37,11 @@ class BookingsCustomer extends Component {
 
   Initate = (nextProps) => {
     nextProps.getItem('departurelists', typeof nextProps.tour === 'object' ? nextProps.tour.id : -1)
+    this.setState({selectedRoom     : nextProps.customer.selectedRoom,
+      selectedCustomer : nextProps.customer,
+      selectedDeparture: nextProps.customer.selectedDeparture})
   }
+
 
   showInvoiceInfo = () => {
     const {infoPopup} = this.props
@@ -48,9 +55,16 @@ class BookingsCustomer extends Component {
       suppressed: false})
   }
 
+  handleRoomInput = (v,e) => {
+    e.preventDefault()
+    console.log(v)
+    console.log(e)
+
+  }
+
   render () {
-    const {id, number, isOdd, handleChange, index, customer = {}, isSubmitting, removeCustomer, maxInvoice, tour, handleChangeRoom} = this.props
-    const {departurelocationList, selectedRoom} = this.state
+    const {id, number, isOdd, handleChange, index, customer = {}, isSubmitting, removeCustomer, maxInvoice, tour, handleChangeRoom, allCustomers} = this.props
+    const {departurelocationList, selectedRoom, selectedCustomer, selectedDeparture, isRoomValid } = this.state
 
 
     const invoiceSelector = <select name="invoicenr" value={customer.invoicenr} onChange={e => handleChange(e.target, index)} disabled={isSubmitting} className="rounded d-inline m-0 p-1">
@@ -75,11 +89,75 @@ class BookingsCustomer extends Component {
           <div className="row">
             <div className="col-5 pr-1">
               <label htmlFor="firstname" className="d-block small mt-1 mb-0">Förnamn</label>
-              <input placeholder="Förnamn" type="text" name="firstname" value={customer.firstname} onChange={e => handleChange(e.target, index)} className="rounded w-100 d-inline-block m-0" />
+              <Typeahead className="rounded w-100 d-inline-block m-0"
+                id="firstname"
+                name="firstname"
+                minLength={2}
+                maxResults={30}
+                allowNew
+                flip
+                disabled={isSubmitting}
+                clearButton
+                paginationText="Visa fler resultat"
+                emptyLabel=""
+                labelKey="firstname"
+                newSelectionPrefix="Lägg till: "
+                onChange={() => { console.log('changeTriggered') }}
+                options={allCustomers}
+                renderMenu={(results, menuProps) => (
+                  <Menu {...menuProps}>
+                    {results.map((result, index) => (
+                      <MenuItem key={index} option={result} position={index}>
+                        <div key={index} className="small m-0 p-0">
+                          <p className="m-0 p-0">{result.firstname} {result.lastname}</p>
+                          <p className="m-0 p-0">{result.street}</p>
+                          <p className="m-0 p-0">{result.email}</p>
+                          <p className="m-0 p-0">{result.phone}</p>
+                        </div>
+                      </MenuItem>))}
+                  </Menu>
+                )}
+                selected={[selectedCustomer]}
+                placeholder="Förnamn"
+                // eslint-disable-next-line no-return-assign
+                ref={(ref) => this._customerfirstname = ref}
+              />
             </div>
             <div className="col-7 pl-1">
               <label htmlFor="lastname" className="d-block small mt-1 mb-0">Efternamn</label>
-              <input placeholder="Efternamn" type="text" name="lastname" value={customer.lastname} onChange={e => handleChange(e.target, index)} className="rounded w-100 d-inline-block m-0" />
+              <Typeahead className="rounded w-100 d-inline-block m-0"
+                id="lastname"
+                name="lastname"
+                minLength={2}
+                maxResults={30}
+                allowNew
+                flip
+                disabled={isSubmitting}
+                clearButton
+                paginationText="Visa fler resultat"
+                emptyLabel=""
+                labelKey="lastname"
+                newSelectionPrefix="Lägg till: "
+                onChange={() => { console.log('changeTriggeredlast') }}
+                options={allCustomers}
+                renderMenu={(results, menuProps) => (
+                  <Menu {...menuProps}>
+                    {results.map((result, index) => (
+                      <MenuItem key={index} option={result} position={index}>
+                        <div key={index} className="small m-0 p-0">
+                          <p className="m-0 p-0">{result.firstname} {result.lastname}</p>
+                          <p className="m-0 p-0">{result.street}</p>
+                          <p className="m-0 p-0">{result.email}</p>
+                          <p className="m-0 p-0">{result.phone}</p>
+                        </div>
+                      </MenuItem>))}
+                  </Menu>
+                )}
+                selected={[selectedCustomer]}
+                placeholder="Efternamn"
+                // eslint-disable-next-line no-return-assign
+                ref={(ref) => this._customerlastname = ref}
+              />
             </div>
           </div>
           <div className="row">
@@ -101,19 +179,87 @@ class BookingsCustomer extends Component {
           <div className="row">
             <div className="col-12">
               <label htmlFor="phone" className="d-block small mt-1 mb-0">Telefon</label>
-              <input placeholder="Telefonnr" type="tel" pattern="^[^a-zA-Z]+$" name="phone" value={customer.phone} onChange={e => handleChange(e.target, index)} className="rounded w-100 d-inline-block m-0" />
+              <Typeahead className="rounded w-100 d-inline-block m-0"
+                id="phone"
+                name="phone"
+                minLength={2}
+                maxResults={30}
+                allowNew
+                flip
+                disabled={isSubmitting}
+                clearButton
+                paginationText="Visa fler resultat"
+                emptyLabel=""
+                labelKey="phone"
+                newSelectionPrefix="Lägg till: "
+                onChange={() => { console.log('changeTriggeredlast') }}
+                options={allCustomers}
+                renderMenu={(results, menuProps) => (
+                  <Menu {...menuProps}>
+                    {results.map((result, index) => (
+                      <MenuItem key={index} option={result} position={index}>
+                        <div key={index} className="small m-0 p-0">
+                          <p className="m-0 p-0">{result.firstname} {result.lastname}</p>
+                          <p className="m-0 p-0">{result.street}</p>
+                          <p className="m-0 p-0">{result.email}</p>
+                          <p className="m-0 p-0">{result.phone}</p>
+                        </div>
+                      </MenuItem>))}
+                  </Menu>
+                )}
+                selected={[selectedCustomer]}
+                placeholder="Telefonnr"
+                inputProps={{type   : 'tel',
+                  pattern: '^[^a-zA-Z]+$'}}
+                // eslint-disable-next-line no-return-assign
+                ref={(ref) => this._customerphone = ref}
+              />
             </div>
           </div>
           <div className="row">
             <div className="col-12">
               <label htmlFor="email" className="d-block small mt-1 mb-0">E-post</label>
-              <input placeholder="E-post" type="email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" name="email" value={customer.email} onChange={e => handleChange(e.target, index)} className="rounded w-100 d-inline-block m-0" />
+              <Typeahead className="rounded w-100 d-inline-block m-0"
+                id="email"
+                name="email"
+                minLength={2}
+                maxResults={30}
+                allowNew
+                flip
+                disabled={isSubmitting}
+                clearButton
+                paginationText="Visa fler resultat"
+                emptyLabel=""
+                labelKey="email"
+                newSelectionPrefix="Lägg till: "
+                onChange={() => { console.log('changeTriggeredlast') }}
+                options={allCustomers}
+                renderMenu={(results, menuProps) => (
+                  <Menu {...menuProps}>
+                    {results.map((result, index) => (
+                      <MenuItem key={index} option={result} position={index}>
+                        <div key={index} className="small m-0 p-0">
+                          <p className="m-0 p-0">{result.firstname} {result.lastname}</p>
+                          <p className="m-0 p-0">{result.street}</p>
+                          <p className="m-0 p-0">{result.email}</p>
+                          <p className="m-0 p-0">{result.phone}</p>
+                        </div>
+                      </MenuItem>))}
+                  </Menu>
+                )}
+                selected={[selectedCustomer]}
+                placeholder="E-post"
+                inputProps={{type   : 'email',
+                  pattern: '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$'}}
+                // eslint-disable-next-line no-return-assign
+                ref={(ref) => this._customeremail = ref}
+              />
             </div>
           </div>
           <div className="row">
             <div className="col-12">
               <label htmlFor="priceadjustment" className="d-block small mt-3 mb-0">Rabatt/Tillägg</label>
-              <input placeholder="0" type="number" name="priceadjustment" value={Number(customer.priceadjustment).toFixed(0)} style={{width: '180px'}} onChange={e => handleChange(e.target, index)} className="rounded d-inline-block m-0" /> kr
+              <input placeholder="0" type="text" name="priceadjustment" value={Number(customer.priceadjustment).toFixed(0)} style={{width: '180px'}} onChange={e => handleChange(e.target, index)} className="rounded d-inline-block m-0" /> kr
             </div>
           </div>
           <div className="row">
@@ -128,15 +274,18 @@ class BookingsCustomer extends Component {
                 disabled={isSubmitting}
                 clearButton
                 paginationText="Visa fler resultat"
+                selectHintOnEnter
                 emptyLabel=""
                 labelKey="label"
                 filterBy={['label']}
                 onChange={e => handleChangeRoom(e, index)}
+                onInputChange={(v,e) => this.handleRoomInput(v,e)}
                 options={tour.rooms}
                 selected={[selectedRoom]}
-                highlightOnlyResult
-                placeholder="Påstigningsplats"
+                placeholder="Rumstyp"
                 allowNew={false}
+                isValid={isRoomValid}
+                isInvalid={!isRoomValid}
                 // eslint-disable-next-line no-return-assign
                 ref={(ref) => this._room = ref}
               />
@@ -160,10 +309,15 @@ class BookingsCustomer extends Component {
                 clearButton
                 paginationText="Visa fler resultat"
                 emptyLabel=""
+                labelKey="label"
+                filterBy={['label']}
                 newSelectionPrefix="Lägg till plats: "
-                onChange={e => handleChange({name: 'departurelocation', value: typeof e[0] !== 'undefined' ? e[0].label : ''}, index)}
+                selectHintOnEnter
+                highlightOnlyResult
+                isValid
+                onChange={e => handleChangeRoom(e, index)}
                 options={departurelocationList}
-                selected={[typeof customer.departurelocation === 'string' ? {label: customer.departurelocation} : {label: ''}]}
+                selected={[selectedDeparture]}
                 placeholder="Påstigningsplats"
                 // eslint-disable-next-line no-return-assign
                 ref={(ref) => this._departurelocation = ref}
@@ -177,7 +331,40 @@ class BookingsCustomer extends Component {
           <div className="row">
             <div className="col-12">
               <label htmlFor="personalnumber" className="d-block small mt-1 mb-0">Personnummer</label>
-              <input placeholder="XXXXXX-XXXX" pattern="^[0-9]{6}[-+]{1}[0-9]{4}$" maxLength="11" type="text" name="personalnumber" value={customer.personalnumber} onChange={e => handleChange(e.target, index)} className="rounded w-100 d-inline-block m-0" />
+              <Typeahead className="rounded w-100 d-inline-block m-0"
+                id="personalnumber"
+                name="personalnumber"
+                minLength={2}
+                maxResults={30}
+                allowNew
+                flip
+                disabled={isSubmitting}
+                clearButton
+                paginationText="Visa fler resultat"
+                emptyLabel=""
+                labelKey="personalnumber"
+                newSelectionPrefix="Lägg till: "
+                onChange={() => { console.log('changeTriggeredlast') }}
+                options={allCustomers}
+                renderMenu={(results, menuProps) => (
+                  <Menu {...menuProps}>
+                    {results.map((result, index) => (
+                      <MenuItem key={index} option={result} position={index}>
+                        <div key={index} className="small m-0 p-0">
+                          <p className="m-0 p-0">{result.firstname} {result.lastname}</p>
+                          <p className="m-0 p-0">{result.personalnumber}</p>
+                          <p className="m-0 p-0">{result.email}</p>
+                          <p className="m-0 p-0">{result.phone}</p>
+                        </div>
+                      </MenuItem>))}
+                  </Menu>
+                )}
+                selected={[selectedCustomer]}
+                placeholder="XXXXXX-XXXX"
+                inputProps={{pattern: '^[0-9]{6}[-+]{1}[0-9]{4}$', maxLength: '11'}}
+                // eslint-disable-next-line no-return-assign
+                ref={(ref) => this._customerpersonalnumber = ref}
+              />
             </div>
           </div>
           <div className="row">

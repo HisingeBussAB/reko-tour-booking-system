@@ -77,11 +77,12 @@ class NewTourBooking extends Component {
       this.setState(newState)
     }
   }
-  /*
+
   handleSave = async () => {
-    const {id} = this.state
+    const {id, ...state} = this.state
     const {postItem, putItem, getItem} = this.props
-    this.setState({isSubmitting: true})
+    console.log(JSON.parse(JSON.stringify(state)))
+    /*this.setState({isSubmitting: true})
     const data = {}
     const reply = id === 'new' ? await postItem('bookings', data) : await putItem('bookings', id, data)
     if (reply !== false && !isNaN(reply)) {
@@ -91,9 +92,9 @@ class NewTourBooking extends Component {
         this.setState({redirectTo: '/bokningar/bookings/' + reply}, () => { this.setState({redirectTo: false}) })
       }
     }
-    this.setState({isSubmitting: false})
+    this.setState({isSubmitting: false}) */
   }
-*/
+
   handleChange = (e) => {
     this.setState({ [e.name]: e.value })
   }
@@ -105,14 +106,14 @@ class NewTourBooking extends Component {
   }
 
   handleChangeRoom = (room, i) => {
-    const {customers = {},tourSelected = {}} = this.state
-    
+    const {customers = {}, tourSelected = {}} = this.state
+
     const roomSpecs = typeof room[0] === 'undefined' || typeof tourSelected[0] === 'undefined' ? {price: 0} : findByKey(room[0].id, 'id', tourSelected[0].rooms)
-    const roomid =  typeof room[0] === 'undefined' || typeof tourSelected[0] === 'undefined' ? '' : room[0].id
+    const roomid = typeof room[0] === 'undefined' || typeof tourSelected[0] === 'undefined' ? '' : room[0].id
     const newcustomer = update(customers, {[[i]]:
                                   {selectedRoom: {$set: room},
                                     roomid      : {$set: roomid},
-                                    price: {$set: roomSpecs.price}}
+                                    price       : {$set: roomSpecs.price}}
     })
     this.setState({customers: newcustomer})
   }
@@ -162,7 +163,8 @@ class NewTourBooking extends Component {
       personalnumber   : '',
       requests         : '',
       roomid           : '',
-      selectedRoom     : {label: ''}
+      selectedRoom     : {label: ''},
+      selectedDeparture: {label: ''}
     }
     const newcustomers = update(customers, {$push: [emptyCustomer]})
     this.setState({customers: newcustomers})

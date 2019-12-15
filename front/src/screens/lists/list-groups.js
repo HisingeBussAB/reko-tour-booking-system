@@ -252,7 +252,7 @@ class GroupList extends Component {
                       maxResults={6}
                       flip
                       emptyLabel=""
-                      paginationText='Visa fler resultat'
+                      paginationText="Visa fler resultat"
                       disabled={isSubmitting}
                       onChange={(orgSelected) => this.changeOrg(orgSelected)}
                       labelKey="organisation"
@@ -340,7 +340,7 @@ class GroupList extends Component {
                       flip
                       multiple
                       emptyLabel=""
-                      paginationText='Visa fler resultat'
+                      paginationText="Visa fler resultat"
                       disabled={isSubmitting}
                       onChange={(catSelected) => { this.setState({ catSelected: catSelected }) }}
                       labelKey="label"
