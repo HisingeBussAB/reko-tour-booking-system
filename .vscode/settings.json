@@ -3,4 +3,10 @@
   "typescript.format.enable": false,
   "javascript.validate.enable": false,
   "javascript.format.enable": false,
+  "files.exclude": {
+    "**/.classpath": true,
+    "**/.project": true,
+    "**/.settings": true,
+    "**/.factorypath": true
+  },
 }

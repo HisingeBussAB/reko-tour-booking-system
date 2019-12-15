@@ -9,18 +9,16 @@ export function deleteItem (itemType, item, data) {
     if (itemNameHuman.hasOwnProperty(itemType)) {
       dispatch(networkAction(1, 'delete ' + itemType))
       try {
-        const response = await myAxios.delete('/' + itemType + '/' + item, data)
-        const id = response.data.response.updatedid
+        await myAxios.delete('/' + itemType + '/' + item, data)
         dispatch(getItem(itemType, 'all'))
-        firebaseSavedItem(id, itemType)
+        firebaseSavedItem('all', itemType)
         return true
       } catch (e) {
         try {
-          if (typeof e.response.data.response !== 'undefined' && e.response.data.response.length > 0) {
-            dispatch(errorPopup({visible: true, message: e.response.data.response, suppressed: false}))
-          } else {
-            dispatch(errorPopup({visible: true, message: 'Kunde utföra åtgärden.\nOkänt eller inget svar från API.', suppressed: false}))
-          }
+          const reply = typeof e.response.data.response !== 'undefined' && e.response.data.response.length > 0 ? e.response.data.response : 'Kunde inte utföra åtgärden.'
+          const err = typeof e.response.data.error !== 'undefined' && e.response.data.error.length > 0 ? e.response.data.error : 'Okänt eller inget svar från API.'
+          const text = reply === err ? reply : reply + '\n' + err
+          dispatch(errorPopup({visible: true, message: text, suppressed: false}))
           return false
         } catch (e) {
           dispatch(errorPopup({visible: true, message: 'Kunde utföra åtgärden.\nOkänt eller inget svar från API.', suppressed: false}))

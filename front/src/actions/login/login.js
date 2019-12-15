@@ -61,7 +61,7 @@ export function Login (usr) {
           errormsg = errprep + 'Felformaterat eller inget svar från server.'
         }
       } catch (e) {
-        errormsg = errprep + 'Felformaterat eller inget svar från server.'
+        errormsg = errprep + 'Felformaterat eller inget svar från server.\nProva uppdatera brandväggen.'
       }
       dispatch(errorPopup({visible: true, message: errormsg, suppressed: true}))
       dispatch(networkAction(0, 'login action', dispatch))

@@ -13,6 +13,11 @@ const initialState = {
     message   : '',
     suppressed: false
   },
+  infoPopup: {
+    visible   : false,
+    message   : '',
+    suppressed: false
+  },
   login: {
     login         : false,
     user          : 'anonymous',
@@ -24,11 +29,28 @@ const initialState = {
   },
   tours: {
     categories: [],
-    tours     : []
+    tours     : [],
+    bookings  : []
   },
   lists: {
     groupcustomers: [],
-    newsletter:     []
+    newsletter    : [],
+    customers     : []
+  },
+  budgets: {
+    budgetgroups: [],
+    budgets     : []
+  },
+  web: {
+    webtours     : [],
+    webcategories: [],
+    webrooms     : []
+  },
+  pendingfromweb: {
+    count     : {},
+    bookings  : [],
+    leads     : [],
+    newsletter: []
   },
   networkOperations: []
 }

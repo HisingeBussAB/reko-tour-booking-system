@@ -25,7 +25,7 @@ class Categories extends Model {
       }
       if (count($result) < 1 && $params['id'] != -1) {
         $this->response->AddResponse('error', 'Kategorin hittades inte.');
-        $this->response->Exit(404);
+        return false;
       } else {
         $i = 0;
         foreach ($result as $item) {
@@ -100,10 +100,23 @@ class Categories extends Model {
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
         $sth->execute();
+        $sql = "DELETE FROM Categories_GroupCustomers WHERE categoryId = :id;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
+        $sth->execute();
+        $sql = "DELETE FROM Categories_Leads WHERE categoryId = :id;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
+        $sth->execute();
+        $sql = "DELETE FROM Categories_Tours WHERE categoryId = :id;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
+        $sth->execute();
       } catch(\PDOException $e) {
         $this->response->DBError($e, __CLASS__, $sql);
         $this->response->Exit(500);
       }
+      return array('updatedid' => $params['id']);
     }
     if ($this->get(array('id' => $params['id'])) !== false) {
       try {
@@ -126,7 +139,7 @@ class Categories extends Model {
     $passed = true;
     $result = array();
     if (isset($params['label'])) {
-      $result['label'] = Functions::sanatizeStringUnsafe($params['label']);
+      $result['label'] = Functions::sanatizeStringUnsafe($params['label'], 60);
     } else {
       $result['label'] = '';
     }

@@ -8,6 +8,10 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+input[type='number'] {
+  appearance: textfield;
+}
+
 .cursor-pointer {
   cursor: pointer;
 }
@@ -37,6 +41,17 @@ body {
       border-color: $danger-color;
       color: $danger-color;
     }
+    &:disabled {
+      background-color: $danger-color; 
+      border-color: $danger-color; 
+      color: white;
+      opacity: 95%;
+      &:hover {
+        background-color: $danger-color; 
+        border-color: $danger-color; 
+        color: white;
+      }
+    }
 }
 
 .btn-success {
@@ -50,6 +65,11 @@ body {
     }
 }
 
+.badge-primary {
+  background-color: $primary-color; 
+  color: white;
+  padding: 6px;
+}
 
 .btn-primary {
   background-color: $primary-color; 
@@ -59,6 +79,17 @@ body {
       background-color: #fff;
       border-color: $primary-color;
       color: $primary-color;
+    }
+    &:disabled {
+      background-color: $primary-color; 
+      border-color: $primary-color; 
+      color: white;
+      opacity: 95%;
+      &:hover {
+        background-color: $primary-color; 
+        border-color: $primary-color; 
+        color: white;
+      }
     }
 }
 
@@ -91,10 +122,17 @@ body {
 input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button {
     -webkit-appearance: none;
+    appearance: none;
     margin: 0;
 }
 input[type=number] {
     -moz-appearance: textfield;
+}
+
+table {
+  input {
+    padding: 2px 4px 1px 3px;
+  }
 }
 
 select,
@@ -119,6 +157,10 @@ input[type=search] {
 
 input:invalid {
   color: $danger-color;
+}
+
+input:disabled {
+  background-color: lightgrey; 
 }
 
 select {
@@ -152,7 +194,9 @@ select {
   }
 }
 
-
+.nowrap {
+  white-space:nowrap;
+}
 
 .MainMenu {
   border-bottom: 1px solid $secondary-color;
@@ -234,18 +278,18 @@ select {
 
 }
 
-
+.custom-border-right {
+  border-right: 1px solid $secondary-color;
+}
+.custom-border-top {
+  border-top: 1px solid $secondary-color;
+}
 
 .MainView {
   border-bottom: 1px solid $secondary-color;
-  div {
+  > div {
   min-height: 500px;
   }
-  .custom-border-right {
-    border-right: 1px solid $secondary-color;
-  }
-
-
 }
 
 .Loader {
@@ -263,6 +307,13 @@ select {
 
 .rbt-input-main {
   border: 1px solid #0856fb !important;
+}
+
+.rbt-input-multi {
+  border: 1px solid #0856fb !important;
+  .rbt-input-main {
+    border: 0 !important;
+  }
 }
 
 @keyframes dots {
@@ -301,4 +352,8 @@ select {
   }
  }
 
-
+@media print {
+  input {
+    border: 0
+  }
+}

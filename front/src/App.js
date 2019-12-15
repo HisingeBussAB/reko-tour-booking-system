@@ -11,6 +11,7 @@ import Config from './config/config'
 import firebase from './config/firebase'
 import {firebaseItemSub} from './actions/firebase/firebase-item-sub'
 import ErrorPopup from './components/global/error-popup'
+import InfoPopup from './components/global/info-popup'
 import {LoginRefresh} from './actions'
 
 /* eslint-disable react/display-name */
@@ -28,6 +29,10 @@ const BudgetView = MyLoadable({
 
 const ListView = MyLoadable({
   loader: () => import('./screens/list')
+})
+
+const PendingView = MyLoadable({
+  loader: () => import('./screens/pending')
 })
 
 const UpdateFirewall = MyLoadable({
@@ -58,12 +63,12 @@ class App extends Component {
       // Firebase
       firebase.auth().signInWithEmailAndPassword(Config.FirebaseLogin, Config.FirebasePwd)
         .then(() => {
-          firebaseItemSub(nextProps.login.user, nextProps.login.jwt)
+          firebaseItemSub()
         })
         .catch(() => {
           this.setState({
             showStatus       : true,
-            showStatusMessage: 'Kunde inte ansluta till WebSocket för klientsynkronisering! Programmet går fortfarande att använda men undvik att använda det på flera datorer samtidigt.'
+            showStatusMessage: 'Kunde inte ansluta till Firebase för klientsynkronisering! Programmet går fortfarande att använda, men undvik att arbeta på flera datorer samtidigt.'
           })
           setTimeout(() => {
             this.setState({
@@ -86,10 +91,10 @@ class App extends Component {
   }
 
   render () {
-    const {isSuppressedPopup = true, login = {login: {login: false}}} = this.props
+    const {isSuppressedInfo = true, isSuppressedPopup = true, login = {login: {login: false}}} = this.props
     const {showStatus = true, showStatusMessage = ''} = this.state
     return (
-      <div className="App h-100">
+      <div className="App h-100 mb-5">
         {login.login
           ? <div>
             {showStatus
@@ -100,11 +105,13 @@ class App extends Component {
             <Route path="/bokningar" component={TourView} />
             <Route path="/kalkyler" component={BudgetView} />
             <Route path="/utskick" component={ListView} />
+            <Route path="/pending" component={PendingView} />
             <Route path="/updatefirewall" component={UpdateFirewall} />
           </div>
           : <LoginScreen />
         }
         {!isSuppressedPopup && <ErrorPopup /> }
+        {!isSuppressedInfo && <InfoPopup /> }
         <NetworkIcon />
       </div>
     )
@@ -115,12 +122,14 @@ App.propTypes = {
   LoginRefresh     : PropTypes.func,
   login            : PropTypes.object,
   firebaseItemSub  : PropTypes.func,
-  isSuppressedPopup: PropTypes.bool
+  isSuppressedPopup: PropTypes.bool,
+  isSuppressedInfo : PropTypes.bool
 }
 
 const mapStateToProps = state => ({
   login            : state.login,
-  isSuppressedPopup: state.errorPopup.suppressed
+  isSuppressedPopup: state.errorPopup.suppressed,
+  isSuppressedInfo : state.infoPopup.suppressed
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({

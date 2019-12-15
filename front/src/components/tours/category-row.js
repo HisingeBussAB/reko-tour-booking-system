@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import {faSave, faSpinner} from '@fortawesome/free-solid-svg-icons'
-import {faSquare, faCheckSquare, faTrashAlt} from '@fortawesome/free-regular-svg-icons'
+import {faSave, faSpinner, faTrash} from '@fortawesome/free-solid-svg-icons'
+import {faSquare, faCheckSquare} from '@fortawesome/free-regular-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import {getItem, putItem, postItem, deleteItem} from '../../actions'
@@ -17,13 +17,14 @@ class CategoriesRow extends Component {
 
   constructor (props) {
     super(props)
-    const {category = ''} = this.props
+    const {category = '', forceSave = false} = this.props
     this.state = {
       updatingSave  : false,
       updatingActive: false,
       deleting      : false,
       category      : category,
-      isConfirming  : false
+      isConfirming  : false,
+      forceSave     : forceSave
     }
   }
 
@@ -36,7 +37,8 @@ class CategoriesRow extends Component {
         updatingSave  : false,
         updatingActive: false,
         deleting      : false,
-        isConfirming  : false
+        isConfirming  : false,
+        forceSave     : nextProps.forceSave
       })
     }
     // cancel loaders on changes recived
@@ -54,7 +56,7 @@ class CategoriesRow extends Component {
 
   saveCategory = async (e) => {
     e.preventDefault()
-    this.setState({updatingSave: true})
+    this.setState({updatingSave: true, forceSave: false})
     const {putItem, postItem, isNew = false, isDisabled, id = 'new', remove = () => {}, index = null, submitToggle} = this.props
     const {category} = this.state
     submitToggle(true)
@@ -130,24 +132,25 @@ class CategoriesRow extends Component {
   }
 
   render () {
-    const {category: propsCategory = 'new', isDisabled: propsActiveReversed = false, isNew} = this.props
+    const {category: propsCategory = 'new', isDisabled: propsActiveReversed = false, isNew, title = ''} = this.props
     const propsActive = !propsActiveReversed
     const {
       category: stateCategory = 'new',
       updatingSave = false,
       updatingActive = false,
       deleting = false,
-      isConfirming
+      isConfirming,
+      forceSave
     } = this.state
     return (
 
-      <tr>
+      <tr title={title}>
         <td className="align-middle pr-3 py-2 w-50">
           {isConfirming && <ConfirmPopup doAction={this.doDelete} message={'Vill du verkligen ta bort kategorin:\n' + propsCategory} />}
           <input value={stateCategory} onChange={(e) => this.handleCategoryChange(e.target.value)} placeholder="Kategorinamn" type="text" className="rounded w-100" maxLength="35" style={{minWidth: '200px'}} />
         </td>
         <td className="align-middle px-3 py-2 text-center">
-          {(((stateCategory === '' || stateCategory) !== undefined && stateCategory !== propsCategory)) && !updatingSave &&
+          {(((stateCategory === '' || stateCategory === undefined) || (stateCategory !== propsCategory || forceSave))) && !updatingSave &&
             <span title="Spara ändring i kategorin" className="primary-color custom-scale cursor-pointer"><FontAwesomeIcon icon={faSave} size="2x" onClick={(e) => this.saveCategory(e)} /></span>}
           {updatingSave &&
             <span title="Sparar ändring i kategorin..." className="primary-color"><FontAwesomeIcon icon={faSpinner} size="2x" pulse /></span> }
@@ -165,7 +168,7 @@ class CategoriesRow extends Component {
         </td>
         <td className="align-middle pl-3 py-2 text-center">
           {!deleting &&
-          <span title="Ta bort denna kategori permanent" className="danger-color custom-scale cursor-pointer"><FontAwesomeIcon icon={faTrashAlt} onClick={(e) => this.deleteConfirm(e)} size="2x" /></span>}
+          <span title="Ta bort denna kategori permanent" className="danger-color custom-scale cursor-pointer"><FontAwesomeIcon icon={faTrash} onClick={(e) => this.deleteConfirm(e)} size="2x" /></span>}
           {deleting &&
             <span title="Tar bort denna kategori..." className="danger-color"><FontAwesomeIcon icon={faSpinner} size="2x" pulse /></span>}
         </td>
@@ -184,7 +187,9 @@ CategoriesRow.propTypes = {
   deleteItem  : PropTypes.func,
   isDisabled  : PropTypes.bool,
   index       : PropTypes.number,
-  remove      : PropTypes.func
+  remove      : PropTypes.func,
+  title       : PropTypes.string,
+  forceSave   : PropTypes.bool
 }
 
 const mapDispatchToProps = dispatch => bindActionCreators({

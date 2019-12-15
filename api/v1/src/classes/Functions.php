@@ -35,6 +35,30 @@ final class Functions {
     }, array_keys($a), $a), 1, 0);
   }
 
+
+
+  /**
+   * Compare creator. String used screen for duplicates. 
+   * Consists of parts of name and address
+   * First 35 are comparison without addr, last 7 is adr
+   */
+
+  public static function getCompString($_firstName = '',$_lastName = '',$_zip = '', $_street='') {
+    $firstName = str_pad(str_replace(['-',' '],'',substr(filter_var(filter_var(strtolower(trim($_firstName)), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK), FILTER_SANITIZE_EMAIL), 0, 15)),16,"0",STR_PAD_RIGHT);
+    $lastName = str_pad(str_replace(['-',' '],'',substr(filter_var(filter_var(strtolower(trim($_lastName)), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK), FILTER_SANITIZE_EMAIL), 0, 15)),16,"0",STR_PAD_RIGHT);
+    $zip = str_pad(str_replace(['+','-',' '],'',filter_var(substr(trim($_zip), 0, 5), FILTER_SANITIZE_NUMBER_INT)),6,"0",STR_PAD_RIGHT);
+    $street = str_pad(substr(filter_var(filter_var(str_replace(['-','0','1','2','3','4','5','6','7','8','9',' ','vägen','gatan','väg','gata','v','g','v:a','västra','östra','ö:a','n:a','norra','s:a','södra','st','s:t','sankt','v.','g.','.',':'],'',strtolower(trim($_street))), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK), FILTER_SANITIZE_EMAIL), 0, 10),11,"0",STR_PAD_LEFT);
+    $streetnr = str_pad(str_replace(['+','-',' '],'',filter_var(trim($_street), FILTER_SANITIZE_NUMBER_INT)),4,"0",STR_PAD_LEFT);
+    return (string)substr(($firstName . $lastName . (string)$zip . (string)$streetnr .$street),0,60);
+  }
+
+  /**
+   * Compare two comp strings with or without address. First 42 are comparison without street name addr, last is steet adr
+   */
+  public static function compCompString(string $str1, string $str2, $useAdr = false) {
+    return $useAdr ? (substr($str1,0,42) == substr($str2,0,42)) : ($str1 == $str2);
+  }
+
   /**
    * Validation/sanitazion functions
    * These functions return validated/santazited value or NULL if fail
@@ -51,7 +75,7 @@ final class Functions {
   public static function validateInt($int, int $min = PHP_INT_MIN, int $max = PHP_INT_MAX) {
     if ((gettype($int) != "integer" && gettype($int) != "string") || $int === true) { return NULL; }
     $new = filter_var(trim($int), FILTER_VALIDATE_INT, array("options" => array("min_range"=>$min, "max_range"=>$max)));
-    if (empty($new)) {return NULL;}
+    if (empty($new) && $new != 0) {return NULL;}
     return (int)$new;
   }
 
@@ -65,7 +89,7 @@ final class Functions {
   public static function validateDate($date) {
     if (gettype($date) != "integer" && gettype($date) != "string") { return NULL; }
     Moment::setDefaultTimezone('CET');
-    Moment::setLocale('se_SV');
+    Moment::setLocale('sv_SE');
     try {
       $m = new \Moment\Moment($date);
     } catch (\Exception $e) {
@@ -74,53 +98,84 @@ final class Functions {
     return (string)$m->format('Y-m-d');
   }
 
-  public static function sanatizeStringUnsafe($string) {
+  public static function sanatizeStringUnsafe($string, $len = 255) {
     //Just make sure it is a string, trim and casted as such. 
     //statements should be prepared and the API should not be excplicilty trusted in front-end ie. do not dangerously set innerHTML.
+    //Optinally cut string to fit DB field
     if (gettype($string) != "integer" && gettype($string) != "string") { return NULL; }
-    $new = filter_var(trim($string), FILTER_UNSAFE_RAW);
+    $new = substr(filter_var(trim($string), FILTER_UNSAFE_RAW),0,$len);
     if(empty($new)) { return NULL; }
     return (string)$new;
   }
 
   public static function validateZIP($zip) {
     if (gettype($zip) != "integer" && gettype($zip) != "string") { return NULL; }
-    $new = self::validateInt(str_replace(['+','-'],'',filter_var(trim($zip), FILTER_SANITIZE_NUMBER_INT)), 10000, 99999);
+    $new = self::validateInt(str_replace(['+','-',' '],'',filter_var(trim($zip), FILTER_SANITIZE_NUMBER_INT)), 1000, 999999); //Shouldnt block foreing zips totally
     if (empty($new)) {return NULL;}
     return (int)$new;
   }
 
   public static function validatePhone($phone) {
     if (gettype($phone) != "integer" && gettype($phone) != "string") { return NULL; }
-    $new = str_replace(['-'],'',filter_var(trim($phone), FILTER_SANITIZE_NUMBER_INT));
+    $new = substr(str_replace(['+'],'',filter_var(trim($phone), FILTER_SANITIZE_NUMBER_INT)),0,25); //cut to 25
     if (empty($new)) {return NULL;}
     return (string)$new;
   }
 
   public static function validateEmail($email) {
     if (gettype($email) != "integer" && gettype($email) != "string") { return NULL; }
-    $new = filter_var(trim($email), FILTER_VALIDATE_EMAIL);
+    $new = substr(filter_var(trim($email), FILTER_VALIDATE_EMAIL),0,60); //Cut to 60 chars
     if(empty($new)) { return NULL; }
     return (string)$new;
   }
 
   public static function validatePersonalNumber($pnumb) {
     if (gettype($pnumb) != "integer" && gettype($pnumb) != "string") { return NULL; }
-    $new = str_replace(['+','-'],'',filter_var(trim($pnumb), FILTER_SANITIZE_NUMBER_INT));
-    if(empty($new)) { return NULL; }
+    preg_match('/^(18|19|20|21)?([0-9]{6}[-+][0-9]{4})$/', trim($pnumb), $matched, PREG_UNMATCHED_AS_NULL | PREG_OFFSET_CAPTURE);
+    if(empty($matched[2][0])) { return NULL; } 
+    $sanitizedmatch = str_replace(['+','-'],'',filter_var(trim($matched[2][0]), FILTER_SANITIZE_NUMBER_INT));
+    $controlnr = substr((string)$sanitizedmatch, -1);
+    $numbers = str_split(substr((string)$sanitizedmatch, 0,9));
+    $multipler = 2;
+    $sums = '';
+    foreach($numbers as $nr) {
+      $sums = $sums . (string)((int)$nr * (int)$multipler);
+      $multipler = $multipler == 2 ? 1 : 2;
+    }
+    $sum = 0;
+    foreach(str_split($sums) as $nr) {
+      $sum = $sum + (int)$nr;
+    }
+    if ((int)$controlnr != (int)((10 - ($sum % 10)) % 10)) {
+      return NULL;
+    }
+
+    $new = trim($matched[2][0]);
     return (string)$new;
   }
 
   public static function validateTime($time) {
     if (gettype($time) != "integer" && gettype($time) != "string") { return NULL; }
     Moment::setDefaultTimezone('CET');
-    Moment::setLocale('se_SV');
+    Moment::setLocale('sv_SE');
     try {
       $m = new \Moment\Moment($time);
     } catch (\Exception $e) {
       return NULL;
     }
     return (string)$m->format('H:i:s');
+  }
+
+  public static function validateDateTime($date) {
+    if (gettype($date) != "integer" && gettype($date) != "string") { return NULL; }
+    Moment::setDefaultTimezone('CET');
+    Moment::setLocale('sv_SE');
+    try {
+      $m = new \Moment\Moment($date);
+    } catch (\Exception $e) {
+      return NULL;
+    }
+    return (string)$m->format('Y-m-d H:i:s');
   }
 
 

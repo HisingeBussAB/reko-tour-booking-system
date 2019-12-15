@@ -9,16 +9,15 @@ export function putItem (itemType, item, data) {
     if (itemNameHuman.hasOwnProperty(itemType)) {
       dispatch(networkAction(1, 'put ' + itemType))
       try {
-        console.log('put')
         const response = await myAxios.put('/' + itemType + '/' + item, data)
         const id = response.data.response.updatedid
         dispatch(getItem(itemType, id))
         firebaseSavedItem(id, itemType)
-        return true
+        return id
       } catch (e) {
         try {
           const reply = typeof e.response.data.response !== 'undefined' && e.response.data.response.length > 0 ? e.response.data.response : 'Kunde inte utföra åtgärden.'
-          const err = typeof e.response.data.error !== 'undefined' && e.response.data.error.length > 0 ? '\n' + e.response.data.error : 'Okänt eller inget svar från API.'
+          const err = typeof e.response.data.error !== 'undefined' && e.response.data.error.length > 0 ? e.response.data.error : 'Okänt eller inget svar från API.'
           const text = reply === err ? reply : reply + '\n' + err
           dispatch(errorPopup({visible: true, message: text, suppressed: false}))
           return false

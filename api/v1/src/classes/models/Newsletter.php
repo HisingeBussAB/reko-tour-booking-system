@@ -28,8 +28,8 @@ class Newsletter extends Model {
         return array('newsletter' => $result);
       }
     } else {
-      $this->response->AddResponse('error', 'Newsletterid kan bara anges som ett positivt heltal, eller inte anges alls för alla resor.');
-      $this->response->AddResponse('response', 'Newsletterid kan bara anges som ett positivt heltal, eller inte anges alls för alla resor.');
+      $this->response->AddResponse('error', 'Newsletterid kan bara anges som ett positivt heltal, eller inte anges alls för alla adresser.');
+      $this->response->AddResponse('response', 'Newsletterid kan bara anges som ett positivt heltal, eller inte anges alls för alla adresser.');
       $this->response->Exit(404);
     }
     return false;
@@ -50,7 +50,7 @@ class Newsletter extends Model {
     if ($result != false) {
       $this->response->AddResponse('error', 'Adressen ' . $params['email'] . ' finns redan i systemet.');
       $this->response->AddResponse('response', 'Adressen ' . $params['email'] . ' finns redan i systemet.');
-      $this->response->Exit(404);
+      $this->response->Exit(409);
     }
     $sql = "INSERT INTO Newsletter (email) VALUES (:email);";
     try {     

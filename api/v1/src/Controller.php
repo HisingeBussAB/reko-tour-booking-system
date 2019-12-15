@@ -17,6 +17,7 @@ class Controller {
 
   private $response;
   private $pdo;
+  private $pdoweb;
   private $userData;
 
   public function __construct() {
@@ -25,9 +26,14 @@ class Controller {
     $this->response->AddResponse('success',   false);
     $this->response->AddResponse('response',  'Ingen uppgift utförd.');
     $this->pdo = DB::get($this->response);
+    $this->pdoweb = DB::getweb($this->response);
     if ($this->pdo == false) {
       $this->response->AddResponse('response',  'Kritiskt fel. Databasanslutning misslyckades.');
       $this->response->Exit(500);
+    }
+    if ($this->pdoweb == false) {
+      $this->response->AddResponse('response',  'Databasanslutning till webbokningar misslyckades.');
+      $this->response->AddResponse('error',  'Databasanslutning till webbokningar misslyckades.');
     }
   }
 
@@ -89,9 +95,15 @@ class Controller {
   }
 
   private function modelInvoker(string $model, string $function, array $unvalidatedData) {
+    $rawmodel = $model;
     $model = 'RekoBooking\classes\models\\' . $model;
     if (class_exists($model)) {
-      $REQUEST = new $model($this->response, $this->pdo);
+      $REQUEST = NULL;
+      if (substr($rawmodel, 0, 7) == 'Pending' ) {
+        $REQUEST = new $model($this->response, $this->pdoweb);
+      } else {
+        $REQUEST = new $model($this->response, $this->pdo);
+      }
       $data = $REQUEST->$function($unvalidatedData);
       if ($function == 'post' && $data != false) {
         $this->response->AddResponse('response', $data);
@@ -153,13 +165,23 @@ class Controller {
             http_response_code(401);
           }
           break;
+
+          case "revokeall":
+          if ( Auth::revokeall($this->response, $this->pdo )) {
+            http_response_code(200);
+          } else {
+            header('WWW-Authenticate: Bearer');
+            http_response_code(401);
+          }
+          break;
       }
       return $this->response->GetResponse();
   }
 
-  public function getUserData() {
-    return $this->userData;
-  }
+  public function Maintinance() {
+    Maintenance::refreshSecrets($this->response, $this->pdo);
+    return 'complete';
+  } 
 
   private function authenticate() {
     if (!empty($_SERVER['HTTP_AUTHORIZATION']) && preg_match('/Bearer\s(.*\..*\..*)/', $_SERVER['HTTP_AUTHORIZATION'], $matches)) {

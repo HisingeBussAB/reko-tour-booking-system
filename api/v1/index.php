@@ -110,6 +110,11 @@ if(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/updatefirewall/' && 
   $bypassLocks = true;
 }
 
+//Bypass kill switches for cron jobs
+if(in_array(ENV_REMOTE_ADDR, ENV_SERVER_IP) && (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/updatefirewall/' || parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/maintinance/')) { 
+  $bypassLocks = true;
+}
+
 if (ENV_IP_ADDRESS_LOCK && !$bypassLocks) {
   $file = 'dynamic_allowed_ips.txt';
   updateDynamicIPBlock($file, false);
@@ -139,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] == "OPTIONS") {
 }
 
 
-if ((empty($_SERVER["HTTP_X_API_KEY"]) || $_SERVER["HTTP_X_API_KEY"] != AUTH_API_KEY) && !$bypassLocks) {
+if ((empty($_SERVER["HTTP_X_API_KEY"]) || $_SERVER["HTTP_X_API_KEY"] != AUTH_API_KEY) && !$bypassLocks && !($_SERVER['REQUEST_METHOD'] == 'GET' && parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/generatehash')) {
   http_response_code(403);
   $a = array(
     'login' => false,
@@ -150,6 +155,9 @@ if ((empty($_SERVER["HTTP_X_API_KEY"]) || $_SERVER["HTTP_X_API_KEY"] != AUTH_API
   echo json_encode($a);
   die();
 }
+
+
+
 
 
 header("Accept: application/json");
@@ -164,33 +172,57 @@ Moment::setDefaultTimezone('CET');
 Moment::setLocale('sv_SE');
 
 
+//Final saftey kill setting check for only URLs it should apply to
+if ($bypassLocks != false && !(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/updatefirewall/' || parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/maintinance/' || parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) == '/v1/generatehash'))
+{
+  http_response_code(403);
+  $a = array(
+    'login' => false,
+    'saved' => false,
+    'response' => 'Fel i åtkomstprocedur! Ej behörig.');
+  $headers = ob_get_clean();
+  echo $headers;
+  echo json_encode($a);
+  die();
+}
+
 $router->addRoutes(array(
   array('POST',           '/users/auth[/]?',                function()         { $start = new Controller; echo $start->auth('login');               }),
   array('POST',           '/users/auth/refresh[/]?',        function()         { $start = new Controller; echo $start->auth('refresh');             }),
   array('POST',           '/users/auth/revoke[/]?',         function()         { $start = new Controller; echo $start->auth('revoke');              }),
-  array('GET|PUT|DELETE', '/tours/[i:id]?[/]?',             function($id = -1) { $start = new Controller; echo $start->start('Tours',       $id);   }),
-  array('GET|POST',       '/tours[/]?',                     function()         { $start = new Controller; echo $start->start('Tours'           );   }),
-  array('GET|PUT|DELETE', '/categories/[i:id]?[/]?',        function($id = -1) { $start = new Controller; echo $start->start('Categories',  $id);   }),
-  array('GET|POST',       '/categories[/]?',                function()         { $start = new Controller; echo $start->start('Categories'      );   }),
-  array('GET|PUT|DELETE', '/bookings/[i:id]?[/]?',          function($id = -1) { $start = new Controller; echo $start->start('Bookings',    $id);   }),
-  array('GET|POST',       '/bookings[/]?',                  function()         { $start = new Controller; echo $start->start('Bookings'        );   }),
-  array('GET|PUT|DELETE', '/reservations/[i:id]?[/]?',      function($id = -1) { $start = new Controller; echo $start->start('Reservations',$id);   }),
-  array('GET|POST',       '/reservations[/]?',              function()         { $start = new Controller; echo $start->start('Reservations'    );   }),
-  array('GET|PUT|DELETE', '/customers/[i:id]?[/]?',         function($id = -1) { $start = new Controller; echo $start->start('Customers',   $id);   }),
-  array('GET|POST',       '/customers[/]?',                 function()         { $start = new Controller; echo $start->start('Customers'       );   }),
-  array('GET|PUT|DELETE', '/groupcustomers/[i:id]?[/]?',    function($id = -1) { $start = new Controller; echo $start->start('GroupCustomers',$id); }),
-  array('GET|POST',       '/groupcustomers[/]?',            function()         { $start = new Controller; echo $start->start('GroupCustomers');     }),
-  array('GET|PUT|DELETE', '/newsletter/[i:id]?[/]?',        function($id = -1) { $start = new Controller; echo $start->start('Newsletter',   $id);  }),
-  array('GET|POST',       '/newsletter[/]?',                function()         { $start = new Controller; echo $start->start('Newsletter'       );  }),
-  array('GET|PUT|DELETE', '/leads/[i:id]?[/]?',             function($id = -1) { $start = new Controller; echo $start->start('Leads',       $id);   }),
-  array('GET|POST',       '/leads[/]?',                     function()         { $start = new Controller; echo $start->start('Leads'           );   }),
-  array('GET|PUT|DELETE', '/payments/[i:id]?[/]?',          function($id = -1) { $start = new Controller; echo $start->start('Payments',    $id);   }),
-  array('GET|POST',       '/payments[/]?',                  function()         { $start = new Controller; echo $start->start('Payments'        );   }),
-  array('GET|PUT|DELETE', '/budgets/[i:id]?[/]?',           function($id = -1) { $start = new Controller; echo $start->start('Budgets',     $id);   }),
-  array('GET|POST',       '/budgets[/]?',                   function()         { $start = new Controller; echo $start->start('Budgets'         );   }),
-  array('GET|PUT|DELETE', '/deadlines/[i:id]?[/]?',         function($id = -1) { $start = new Controller; echo $start->start('Deadlines',   $id);   }),
-  array('GET|POST',       '/deadlines[/]?',                 function()         { $start = new Controller; echo $start->start('Deadlines'       );   }),
-  
+  array('POST',           '/users/auth/revokeall[/]?',      function()         { $start = new Controller; echo $start->auth('revokeall');              }),
+  array('GET|PUT|DELETE', '/tours/[i:id]?[/]?',             function($id = -1) { $start = new Controller; echo $start->start('Tours',            $id);   }),
+  array('GET|POST',       '/tours[/]?',                     function()         { $start = new Controller; echo $start->start('Tours'                );   }),
+  array('GET|PUT|DELETE', '/categories/[i:id]?[/]?',        function($id = -1) { $start = new Controller; echo $start->start('Categories',       $id);   }),
+  array('GET|POST',       '/categories[/]?',                function()         { $start = new Controller; echo $start->start('Categories'           );   }),
+  array('GET|PUT|DELETE', '/bookings/[i:id]?[/]?',          function($id = -1) { $start = new Controller; echo $start->start('Bookings',         $id);   }),
+  array('GET|POST',       '/bookings[/]?',                  function()         { $start = new Controller; echo $start->start('Bookings'             );   }),
+  array('GET|PUT|DELETE', '/reservations/[i:id]?[/]?',      function($id = -1) { $start = new Controller; echo $start->start('Reservations',     $id);   }),
+  array('GET|POST',       '/reservations[/]?',              function()         { $start = new Controller; echo $start->start('Reservations'         );   }),
+  array('GET|PUT|DELETE', '/customers/[i:id]?[/]?',         function($id = -1) { $start = new Controller; echo $start->start('Customers',        $id);   }),
+  array('GET|POST',       '/customers[/]?',                 function()         { $start = new Controller; echo $start->start('Customers'            );   }),
+  array('GET|PUT|DELETE', '/groupcustomers/[i:id]?[/]?',    function($id = -1) { $start = new Controller; echo $start->start('GroupCustomers',   $id);   }),
+  array('GET|POST',       '/groupcustomers[/]?',            function()         { $start = new Controller; echo $start->start('GroupCustomers'       );   }),
+  array('GET|PUT|DELETE', '/newsletter/[i:id]?[/]?',        function($id = -1) { $start = new Controller; echo $start->start('Newsletter',       $id);   }),
+  array('GET|POST',       '/newsletter[/]?',                function()         { $start = new Controller; echo $start->start('Newsletter'           );   }),
+  array('GET|PUT|DELETE', '/leads/[i:id]?[/]?',             function($id = -1) { $start = new Controller; echo $start->start('Leads',            $id);   }),
+  array('GET|POST',       '/leads[/]?',                     function()         { $start = new Controller; echo $start->start('Leads'                );   }),
+  array('GET|PUT|DELETE', '/payments/[i:id]?[/]?',          function($id = -1) { $start = new Controller; echo $start->start('Payments',         $id);   }),
+  array('GET|POST',       '/payments[/]?',                  function()         { $start = new Controller; echo $start->start('Payments'             );   }),
+  array('GET|PUT|DELETE', '/budgets/[i:id]?[/]?',           function($id = -1) { $start = new Controller; echo $start->start('Budgets',          $id);   }),
+  array('GET|POST',       '/budgets[/]?',                   function()         { $start = new Controller; echo $start->start('Budgets'              );   }),
+  array('GET|PUT|DELETE', '/budgetgroups/[i:id]?[/]?',      function($id = -1) { $start = new Controller; echo $start->start('BudgetGroups',     $id);   }),
+  array('GET|POST',       '/budgetgroups[/]?',              function()         { $start = new Controller; echo $start->start('BudgetGroups'         );   }),
+  array('GET|PUT|DELETE', '/deadlines/[i:id]?[/]?',         function($id = -1) { $start = new Controller; echo $start->start('Deadlines',        $id);   }),
+  array('GET|POST',       '/deadlines[/]?',                 function()         { $start = new Controller; echo $start->start('Deadlines'            );   }),
+  array('GET',            '/pendingcount[/]?',              function()         { $start = new Controller; echo $start->start('PendingCount'         );   }),
+  array('GET|PUT',        '/pendingnewsletter/[i:id]?[/]?', function($id = -1) { $start = new Controller; echo $start->start('PendingNewsletter',$id);   }),
+  array('GET',            '/pendingnewsletter[/]?',         function()         { $start = new Controller; echo $start->start('PendingNewsletter'    );   }),
+  //UTILITES
+  array('GET',            '/generatehash?[**:trailing]?',   function($trailing = false) { die(json_encode(array('pwd' => trim($_SERVER['QUERY_STRING']), 'hash' => password_hash(trim($_SERVER['QUERY_STRING']) . AUTH_PWD_PEPPER, PASSWORD_DEFAULT)))); }),
+  //CRON
+  array('GET',            '/maintinance[/]?',                 function()       { $start = new Controller; echo $start->Maintinance();               }),
+  //FIREWALL
   array('GET|POST',       '/updatefirewall[/]?', function(){
     file_put_contents('cloudflareips.txt', file_get_contents('https://www.cloudflare.com/ips-v4'));
     updateDynamicIPBlock('dynamic_allowed_ips.txt', true);
@@ -204,15 +236,15 @@ $router->addRoutes(array(
     foreach(ENV_IP_ADDRESS_LOCK_ALLOWED_IPS as $ip) {
       $allowed_ips = $allowed_ips . ' ' . $ip;
     }
+    foreach(ENV_SERVER_IP as $ip) {
+      $allowed_ips = $allowed_ips . ' ' . $ip;
+    }
     $allowed_ips = trim($allowed_ips); 
 
     //Edit IDs in these rules
-    $rule1 = array("id" => ENV_CLOUDFLARE_API_FILTER_ID,"expression" => "(ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"https://api.rekoresor.app\") or (ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"https://apitest.rekoresor.app\")","paused"=> false,"description"=> "DynamicUpdateAllowedIPs API"
-    );
-
-    //$rule2 = array("id"=> ENV_CLOUDFLARE_WEB_FILTER_ID,"expression"=>"(ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"://bokningar.rekoresor.app\") or (ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"://bokningartest.rekoresor.app\")","paused"=> false,"description"=> "DynamicUpdateAllowedIPs Web");
-
-    $rules = array($rule1);//, $rule2);
+    $rule1 = array("id" => ENV_CLOUDFLARE_API_FILTER_ID,"expression" => "(ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"https://api.rekoresor.app\") or (ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"https://apitest.rekoresor.app\")","paused"=> false,"description"=> "DynamicUpdateAllowedIPs API");
+    $rule2 = array("id"=> ENV_CLOUDFLARE_WEB_FILTER_ID,"expression"=>"(ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"://bokningar.rekoresor.app\") or (ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"://bokningartest.rekoresor.app\")","paused"=> false,"description"=> "DynamicUpdateAllowedIPs Web");
+    $rules = array($rule1, $rule2);
     $reply = array();
     $reply['ips'] = array();
     $reply['response'] = array();
@@ -234,9 +266,11 @@ $router->addRoutes(array(
     $user_ips = array("Cloudflare reported IP" => $_SERVER["HTTP_CF_CONNECTING_IP"],"Connection remote IP" => $_SERVER['REMOTE_ADDR']);
     array_push($reply['ips'], $user_ips);
     header("Content-Type: text/html; charset=UTF-8");
-    echo '<html><head><META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW"></head><h1>Brandväggen har uppdaterats.</h1><h2><a href="https://bokningar.rekoresor.app" target="_top">Tillbaka till bokningssystemet</a></h2><pre>';
+    echo '<html><head><META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW"></head><body><div style="margin: 60px;"><h1>Brandväggen har uppdaterats.</h1><h2>';
+    echo ENV_DOMAIN == 'apitest.rekoresor.app' ? '<a href="https://bokningartest.rekoresor.app" target="_top">' : '<a href="https://bokningar.rekoresor.app" target="_top">';
+    echo 'Tillbaka till bokningssystemet</a></h2><pre style="margin-top: 60px;">';
     print_r($reply);
-    echo '</pre></body></html>';
+    echo '</pre></div></body></html>';
     http_response_code(200); 
     echo ob_get_clean(); 
     die();
@@ -329,11 +363,15 @@ function Set_ENV_REMOTE_ADDR($cloudlfarefile) {
   function updateDynamicIPBlock($file = 'dynamic_allowed_ips.txt', $force = false) {
     $allowed_ips = '';
     if ($force || !file_exists($file) || (file_exists($file) && filemtime($file) < mktime(0, 0, 0, date("m"), date("d")-1, date("Y")))) {
+
       foreach(ENV_IP_DYNAMIC_LOCK_ALLOWED_IPS as $host) {
         $ip = gethostbyname($host);
         if ($ip != $host) {
           $allowed_ips = $allowed_ips . ' ' . $ip;
         }
+      }
+      foreach(ENV_SERVER_IP as $ip) {
+        $allowed_ips = $allowed_ips . ' ' . $ip;
       }
       $ipsformatted = str_replace(' ', ',', trim($allowed_ips));
       file_put_contents($file, $ipsformatted);
