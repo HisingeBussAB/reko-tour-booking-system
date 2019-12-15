@@ -4,13 +4,12 @@ namespace RekoBooking\classes\models;
 use RekoBooking\classes\models\Model;
 use RekoBooking\classes\Functions;
 
-class GroupCustomers extends Model {
+class Customers extends Model {
 
   public function get(array $params) {
     if ($params['id'] > 0 || $params['id'] == -1) {
       try {
         $sql = "SELECT id
-                    ,organisation
                     ,firstname
                     ,lastname
                     ,street
@@ -22,11 +21,11 @@ class GroupCustomers extends Model {
                     ,date
                     ,compare 
                     ,isAnonymized
-                    FROM GroupCustomers";
+                    FROM Customers";
         $sql .= ($params['id'] != -1) 
                     ? " WHERE id = :id AND isAnonymized = 0"
                     : " WHERE isAnonymized = 0";
-        $sql .= " ORDER BY organisation, lastname, firstname, date ASC;";
+        $sql .= " ORDER BY lastname, firstname, date ASC;";
         $sth = $this->pdo->prepare($sql);
         if ($params['id'] != -1) { $sth->bindParam(':id', $params['id'], \PDO::PARAM_INT); }
         $sth->execute(); 
@@ -36,17 +35,23 @@ class GroupCustomers extends Model {
         $this->response->Exit(500);
       }
       if (count($result) < 1 && $params['id'] != -1) {
-        $this->response->AddResponse('error', 'Gruppkunden hittades inte.');
+        $this->response->AddResponse('error', 'Kunden hittades inte.');
         $this->response->Exit(404);
       } else {
         foreach ($result as $key=>$client) {
           try {
-            $sql = "SELECT DISTINCT Categories.id as id, label 
+            $sql = "SELECT DISTINCT Categories.id as id, Categories.label as label
                       FROM Categories 
-                      INNER JOIN Categories_GroupCustomers
-                        ON Categories_GroupCustomers.categoryid = Categories.id 
-                      WHERE Categories_GroupCustomers.groupid = :id
-                      ORDER BY label ASC;";
+                      INNER JOIN Categories_Tours
+                        ON Categories.id = Categories_Tours.categoryid 
+                      INNER JOIN Tours
+                        ON Tours.id = Categories_Tours.tourid
+                      INNER JOIN Bookings
+                        ON Bookings.tourid = Tours.id
+                      INNER JOIN Bookings_Customers
+                        ON Bookings_Customers.bookingid = Bookings.id
+                      WHERE Bookings_Customers.customerid = :id
+                      ORDER BY Categories.label ASC;";
             $sth = $this->pdo->prepare($sql);
             $sth->bindParam(':id', $client['id'], \PDO::PARAM_INT);
             $sth->execute();
@@ -59,11 +64,11 @@ class GroupCustomers extends Model {
           $result[$key]['zip'] = ($client['zip'] == null OR $client['zip'] < 1) ? '' : $client['zip'];
           $result[$key]['zip'] = wordwrap($result[$key]['zip'], 3, ' ', true );
         }
-        return array('groupcustomers' => $result);
+        return array('customers' => $result);
       }
     } else {
-      $this->response->AddResponse('error', 'Groupcustomerid kan bara anges som ett positivt heltal, eller inte anges alls för alla gruppkunder.');
-      $this->response->AddResponse('response', 'Groupcustomerid kan bara anges som ett positivt heltal, eller inte anges alls för alla gruppkunder.');
+      $this->response->AddResponse('error', 'Customerid kan bara anges som ett positivt heltal, eller inte anges alls för alla gruppkunder.');
+      $this->response->AddResponse('response', 'Customerid kan bara anges som ett positivt heltal, eller inte anges alls för alla gruppkunder.');
       $this->response->Exit(404);
     }
     return false;
@@ -72,9 +77,8 @@ class GroupCustomers extends Model {
   public function post(array $_params) {
     $params = $this->paramsValidationWithExit($_params, true);
     $comp = Functions::getCompString($params['firstname'],$params['lastname'],$params['zip'],$params['street']);
-    $sql = "INSERT INTO GroupCustomers (
-      organisation
-      ,firstname
+    $sql = "INSERT INTO Customers (
+      firstname
       ,lastname
       ,street
       ,zip
@@ -86,8 +90,7 @@ class GroupCustomers extends Model {
       ,compare
       ,isAnonymized) 
     VALUES (
-      :organisation
-      ,:firstname
+      :firstname
       ,:lastname
       ,:street
       ,:zip
@@ -101,7 +104,6 @@ class GroupCustomers extends Model {
     try {     
       $this->pdo->beginTransaction();
       $sth = $this->pdo->prepare($sql);
-      $sth->bindParam(':organisation',      $params['organisation'],   \PDO::PARAM_STR);
       $sth->bindParam(':firstname',         $params['firstname'],      \PDO::PARAM_STR);
       $sth->bindParam(':lastname',          $params['lastname'],       \PDO::PARAM_STR);
       $sth->bindParam(':street',            $params['street'],         \PDO::PARAM_STR);
@@ -117,11 +119,11 @@ class GroupCustomers extends Model {
       $sth = $this->pdo->prepare($sql);
       $sth->execute(); 
       $result = $sth->fetch(\PDO::FETCH_ASSOC); 
-      foreach ($params['categories'] as $category) {
-        $sql = "INSERT INTO Categories_GroupCustomers (groupId, categoryId) VALUES (:gid, :cid);";
+      foreach ($params['bookings'] as $booking) {
+        $sql = "INSERT INTO Bookings_Customers (customerId, bookingId) VALUES (:cid, :bid);";
         $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':gid', $result['id'],                  \PDO::PARAM_INT);
-        $sth->bindParam(':cid', $category['id'],                \PDO::PARAM_INT);
+        $sth->bindParam(':cid', $result['id'],                  \PDO::PARAM_INT);
+        $sth->bindParam(':bid', $booking['id'],                 \PDO::PARAM_INT);
         $sth->execute();
       } 
       $this->pdo->commit();
@@ -138,9 +140,8 @@ class GroupCustomers extends Model {
     $comp = Functions::getCompString($params['firstname'],$params['lastname'],$params['zip'],$params['street']);
     if ($this->get(array('id' => $params['id'])) !== false) {
       try {
-        $sql = "UPDATE GroupCustomers SET 
-        organisation  = :organisation
-        ,firstname    = :firstname
+        $sql = "UPDATE Customers SET 
+        firstname    = :firstname
         ,lastname     = :lastname
         ,street       = :street
         ,zip          = :zip 
@@ -156,7 +157,6 @@ class GroupCustomers extends Model {
         $this->pdo->beginTransaction();
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id',                $params['id'],             \PDO::PARAM_INT);
-        $sth->bindParam(':organisation',      $params['organisation'],   \PDO::PARAM_STR);
         $sth->bindParam(':firstname',         $params['firstname'],      \PDO::PARAM_STR);
         $sth->bindParam(':lastname',          $params['lastname'],       \PDO::PARAM_STR);
         $sth->bindParam(':street',            $params['street'],         \PDO::PARAM_STR);
@@ -168,15 +168,15 @@ class GroupCustomers extends Model {
         $sth->bindParam(':date',              $params['date'],           \PDO::PARAM_STR);
         $sth->bindParam(':compare',           $comp,                     \PDO::PARAM_STR);
         $sth->execute(); 
-        $sql = "DELETE FROM Categories_GroupCustomers WHERE groupId = :gid;";
+        $sql = "DELETE FROM Bookings_Customers WHERE customerId = :cid;";
         $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':gid',               $params['id'],             \PDO::PARAM_INT);
+        $sth->bindParam(':cid',               $params['id'],             \PDO::PARAM_INT);
         $sth->execute(); 
-        foreach ($params['categories'] as $category) {
-          $sql = "INSERT INTO Categories_GroupCustomers (groupId, categoryId) VALUES (:gid, :cid);";
+        foreach ($params['bookings'] as $booking) {
+          $sql = "INSERT INTO Bookings_Customers (customerId, bookingId) VALUES (:cid, :bid);";
           $sth = $this->pdo->prepare($sql);
-          $sth->bindParam(':gid', $params['id'],                  \PDO::PARAM_INT);
-          $sth->bindParam(':cid', $category['id'],                \PDO::PARAM_INT);
+          $sth->bindParam(':cid', $result['id'],                  \PDO::PARAM_INT);
+          $sth->bindParam(':bid', $booking['id'],                 \PDO::PARAM_INT);
           $sth->execute();
         } 
         $this->pdo->commit();
@@ -193,11 +193,11 @@ class GroupCustomers extends Model {
     if (ENV_DEBUG_MODE && !empty($_GET["forceReal"]) && Functions::validateBoolToBit($_GET["forceReal"])) {
       //Allows true deletes while running tests or after debugging, does not validate exiting ID
       try {
-        $sql = "DELETE FROM GroupCustomers WHERE id = :id;";
+        $sql = "DELETE FROM Customers WHERE id = :id;";
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
         $sth->execute();
-        $sql = "DELETE FROM Categories_GroupCustomers WHERE groupid = :id;";
+        $sql = "DELETE FROM Bookings_Customers WHERE customerpid = :id;";
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
         $sth->execute();
@@ -209,7 +209,6 @@ class GroupCustomers extends Model {
     }
     if ($this->get(array('id' => $params['id'])) !== false) {
       try {
-        $params['organisation'] = substr(md5(mt_rand()),0,4);
         $params['firstname'] = substr(md5(mt_rand()),0,4);
         $params['lastname'] = substr(md5(mt_rand()),0,4);
         $params['street'] = substr(md5(mt_rand()),0,2);
@@ -220,9 +219,8 @@ class GroupCustomers extends Model {
         $params['personalNumber'] = '0';
         $comp = Functions::getCompString($params['firstname'],$params['lastname'],$params['zip'],$params['street']);
 
-        $sql = "UPDATE GroupCustomers SET 
-        organisation  = :organisation
-        ,firstname    = :firstname
+        $sql = "UPDATE Customers SET 
+        firstname    = :firstname
         ,lastname     = :lastname
         ,street       = :street
         ,zip          = :zip 
@@ -237,7 +235,6 @@ class GroupCustomers extends Model {
         
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id',                $params['id'],             \PDO::PARAM_INT);
-        $sth->bindParam(':organisation',      $params['organisation'],   \PDO::PARAM_STR);
         $sth->bindParam(':firstname',         $params['firstname'],      \PDO::PARAM_STR);
         $sth->bindParam(':lastname',          $params['lastname'],       \PDO::PARAM_STR);
         $sth->bindParam(':street',            $params['street'],         \PDO::PARAM_STR);
@@ -260,17 +257,44 @@ class GroupCustomers extends Model {
 
   
 
-  private function paramsValidationWithExit($params, $validateCategories = false) {
+  private function paramsValidationWithExit($params, $validateBookings = false) {
     $passed = true;
     $result = array();
-    if (isset($params['organisation'])) {
-      $result['organisation'] = Functions::sanatizeStringUnsafe($params['organisation'], 200);
-    } else {
-      $result['organisation'] = '';
+
+    $result['bookings'] = array();
+    if ($validateBookings) {
+      if (isset($params['bookings']) && is_array($params['bookings'])) {
+        foreach($params['bookings'] as $booking) {
+          $sqlresult = false;
+          if (isset($booking['id'])) {
+            $booking['id'] = Functions::validateInt($booking['id']);
+            try {
+              $sql = "SELECT id FROM Bookings where id = :id";
+              $sth = $this->pdo->prepare($sql);
+              $sth->bindParam(':id', $booking['id'], \PDO::PARAM_INT);
+              $sth->execute(); 
+              $sqlresult = $sth->fetchAll(\PDO::FETCH_ASSOC); 
+            } catch(\PDOException $e) {
+              $this->response->DBError($e, __CLASS__, $sql);
+              $this->response->Exit(500);
+            }
+            if ($sqlresult == false || count($sqlresult) < 1) {
+              $this->response->AddResponse('error', 'Kunden måste kopplas till en giltig bokning.');
+              $this->response->AddResponsePushToArray('invalidFields', array('bookings'));
+              $passed = false;
+            } else {
+              array_push($result['bookings'], $booking);
+            }
+          }
+        }
+      } else {
+        $this->response->AddResponse('error', 'Kunden måste kopplas till en giltig bokning.');
+        $this->response->AddResponsePushToArray('invalidFields', array('bookings'));
+        $passed = false;
+      }
+      
     }
-    if (empty($result['organisation'])) {
-      $result['organisation'] = 'Privat grupp';
-    }
+   
     if (isset($params['firstname']) && !empty($params['firstname'])) {
       $result['firstname'] = Functions::sanatizeStringUnsafe($params['firstname'], 100);
       if (is_null($result['firstname'])) {
@@ -292,8 +316,8 @@ class GroupCustomers extends Model {
       $result['lastname'] = '';
     }
 
-    if (empty($result['lastname']) && empty($result['firstname']) && $result['organisation'] == 'Privat grupp') {
-      $this->response->AddResponse('error', 'Något av förnamn, efternamn eller organisation måste anges.');
+    if (empty($result['lastname']) && empty($result['firstname'])) {
+      $this->response->AddResponse('error', 'Något av förnamn eller efternamn måste anges.');
       $this->response->AddResponsePushToArray('invalidFields', array('firstname','lastname','organisation'));
       $passed = false;
     }
@@ -376,53 +400,7 @@ class GroupCustomers extends Model {
     }
     
 
-    $result['categories'] = array();
-    if (isset($params['categories']) && is_array($params['categories'])) {
-      foreach($params['categories'] as $key=>$category) {
-        if (isset($category['id'])) {
-          $result['categories'][$key]['id'] = Functions::sanatizeStringUnsafe($category['id']);
-        } else {
-          $result['categories'][$key]['id'] = '';
-        }
-
-        if ($validateCategories) {
-          $flag = true;
-          if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
-            try {
-              $sql = "SELECT DISTINCT categoryid as id
-                        FROM Categories_GroupCustomers
-                        WHERE groupid = :id;";
-              $sth = $this->pdo->prepare($sql);
-              $sth->bindParam(':id', $params['id'], \PDO::PARAM_INT);
-              $sth->execute();
-              $categoryids = $sth->fetchAll(\PDO::FETCH_ASSOC); 
-            } catch(\PDOException $e) {
-              $this->response->DBError($e, __CLASS__, $sql);
-              $this->response->Exit(500);
-            }
-            $org = array();
-            $in = array();
-            foreach($categoryids as $c) {
-              array_push($org, $c['id']);
-            }
-            foreach($params['categories'] as $c) {
-              array_push($in, $c['id']);
-            }
-            if (sizeof(array_diff($org,$in)) == 0) {
-              $flag = false;
-            }
-          }
-          if ($flag) {
-            $Categories = new Categories($this->response, $this->pdo);
-            if (empty($result['categories'][$key]['id']) || $Categories->get(array('id' => $category['id'])) == false) {
-              $this->response->AddResponse('error', 'Kategori id: ' . $category['id'] . ' är borttagen eller ogiltig.');
-              $this->response->AddResponsePushToArray('invalidFields', array('categories.' . $key . '.id'));
-              $passed = false;
-              }
-            }
-          }
-        }
-      }
+    
 
     if (isset($params['isanonymized'])) {
       $result['isAnonymized'] = Functions::validateBoolToBit($params['isanonymized']);

@@ -17,20 +17,19 @@ class CategoriesRow extends Component {
 
   constructor (props) {
     super(props)
-    const {category = '', forceSave = false, title = ''} = this.props
+    const {category = '', forceSave = false} = this.props
     this.state = {
       updatingSave  : false,
       updatingActive: false,
       deleting      : false,
       category      : category,
       isConfirming  : false,
-      forceSave     : forceSave,
-      title         : title
+      forceSave     : forceSave
     }
   }
 
   componentWillReceiveProps (nextProps) {
-    const {id = 'new', category = 'new', isDisabled = false, forceSave = false, title = ''} = this.props
+    const {id = 'new', category = 'new', isDisabled = false} = this.props
     if (nextProps.id !== id) {
       // for some reason id changed, component state needs reset.
       this.setState({
@@ -39,8 +38,7 @@ class CategoriesRow extends Component {
         updatingActive: false,
         deleting      : false,
         isConfirming  : false,
-        forceSave     : nextProps.forceSave,
-        title         : nextProps.title
+        forceSave     : nextProps.forceSave
       })
     }
     // cancel loaders on changes recived
@@ -144,7 +142,6 @@ class CategoriesRow extends Component {
       isConfirming,
       forceSave
     } = this.state
-console.log(forceSave)
     return (
 
       <tr title={title}>
@@ -190,7 +187,9 @@ CategoriesRow.propTypes = {
   deleteItem  : PropTypes.func,
   isDisabled  : PropTypes.bool,
   index       : PropTypes.number,
-  remove      : PropTypes.func
+  remove      : PropTypes.func,
+  title       : PropTypes.string,
+  forceSave   : PropTypes.bool
 }
 
 const mapDispatchToProps = dispatch => bindActionCreators({

@@ -13,6 +13,11 @@ const initialState = {
     message   : '',
     suppressed: false
   },
+  infoPopup: {
+    visible   : false,
+    message   : '',
+    suppressed: false
+  },
   login: {
     login         : false,
     user          : 'anonymous',
@@ -29,12 +34,17 @@ const initialState = {
   },
   lists: {
     groupcustomers: [],
-    newsletter    : []
+    newsletter    : [],
+    customers     : []
+  },
+  budgets: {
+    budgetgroups: [],
+    budgets     : []
   },
   web: {
-    webtours: [],
+    webtours     : [],
     webcategories: [],
-    webrooms: []
+    webrooms     : []
   },
   pendingfromweb: {
     count     : {},
@@ -42,7 +52,7 @@ const initialState = {
     leads     : [],
     newsletter: []
   },
-  networkOperations: [],
+  networkOperations: []
 }
 
 const enhancers = []

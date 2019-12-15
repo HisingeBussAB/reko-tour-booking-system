@@ -8,6 +8,12 @@ export default function lists (state = {}, action) {
       } else {
         return {...state, groupcustomers: mergeObjectArrays(state.groupcustomers, action.payload.groupcustomers, 'id')}
       }
+    case 'DATA_CUSTOMERS_SAVE':
+      if (action.payload.id === 'all' || typeof state.customers === 'undefined') {
+        return {...state, customers: action.payload.customers}
+      } else {
+        return {...state, customers: mergeObjectArrays(state.customers, action.payload.customers, 'id')}
+      }
     case 'DATA_NEWSLETTER_SAVE':
       if (action.payload.id === 'all' || typeof state.newsletter === 'undefined') {
         return {...state, newsletter: action.payload.newsletter}

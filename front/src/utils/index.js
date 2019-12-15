@@ -1,5 +1,3 @@
-import { messaging } from "firebase";
-
 export function mergeObjectArrays (arr1, arr2, match) {
   const newarr = arr1.map(
     s => arr2.find(
@@ -66,9 +64,9 @@ export function dynamicSort (property) {
     return function (a, b) {
       if (sortOrder === -1) {
         return b[property].localeCompare(a[property])
-    }else {
+      } else {
         return a[property].localeCompare(b[property])
-    }
+      }
     }
   } catch (e) {
     return 0
@@ -109,3 +107,5 @@ export function getActivePlusSelectedTours (tours, selectedTour, extraTour) {
   }
   return allActiveTours
 }
+
+export const sumBy = (items, prop) => items.reduce((a, b) => +a + +b[prop], 0)

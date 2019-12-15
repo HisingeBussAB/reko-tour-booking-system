@@ -15,11 +15,11 @@ class LoginScreen extends Component {
     const {login = {autoAttempt: false}} = this.props
     this.state = {
       serverTime: false,
-      isSending : true,
+      isSending : Config.AutoLogin,
       triedAuto : false,
       loginData : {
-        pwd           : Config.AutoLoginPwd,
-        user          : Config.AutoUsername,
+        pwd           : Config.AutoLogin ? Config.AutoLoginPwd : '',
+        user          : Config.AutoLogin ? Config.AutoUsername : '',
         auto          : login.autoAttempt,
         refreshToken  : false,
         refreshExpires: 0
@@ -53,7 +53,7 @@ class LoginScreen extends Component {
     if (userObject !== null) {
       if (typeof userObject.user === 'string' && typeof userObject.refreshToken === 'string' && typeof userObject.refreshExpires === 'number') {
         this.setState({loginData: {
-          pwd           : Config.AutoLoginPwd,
+          pwd           : Config.AutoLogin ? Config.AutoLoginPwd : '',
           user          : userObject.user,
           auto          : login.autoAttempt,
           refreshToken  : userObject.refreshToken,
@@ -63,8 +63,8 @@ class LoginScreen extends Component {
       }
     }
     this.setState({loginData: {
-      pwd           : Config.AutoLoginPwd,
-      user          : Config.AutoUsername,
+      pwd           : Config.AutoLogin ? Config.AutoLoginPwd : '',
+      user          : Config.AutoLogin ? Config.AutoUsername : '',
       auto          : login.autoAttempt,
       refreshToken  : false,
       refreshExpires: 0

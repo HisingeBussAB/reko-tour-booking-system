@@ -1,0 +1,77 @@
+@media print {
+      
+
+ table { 
+        margin: 0px;
+        padding: 0px;
+        border: 0px;
+        font-family: Arial, Helvetica, sans-serif;
+        }
+ 
+ 
+ 
+ tr { 
+        margin: 0px;
+        padding: 0px;
+        border: 0px;
+        }
+ 
+ 
+ 
+ td { 
+        margin: 0px;
+        padding: 0px;
+        border: 0px;
+        font-family: Arial, Helvetica, sans-serif;
+        }
+
+   
+    
+ body {
+    background: #fff;
+    color: #000;
+    font-size: 8pt;
+    line-height: 150%;
+    margin: 0px;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  hr {
+    color: #ccc;
+    background-color: #ccc;
+  }
+  h1, h2, h3, h4, h5, h6, code, pre {
+    color: #000;
+    text-transform: none; /* because sometimes I set all-caps */
+  }
+  h1 {
+    font-size: 11pt;
+    margin-top: 1em;
+  }
+  h2 {
+    font-size: 10pt;
+  }
+  h3 {
+    font-size: 9pt;
+  }
+  h4, h5, h6 {
+    font-size: 8pt;
+  }
+  code, pre {
+    font-size: 8pt;
+    background-color: transparent;
+    /* just in case the user configured browser to print backgrounds */
+  }
+  blockquote {
+    background-image: none;
+    /* though they may not print, I’d rather be sure */
+  }
+  a:link, a:visited {
+    text-decoration: underline;
+    color: #000;
+  }
+  abbr:after, acronym:after { /* some HTML4 love */
+    content: " (" attr(title) ") ";
+    /* I suspect I am one of the few who still use these elements */
+  }
+  
+}
