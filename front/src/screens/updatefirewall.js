@@ -23,7 +23,6 @@ class UpdateFirewall extends Component {
       })
   }
 
-
   render () {
     const {response} = this.state
     return (

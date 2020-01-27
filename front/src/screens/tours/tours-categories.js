@@ -19,20 +19,18 @@ class Categories extends Component {
     }
   }
 
-  componentWillMount () {
+  componentDidMount () {
     this.reduxGetAllUpdate()
+    const {...props} = this.props
+    this.Initiate(props)
   }
 
   componentWillUnmount () {
     this.reduxGetAllUpdate()
   }
 
-  componentDidMount () {
-    const {...props} = this.props
-    this.Initiate(props)
-  }
-
-  componentWillReceiveProps (nextProps) {
+  // eslint-disable-next-line camelcase
+  UNSAFE_componentWillReceiveProps (nextProps) {
     const {webcategories, categories} = this.props
     if (webcategories !== nextProps.webcategories || categories !== nextProps.categories) {
       this.Initiate(nextProps)
@@ -75,7 +73,7 @@ class Categories extends Component {
 
   removeExtraCategory = (i) => {
     const {extracategories} = this.state
-    delete extracategories[i]  //Statemutation!
+    delete extracategories[i] // Statemutation!
   }
 
   submitToggle = (b) => {

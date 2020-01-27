@@ -159,8 +159,8 @@ input[type=search] {
 }
 
 input:invalid {
-  color: #dc3545;
-  border: 1px solid #dc3545;
+  color: #dc3545 !important;
+  border: 1px solid #dc3545 !important;
 }
 
 input.is-invalid {
@@ -170,7 +170,7 @@ input.is-invalid {
 }
 
 input.is-valid {
-  color: #0856fb !important;
+  color: black !important;
   border: 1px solid #0856fb !important;
   background: none !important;
 }

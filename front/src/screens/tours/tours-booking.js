@@ -33,21 +33,18 @@ class NewTourBooking extends Component {
     }
   }
 
-  componentWillMount () {
-    const {getItem, getItemWeb} = this.props
+  componentDidMount () {
+    const {getItem, getItemWeb, ...props} = this.props
     getItem('bookings', 'all')
     getItem('categories', 'all')
     getItem('tours', 'all')
     getItem('customers', 'all')
     getItemWeb('resor', 'all')
-  }
-
-  componentDidMount () {
-    const {...props} = this.props
     this.Initate(props)
   }
 
-  componentWillReceiveProps (nextProps) {
+  // eslint-disable-next-line camelcase
+  UNSAFE_componentWillReceiveProps (nextProps) {
     const {bookings, tours} = this.props
     if (bookings !== nextProps.bookings || tours !== nextProps.tours) {
       this.Initate(nextProps)
@@ -107,7 +104,8 @@ class NewTourBooking extends Component {
 
   handleChangeRoom = (room, i) => {
     const {customers = {}, tourSelected = {}} = this.state
-
+    console.log(room)
+    console.log(i)
     const roomSpecs = typeof room[0] === 'undefined' || typeof tourSelected[0] === 'undefined' ? {price: 0} : findByKey(room[0].id, 'id', tourSelected[0].rooms)
     const roomid = typeof room[0] === 'undefined' || typeof tourSelected[0] === 'undefined' ? '' : room[0].id
     const newcustomer = update(customers, {[[i]]:

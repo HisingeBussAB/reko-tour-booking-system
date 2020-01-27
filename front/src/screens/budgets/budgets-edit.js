@@ -6,7 +6,6 @@ import {faCaretSquareDown, faCaretSquareUp} from '@fortawesome/free-regular-svg-
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import {getItem, putItem, postItem, deleteItem} from '../../actions'
-import { Typeahead } from 'react-bootstrap-typeahead'
 import update from 'immutability-helper'
 import { findByKey, sumBy } from '../../utils'
 import { Redirect } from 'react-router-dom'
@@ -22,17 +21,13 @@ class NewBudget extends Component {
     this.state = {
       isSubmitting    : false,
       id              : 'new',
-      budgetgroupid   : null,
       label           : '',
       tourlabelcalc   : '',
-      tourid          : null,
       estimatedpax    : '',
       actualpax       : '',
       estimatedsurplus: '',
-      createddate     : moment().format('YYYY-MM-DD'),
       departuredate   : moment().format('YYYY-MM-DD'),
       sortdatecalc    : moment().format('YYYY-MM-DD'),
-      isdisabled      : false,
       costs           : [
         {id             : 'new',
           budgetid       : null,
@@ -62,7 +57,13 @@ class NewBudget extends Component {
     }
   }
 
-  componentWillMount () {
+  componentDidMount () {
+    this.reduxGetAllUpdate()
+    const {...props} = this.props
+    this.Initiate(props)
+  }
+
+  reduxGetAllUpdate = () => {
     const {getItem} = this.props
     getItem('budgets', 'all')
     getItem('budgetgroups', 'all')
@@ -70,12 +71,8 @@ class NewBudget extends Component {
     getItem('tours', 'all')
   }
 
-  componentDidMount () {
-    const {...props} = this.props
-    this.Initiate(props)
-  }
-
-  componentWillReceiveProps (nextProps) {
+  // eslint-disable-next-line camelcase
+  UNSAFE_componentWillReceiveProps (nextProps) {
     const {budgets} = this.props
     if (!_.isEqual(budgets, nextProps.budgets)) {
       this.Initiate(nextProps)
@@ -87,25 +84,20 @@ class NewBudget extends Component {
       const budgets = findByKey(nextProps.match.params.id, 'id', nextProps.budgets)
       if (typeof budgets === 'object') {
         this.setState({
-          isSubmitting  : false,
-          id            : budgets.id,
-          budgetgroupid : budgets.budgetgroupid,
-          label         : budgets.label,
-          tourlabelcalc : budgets.tourlabelcalc,
-          tourid        : budgets.tourid,
-          estimatedpax  : budgets.extimatedpax,
-          actualpax     : budgets.actualpax,
-          estimatedprice: budgets.estimatedprice,
-          createddate   : budgets.createddate,
-          departuredate : budgets.departuredate,
-          sortdatecalc  : budgets.sortdatecalc,
-          isdisabled    : budgets.isdisabled,
-          costs         : typeof budgets.costs === 'object' ? budgets.costs : [],
-          sales         : typeof budgets.sales === 'object' ? budgets.sales : [],
-          redirectTo    : false,
-          isConfirming  : false,
-          showSales     : false,
-          isLocked      : budgets.islocked
+          isSubmitting : false,
+          id           : budgets.id,
+          label        : budgets.label,
+          tourlabelcalc: budgets.tourlabelcalc,
+          estimatedpax : budgets.extimatedpax,
+          actualpax    : budgets.actualpax,
+          departuredate: budgets.departuredate,
+          sortdatecalc : budgets.sortdatecalc,
+          costs        : typeof budgets.costs === 'object' ? budgets.costs : [],
+          sales        : typeof budgets.sales === 'object' ? budgets.sales : [],
+          redirectTo   : false,
+          isConfirming : false,
+          showSales    : false,
+          isLocked     : budgets.islocked
         })
       }
     } catch (e) {
@@ -114,7 +106,6 @@ class NewBudget extends Component {
   }
 
   handleSave = async () => {
-    const {} = this.state
     const {postItem, putItem, getItem} = this.props
     this.setState({isSubmitting: true})
     this.setState({isSubmitting: false})
@@ -130,16 +121,16 @@ class NewBudget extends Component {
 
   handleChangeCostRow = (e, i) => {
     const {costs} = this.state
-    const newcost = e.name === 'label' ? 
-      update(costs, {[[i]]: {[e.name]: {$set: e.value}}})
+    const newcost = e.name === 'label' 
+      ? update(costs, {[[i]]: {[e.name]: {$set: e.value}}})
       : parseInt(e.value.replace(/[^\d.-]/g, ''), 10) === 0 ? update(costs, {[[i]]: {[e.name]: {$set: ''}}}) : update(costs, {[[i]]: {[e.name]: {$set: parseInt(e.value.replace(/[^\d.-]/g, ''), 10)}}})
     this.setState({costs: newcost})
   }
 
   handleChangeSalesRow = (e, i) => {
     const {sales} = this.state
-    const newsale = e.name === 'label' ? 
-      update(sales, {[[i]]: {[e.name]: {$set: e.value}}})
+    const newsale = e.name === 'label' 
+      ? update(sales, {[[i]]: {[e.name]: {$set: e.value}}})
       : parseInt(e.value.replace(/[^\d.-]/g, ''), 10) === 0 ? update(sales, {[[i]]: {[e.name]: {$set: ''}}}) : update(sales, {[[i]]: {[e.name]: {$set: parseInt(e.value.replace(/[^\d.-]/g, ''), 10)}}})
     this.setState({sales: newsale})
   }
@@ -213,7 +204,7 @@ class NewBudget extends Component {
   }
 
   handleUnlock = () => {
-    const {costs,actualpax,estimatedpax} = this.state
+    const {costs, actualpax, estimatedpax} = this.state
     const newcosts = costs.map(cost => { cost.actualamount = cost.estimatedamount; return cost })
     this.setState({isLocked: false, actualpax: estimatedpax, costs: newcosts})
   }

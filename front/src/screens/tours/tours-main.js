@@ -18,7 +18,7 @@ class TourViewMain extends Component {
     }
   }
 
-  componentWillMount () {
+  componentDidMount () {
     const {getItem} = this.props
     getItem('tours')
   }

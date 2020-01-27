@@ -23,7 +23,7 @@ class NewsletterList extends Component {
     }
   }
 
-  componentWillMount () {
+  componentDidMount () {
     this.reduxGetAllUpdate()
   }
 

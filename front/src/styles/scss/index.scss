@@ -156,8 +156,8 @@ input[type=search] {
 }
 
 input:invalid {
-  color: $danger-color;
-  border: 1px solid $danger-color;
+  color: $danger-color !important;
+  border: 1px solid $danger-color !important;
 }
 
 input.is-invalid {
@@ -167,9 +167,9 @@ input.is-invalid {
 }
 
 input.is-valid {
-  color: $primary-color !important;
-  border: 1px solid $primary-color !important;
-  background: none !important;
+    color: black !important; 
+    border: 1px solid $primary-color !important; 
+    background: none !important;
 }
 
 input:disabled {

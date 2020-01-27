@@ -28,7 +28,7 @@ class BookingsCustomer extends Component {
     this.Initate(props)
   }
 
-  componentWillReceiveProps (nextProps) {
+  UNSAFE_componentWillReceiveProps (nextProps) {
     const {bookings, tour} = this.props
     if (bookings !== nextProps.bookings || (typeof tour === 'object' ? tour.id : null) !== (typeof nextProps.tour === 'object' ? nextProps.tour.id : null)) {
       this.Initate(nextProps)
@@ -42,7 +42,6 @@ class BookingsCustomer extends Component {
       selectedDeparture: nextProps.customer.selectedDeparture})
   }
 
-
   showInvoiceInfo = () => {
     const {infoPopup} = this.props
     infoPopup({
@@ -55,17 +54,20 @@ class BookingsCustomer extends Component {
       suppressed: false})
   }
 
-  handleRoomInput = (v,e) => {
-    e.preventDefault()
-    console.log(v)
-    console.log(e)
-
+  handleRoomInput = (value) => {
+    const {tour, index, handleChangeRoom} = this.props
+    const selectedRoomMatch = typeof value === 'object' ? value[0] : typeof tour.rooms === 'object' ? tour.rooms.find(o => o.label.toLowerCase() === value.toLowerCase()) : undefined
+    const isValid = typeof selectedRoomMatch === 'object'
+    this.setState({isRoomValid: isValid})
+    if (isValid) {
+      handleChangeRoom([selectedRoomMatch], index)
+    }
+    
   }
 
   render () {
     const {id, number, isOdd, handleChange, index, customer = {}, isSubmitting, removeCustomer, maxInvoice, tour, handleChangeRoom, allCustomers} = this.props
     const {departurelocationList, selectedRoom, selectedCustomer, selectedDeparture, isRoomValid } = this.state
-
 
     const invoiceSelector = <select name="invoicenr" value={customer.invoicenr} onChange={e => handleChange(e.target, index)} disabled={isSubmitting} className="rounded d-inline m-0 p-1">
       {Array.from(Array(maxInvoice).keys()).map(i => { return (<option key={i} value={i}>{Number(i).toString().padStart(2, '0')}</option>) })}
@@ -278,8 +280,8 @@ class BookingsCustomer extends Component {
                 emptyLabel=""
                 labelKey="label"
                 filterBy={['label']}
-                onChange={e => handleChangeRoom(e, index)}
-                onInputChange={(v,e) => this.handleRoomInput(v,e)}
+                onChange={value => this.handleRoomInput(value)}
+                onInputChange={(value) => this.handleRoomInput(value)}
                 options={tour.rooms}
                 selected={[selectedRoom]}
                 placeholder="Rumstyp"
@@ -313,7 +315,6 @@ class BookingsCustomer extends Component {
                 filterBy={['label']}
                 newSelectionPrefix="Lägg till plats: "
                 selectHintOnEnter
-                highlightOnlyResult
                 isValid
                 onChange={e => handleChangeRoom(e, index)}
                 options={departurelocationList}

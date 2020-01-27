@@ -7,19 +7,19 @@ import PropTypes from 'prop-types'
 import {getItem} from '../../actions'
 import BudgetGroupRow from '../../components/budgets/budgetgroup-row'
 import update from 'immutability-helper'
-import { findByKey, dynamicSort } from '../../utils'
+import { dynamicSort } from '../../utils'
 
 class EditBudgetGroup extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      isSubmitting   : false,
-      extragroups    : [],
-      showOnlyActive : false
+      isSubmitting  : false,
+      extragroups   : [],
+      showOnlyActive: false
     }
   }
 
-  componentWillMount () {
+  componentDidMount () {
     this.reduxGetAllUpdate()
   }
 
@@ -56,7 +56,7 @@ class EditBudgetGroup extends Component {
 
   removeExtraGroup = (i) => {
     const {extragroups} = this.state
-    delete extragroups[i] //Statemutation!
+    delete extragroups[i] // Statemutation!
   }
 
   render () {
@@ -95,7 +95,7 @@ class EditBudgetGroup extends Component {
                     <th span="col" className="px-3 py-2 text-center">Spara</th>
                     <th span="col" className="px-3 py-2 text-center">Aktiv{!showOnlyActive &&
                       <span title="Dölj inaktiva kalkylgrupper" className="seconday-color custom-scale cursor-pointer"><FontAwesomeIcon icon={faFilter} onClick={(e) => this.toggleShowOnlyActive(e)} size="lg" /></span> }
-                      {showOnlyActive &&
+                    {showOnlyActive &&
                       <span title="Visa inaktiva kalkylgrupper" className="primary-color custom-scale  cursor-pointer"><FontAwesomeIcon icon={faFilter} onClick={(e) => this.toggleShowOnlyActive(e)} size="lg" /></span> }
                     </th>
                     <th span="col" className="pl-3 py-2 text-center">Ta bort</th>
@@ -121,9 +121,9 @@ class EditBudgetGroup extends Component {
 }
 
 EditBudgetGroup.propTypes = {
-  getItem      : PropTypes.func,
-  budgetgroups : PropTypes.array,
-  history      : PropTypes.object
+  getItem     : PropTypes.func,
+  budgetgroups: PropTypes.array,
+  history     : PropTypes.object
 }
 
 const mapStateToProps = state => ({

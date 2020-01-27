@@ -50,7 +50,8 @@ class App extends Component {
     }
   }
 
-  componentWillReceiveProps (nextProps) {
+  // eslint-disable-next-line camelcase
+  UNSAFE_componentWillReceiveProps (nextProps) {
     // Checks for login change and starts up firebase and refresh timer if login state change and login is detected.
     const {LoginRefresh = function () {}, firebaseItemSub = function () {}, login = {login: {login: false, user: 'none', jwt: 'none'}}} = this.props
     const prevLogin = login.login

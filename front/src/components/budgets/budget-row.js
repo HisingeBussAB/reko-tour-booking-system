@@ -1,13 +1,11 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import { faPencilAlt, faSpinner, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faSpinner, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { faSquare, faCheckSquare } from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import { putItem } from '../../actions'
-import { Link } from 'react-router-dom'
-import ConfirmPopup from '../global/confirm-popup'
 import moment from 'moment'
 import 'moment/locale/sv'
 
@@ -15,17 +13,16 @@ class BudgetRow extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      isConfirming      : false,
       isUpdatingDisabled: false
     }
   }
 
-  componentWillReceiveProps (nextProps) {
+  // eslint-disable-next-line camelcase
+  UNSAFE_componentWillReceiveProps (nextProps) {
     const {id, isDisabled} = this.props
     if (nextProps.id !== id) {
       // for some reason id changed, component state needs reset.
       this.setState({
-        isConfirming      : false,
         isUpdatingDisabled: false
       })
     }
@@ -36,7 +33,6 @@ class BudgetRow extends Component {
   }
 
   toggleDisabled = async (choice) => {
-    this.setState({isConfirming: false})
     const {submitToggle, budget = {}} = this.props
     if (choice === true) {
       this.setState({isUpdatingDisabled: true})
@@ -56,17 +52,12 @@ class BudgetRow extends Component {
     e.preventDefault()
     const {submitToggle} = this.props
     submitToggle(true)
-    this.setState({isDeleting: true})
-    this.setState({isConfirming: true})
   }
 
   render () {
     const {budget = {}} = this.props
-
-    console.log(budget)
     const {
-      isUpdatingDisabled = false,
-      isConfirming = false
+      isUpdatingDisabled = false
     } = this.state
     return (
       <tr>
@@ -91,9 +82,8 @@ class BudgetRow extends Component {
 }
 
 BudgetRow.propTypes = {
-  label       : PropTypes.string,
+  isDisabled  : PropTypes.bool,
   id          : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  putItem     : PropTypes.func,
   budget      : PropTypes.object,
   submitToggle: PropTypes.func
 }

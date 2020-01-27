@@ -18,7 +18,7 @@ class BudgetViewMain extends Component {
     }
   }
 
-  componentWillMount () {
+  componentDidMount () {
     this.reduxGetAllUpdate()
   }
 
@@ -46,7 +46,7 @@ class BudgetViewMain extends Component {
     })
 
     const Budgets = budgets.slice(0, limit).filter(budget => { return !(budget.isdisabled && showOnlyActiveBudgets) }).map((budget) => {
-      return <BudgetRow submitToggle={this.submitToggle} key={budget.id} budget={budget}/>
+      return <BudgetRow submitToggle={this.submitToggle} key={budget.id} budget={budget} />
     })
 
     return (

@@ -51,7 +51,7 @@ class GroupList extends Component {
     }
   }
 
-  componentWillMount () {
+  componentDidMount () {
     this.reduxGetAllUpdate()
   }
 

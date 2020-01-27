@@ -27,14 +27,15 @@ class LoginScreen extends Component {
     }
   }
 
-  componentWillMount () {
+  componentDidMount () {
     const {login = {login: false}} = this.props
     if (!login.login) {
       this.getLocalStorageToState()
     }
   }
 
-  componentWillReceiveProps (nextProps) {
+  // eslint-disable-next-line camelcase
+  UNSAFE_componentWillReceiveProps (nextProps) {
     // Will activate on logout and try loggin back in
     const {login = {login: false}} = this.props
     if (nextProps.login.login !== login.login && !nextProps.login.login) {

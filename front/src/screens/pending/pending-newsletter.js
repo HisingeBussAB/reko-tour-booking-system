@@ -18,7 +18,7 @@ class PendingNewsletter extends Component {
       showProcessed: false
     }
   }
-  componentWillMount () {
+  componentDidMount () {
     this.reduxGetAllUpdate()
   }
 

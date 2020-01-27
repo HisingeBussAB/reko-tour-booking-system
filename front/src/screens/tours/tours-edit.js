@@ -36,24 +36,26 @@ class NewTour extends Component {
     }
   }
 
-  componentWillMount () {
+  componentDidMount () {
+    this.reduxGetAllUpdate()
+    const {...props} = this.props
+    this.Initiate(props)
+  }
+
+  // eslint-disable-next-line camelcase
+  UNSAFE_componentWillReceiveProps (nextProps) {
+    const {tours, webtours} = this.props
+    if (tours !== nextProps.tours || webtours !== nextProps.webtours) {
+      this.Initiate(nextProps)
+    }
+  }
+
+  reduxGetAllUpdate = () => {
     const {getItem, getItemWeb} = this.props
     getItem('categories', 'all')
     getItem('tours', 'all')
     getItemWeb('resor')
     getItemWeb('boenden')
-  }
-
-  componentDidMount () {
-    const {...props} = this.props
-    this.Initiate(props)
-  }
-
-  componentWillReceiveProps (nextProps) {
-    const {tours, webtours} = this.props
-    if (tours !== nextProps.tours || webtours !== nextProps.webtours) {
-      this.Initiate(nextProps)
-    }
   }
 
   Initiate = (nextProps) => {

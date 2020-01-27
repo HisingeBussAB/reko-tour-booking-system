@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import {faPencilAlt, faSpinner} from '@fortawesome/free-solid-svg-icons'
-import {faSquare, faCheckSquare } from '@fortawesome/free-regular-svg-icons'
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
+import { faPencilAlt, faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { faSquare, faCheckSquare } from '@fortawesome/free-regular-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import PropTypes from 'prop-types'
 import { putItem } from '../../actions'
 import { Link } from 'react-router-dom'
@@ -20,7 +20,8 @@ class TourRow extends Component {
     }
   }
 
-  componentWillReceiveProps (nextProps) {
+  // eslint-disable-next-line camelcase
+  UNSAFE_componentWillReceiveProps (nextProps) {
     const {id, isDisabled} = this.props
     if (nextProps.id !== id) {
       // for some reason id changed, component state needs reset.
@@ -40,16 +41,16 @@ class TourRow extends Component {
     const {label, putItem, isDisabled, id, submitToggle, reservationfeeprice, insuranceprice, departuredate, rooms, categories} = this.props
     if (choice === true) {
       this.setState({isUpdatingDisabled: true})
-      
+
       submitToggle(true)
       const data = {
-        label               : label,
-        isDisabled          : !isDisabled,
-        reservationfeeprice : reservationfeeprice,
-        insuranceprice      : insuranceprice,
-        departuredate       : departuredate,
-        rooms               : rooms,              
-        categories          : categories
+        label              : label,
+        isDisabled         : !isDisabled,
+        reservationfeeprice: reservationfeeprice,
+        insuranceprice     : insuranceprice,
+        departuredate      : departuredate,
+        rooms              : rooms,
+        categories         : categories
       }
       if (!await putItem('tours', id, data)) {
         this.setState({isUpdatingDisabled: false})
@@ -62,7 +63,6 @@ class TourRow extends Component {
     e.preventDefault()
     const {submitToggle} = this.props
     submitToggle(true)
-    this.setState({isDeleting: true})
     this.setState({isConfirming: true})
   }
 
@@ -88,7 +88,7 @@ class TourRow extends Component {
           {!isUpdatingDisabled && !isDisabled &&
             <span title="Inaktivera denna resa" className="primary-color custom-scale cursor-pointer"><FontAwesomeIcon icon={faCheckSquare} onClick={(e) => this.deactivateConfirm(e)} size="lg" /></span> }
           {!isUpdatingDisabled && isDisabled &&
-            <span title="Aktivera denna resa" className="primary-color custom-scale  cursor-pointer"><FontAwesomeIcon icon={faSquare} onClick={(e) => {e.preventDefault(); this.toggleDisabled(true)}} size="lg" /></span> }
+            <span title="Aktivera denna resa" className="primary-color custom-scale  cursor-pointer"><FontAwesomeIcon icon={faSquare} onClick={(e) => { e.preventDefault(); this.toggleDisabled(true) }} size="lg" /></span> }
 
         </td>
       </tr>
@@ -98,13 +98,17 @@ class TourRow extends Component {
 }
 
 TourRow.propTypes = {
-  label     : PropTypes.string,
-  id        : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  putItem   : PropTypes.func,
-  isDisabled: PropTypes.bool,
-  insuranceprice : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  label              : PropTypes.string,
+  id                 : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  putItem            : PropTypes.func,
+  isDisabled         : PropTypes.bool,
+  insuranceprice     : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   reservationfeeprice: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  departuredate: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+  departuredate      : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  // eslint-disable-next-line react/boolean-prop-naming
+  submitToggle       : PropTypes.bool,
+  rooms              : PropTypes.object,
+  categories         : PropTypes.object
 }
 
 const mapDispatchToProps = dispatch => bindActionCreators({

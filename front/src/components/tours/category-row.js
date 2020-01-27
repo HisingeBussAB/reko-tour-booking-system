@@ -28,7 +28,8 @@ class CategoriesRow extends Component {
     }
   }
 
-  componentWillReceiveProps (nextProps) {
+  // eslint-disable-next-line camelcase
+  UNSAFE_componentWillReceiveProps (nextProps) {
     const {id = 'new', category = 'new', isDisabled = false} = this.props
     if (nextProps.id !== id) {
       // for some reason id changed, component state needs reset.
@@ -189,6 +190,7 @@ CategoriesRow.propTypes = {
   index       : PropTypes.number,
   remove      : PropTypes.func,
   title       : PropTypes.string,
+  // eslint-disable-next-line react/boolean-prop-naming
   forceSave   : PropTypes.bool
 }
 
