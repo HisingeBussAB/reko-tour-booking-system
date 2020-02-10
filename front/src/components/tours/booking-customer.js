@@ -61,8 +61,21 @@ class BookingsCustomer extends Component {
     this.setState({isRoomValid: isValid})
     if (isValid) {
       handleChangeRoom([selectedRoomMatch], index)
+    } else {
+      handleChangeRoom([], index)
     }
-    
+  }
+
+  handleRoomInput = (value) => {
+    const {tour, index, handleChangeRoom} = this.props
+    const selectedRoomMatch = typeof value === 'object' ? value[0] : typeof tour.rooms === 'object' ? tour.rooms.find(o => o.label.toLowerCase() === value.toLowerCase()) : undefined
+    const isValid = typeof selectedRoomMatch === 'object'
+    this.setState({isRoomValid: isValid})
+    if (isValid) {
+      handleChangeRoom([selectedRoomMatch], index)
+    } else {
+      handleChangeRoom([], index)
+    }
   }
 
   render () {
@@ -382,18 +395,19 @@ class BookingsCustomer extends Component {
 }
 
 BookingsCustomer.propTypes = {
-  customer      : PropTypes.object,
-  bookings      : PropTypes.array,
-  id            : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  number        : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  isOdd         : PropTypes.bool,
-  isSubmitting  : PropTypes.bool,
-  handleChange  : PropTypes.func,
-  removeCustomer: PropTypes.func,
-  index         : PropTypes.number,
-  maxInvoice    : PropTypes.number,
-  infoPopup     : PropTypes.func,
-  tour          : PropTypes.object
+  customer        : PropTypes.object,
+  bookings        : PropTypes.array,
+  id              : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  number          : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  isOdd           : PropTypes.bool,
+  isSubmitting    : PropTypes.bool,
+  handleChange    : PropTypes.func,
+  removeCustomer  : PropTypes.func,
+  index           : PropTypes.number,
+  maxInvoice      : PropTypes.number,
+  infoPopup       : PropTypes.func,
+  tour            : PropTypes.object,
+  handleChangeRoom: PropTypes.func
 }
 
 const mapStateToProps = state => ({

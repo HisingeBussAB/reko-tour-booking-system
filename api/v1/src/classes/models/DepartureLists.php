@@ -10,26 +10,34 @@ class DepartureLists extends Model {
 
     if (Functions::validateInt($params['id'],1) == $params['id']) {
       try {
-        $sql = "SELECT DISTINCT
-                  Tours.id as id
-                  ,Tours.id as tourid
-                  ,Bookings_Customers.departureLocation as departureLocation
-                  ,Bookings_Customers.departureTime as departureTime FROM Bookings_Customers
-                INNER JOIN Bookings on Bookings.id = Bookings_Customers.bookingId
-                INNER JOIN Tours on Bookings.tourId = Tours.id WHERE Tours.id = :id";
+        $sql = "SELECT DISTINCT 
+          Bookings_Customers.id as id
+          ,Tours.id as tourid
+          ,Bookings_Customers.departureLocation as departureLocation
+          ,Bookings_Customers.departureTime as departureTime FROM Bookings_Customers
+           INNER JOIN Bookings on Bookings.id = Bookings_Customers.bookingId
+           INNER JOIN Tours on Bookings.tourId = Tours.id WHERE Tours.id = :id
+           ORDER BY Bookings_Customers.departureTime,Bookings_Customers.departureLocation,Bookings_Customers.id,Tours.id ";
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id', $params['id'], \PDO::PARAM_INT);
-        $sth->execute(); 
+        $sth->execute();
         $result = $sth->fetchAll(\PDO::FETCH_ASSOC); 
       } catch(\PDOException $e) {
         $this->response->DBError($e, __CLASS__, $sql);
         $this->response->Exit(500);
       }
-      if (count($result) < 1) {
-        return array('departurelists' => array(['id' => '' . $params['id']]));
-      } else {       
-        return array('departurelists' => $result);
+      //MySQL 5.7, no row_number() or cte so just make distinct here
+      $place = '';
+      $time = '';
+      $departureresult = array();
+      foreach($result as $key => $item) {
+        if ($place != $item["departurelocation"] || $time != $item["departuretime"]) {
+          array_push($departureresult, $item);
+        }
+        $place = $item["departurelocation"];
+        $time = $item["departuretime"];
       }
+      return array('departurelists' => $departureresult);
     } else {
       $this->response->AddResponse('error', 'Rese id kan bara anges som ett positivt heltal, resa måste anges för påstigningsplatslista.');
       $this->response->AddResponse('response', 'Begäran avbruten felaktigt id.');

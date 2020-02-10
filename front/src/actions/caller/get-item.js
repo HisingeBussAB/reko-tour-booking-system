@@ -51,7 +51,7 @@ function onCatch (error, itemType, suppressErrors = false) {
     try {
       message = typeof error.response.data.error === 'undefined' ? error.response.data.response : error.response.data.error
     } catch (e) {
-      message = 'Ett fel har uppstått under hämtning av' + itemNameHuman[itemType] + '.'
+      message = 'Ett fel har uppstått under hämtning av ' + itemNameHuman[itemType] + '.'
     }
     dispatch(errorPopup({visible: !suppressErrors, message: message, suppressed: suppressErrors}))
   }

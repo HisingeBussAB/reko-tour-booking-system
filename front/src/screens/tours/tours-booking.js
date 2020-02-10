@@ -78,8 +78,7 @@ class NewTourBooking extends Component {
   handleSave = async () => {
     const {id, ...state} = this.state
     const {postItem, putItem, getItem} = this.props
-    console.log(JSON.parse(JSON.stringify(state)))
-    /*this.setState({isSubmitting: true})
+    /* this.setState({isSubmitting: true})
     const data = {}
     const reply = id === 'new' ? await postItem('bookings', data) : await putItem('bookings', id, data)
     if (reply !== false && !isNaN(reply)) {
@@ -104,8 +103,6 @@ class NewTourBooking extends Component {
 
   handleChangeRoom = (room, i) => {
     const {customers = {}, tourSelected = {}} = this.state
-    console.log(room)
-    console.log(i)
     const roomSpecs = typeof room[0] === 'undefined' || typeof tourSelected[0] === 'undefined' ? {price: 0} : findByKey(room[0].id, 'id', tourSelected[0].rooms)
     const roomid = typeof room[0] === 'undefined' || typeof tourSelected[0] === 'undefined' ? '' : room[0].id
     const newcustomer = update(customers, {[[i]]:
