@@ -13,6 +13,7 @@ import ConfirmPopup from '../../components/global/confirm-popup'
 import moment from 'moment'
 import 'moment/locale/sv'
 import BookingsCustomer from '../../components/tours/booking-customer'
+import _ from 'lodash'
 
 class NewTourBooking extends Component {
   constructor (props) {
@@ -102,7 +103,7 @@ class NewTourBooking extends Component {
   }
 
   handleChangeRoom = (room, i) => {
-    const {customers = {}, tourSelected = {}} = this.state
+    const {customers = [], tourSelected = {}} = this.state
     const roomSpecs = typeof room[0] === 'undefined' || typeof tourSelected[0] === 'undefined' ? {price: 0} : findByKey(room[0].id, 'id', tourSelected[0].rooms)
     const roomid = typeof room[0] === 'undefined' || typeof tourSelected[0] === 'undefined' ? '' : room[0].id
     const newcustomer = update(customers, {[[i]]:
@@ -111,6 +112,57 @@ class NewTourBooking extends Component {
                                     price       : {$set: roomSpecs.price}}
     })
     this.setState({customers: newcustomer})
+  }
+
+  handleChangeDeparture = (departurelocation, i) => {
+    const {customers = []} = this.state
+    const newDeparture = {departurelocation: departurelocation[0].departurelocation, departuretime: typeof departurelocation[0].departuretime === 'undefined' ? customers[i].departuretime : departurelocation[0].departuretime}
+    const newcustomer = update(customers, {[[i]]:
+      {departurelocation: {$set: newDeparture.departurelocation},
+        departuretime    : {$set: newDeparture.departuretime}}
+    })
+    this.setState({customers: newcustomer})
+  }
+
+  handleSelectPerson = (selectedCustomer, i) => {
+    const {customers = []} = this.state
+    const {allCustomers = []} = this.props
+    console.log(customers[i])
+    console.log(selectedCustomer)
+    if (typeof selectedCustomer === 'object' && typeof selectedCustomer[0] === 'object') {
+      if (selectedCustomer[0].customOption) {
+        console.log('custom option')
+        const mergeChange = _.merge(selectedCustomer[0], customers[i])
+        const newcustomer = update(customers, {[[i]]:
+          {id            : {$set: 'new'},
+            firstname     : {$set: mergeChange.firstname},
+            lastname      : {$set: mergeChange.lastname},
+            street        : {$set: mergeChange.street},
+            zip           : {$set: mergeChange.zip},
+            city          : {$set: mergeChange.city},
+            phone         : {$set: mergeChange.phone},
+            email         : {$set: mergeChange.email},
+            personalnumber: {$set: mergeChange.personalnumber}}
+        })
+        this.setState({customers: newcustomer})
+      } else {
+        const foundCustomer = allCustomers.find(o => { return o.id.toLowerCase() === selectedCustomer[0].id.toLowerCase() })
+        if (typeof foundCustomer === 'object') {
+          const newcustomer = update(customers, {[[i]]:
+          {id            : {$set: foundCustomer.id},
+            firstname     : {$set: foundCustomer.firstname},
+            lastname      : {$set: foundCustomer.lastname},
+            street        : {$set: foundCustomer.street},
+            zip           : {$set: foundCustomer.zip},
+            city          : {$set: foundCustomer.city},
+            phone         : {$set: foundCustomer.phone},
+            email         : {$set: foundCustomer.email},
+            personalnumber: {$set: foundCustomer.personalnumber}}
+          })
+          this.setState({customers: newcustomer})
+        }
+      }
+    }
   }
 
   /*
@@ -158,8 +210,7 @@ class NewTourBooking extends Component {
       personalnumber   : '',
       requests         : '',
       roomid           : '',
-      selectedRoom     : {label: ''},
-      selectedDeparture: {label: ''}
+      selectedRoom     : {label: ''}
     }
     const newcustomers = update(customers, {$push: [emptyCustomer]})
     this.setState({customers: newcustomers})
@@ -245,6 +296,8 @@ class NewTourBooking extends Component {
         handleChange={this.handleChangePax}
         removeCustomer={this.removeCustomer}
         handleChangeRoom={this.handleChangeRoom}
+        handleChangeDeparture={this.handleChangeDeparture}
+        handleSelectPerson={this.handleSelectPerson}
         isSubmitting={isSubmitting}
         maxInvoice={customers.length > Math.max(...customers.map(c => Number(c.invoicenr)), 0) ? customers.length : Math.max(...customers.map(c => Number(c.invoicenr)), 0)}
       />)
@@ -363,20 +416,22 @@ class NewTourBooking extends Component {
 }
 
 NewTourBooking.propTypes = {
-  getItem   : PropTypes.func,
-  postItem  : PropTypes.func,
-  putItem   : PropTypes.func,
-  deleteItem: PropTypes.func,
-  getItemWeb: PropTypes.func,
-  tours     : PropTypes.array,
-  bookings  : PropTypes.array,
-  match     : PropTypes.object,
-  history   : PropTypes.object
+  getItem     : PropTypes.func,
+  postItem    : PropTypes.func,
+  putItem     : PropTypes.func,
+  deleteItem  : PropTypes.func,
+  getItemWeb  : PropTypes.func,
+  tours       : PropTypes.array,
+  bookings    : PropTypes.array,
+  match       : PropTypes.object,
+  history     : PropTypes.object,
+  allCustomers: PropTypes.array
 }
 
 const mapStateToProps = state => ({
-  tours   : state.tours.tours,
-  bookings: state.tours.bookings
+  tours       : state.tours.tours,
+  bookings    : state.tours.bookings,
+  allCustomers: typeof state.lists.customers === 'object' ? state.lists.customers : []
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({

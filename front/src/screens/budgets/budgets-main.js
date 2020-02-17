@@ -64,7 +64,7 @@ class BudgetViewMain extends Component {
             </div>
             <div className="col-lg-8 col-md-12">
               <form>
-                <formfield disabled={isSubmitting}>
+                <fieldset disabled={isSubmitting}>
                   <h4 className="w-75 my-3 mx-auto">Kalkyler</h4>
                   <Link to={'/kalkyler/kalkyl/ny'} className="btn w-75 btn-primary my-3 mx-auto py-2">Skapa ny kalkyl</Link>
                   <table className="w-75 my-3 mx-auto table-sm table-hover">
@@ -84,7 +84,7 @@ class BudgetViewMain extends Component {
                       {Budgets}
                     </tbody>
                   </table>
-                </formfield>
+                </fieldset>
               </form>
             </div>
           </div>

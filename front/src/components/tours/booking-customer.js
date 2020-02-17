@@ -10,15 +10,15 @@ import 'moment/locale/sv'
 import { infoPopup, getItem } from '../../actions'
 import toursBooking from '../../screens/tours/tours-booking'
 import { findByKey } from '../../utils'
+import _ from 'lodash'
 
 class BookingsCustomer extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      departurelocationList: [],
+      departurelocationList: props.departures.filter(o => o.tourid.toLowerCase() === props.tour.id.toLowerCase()),
       selectedRoom         : props.customer.selectedRoom,
-      selectedCustomer     : props.customer,
-      selectedDeparture    : props.customer.selectedDeparture,
+      selectedDeparture    : {departurelocation: props.customer.departurelocation},
       isRoomValid          : false
     }
   }
@@ -28,18 +28,27 @@ class BookingsCustomer extends Component {
     this.Initate(props)
   }
 
+  // eslint-disable-next-line camelcase
   UNSAFE_componentWillReceiveProps (nextProps) {
-    const {bookings, tour} = this.props
+    const {bookings, tour, departures} = this.props
     if (bookings !== nextProps.bookings || (typeof tour === 'object' ? tour.id : null) !== (typeof nextProps.tour === 'object' ? nextProps.tour.id : null)) {
       this.Initate(nextProps)
+    } else if (departures !== nextProps.departures) {
+      this.setState({
+        departurelocationList: nextProps.departures.filter(o => o.tourid.toLowerCase() === nextProps.tour.id.toLowerCase())
+      })
     }
   }
 
   Initate = (nextProps) => {
     nextProps.getItem('departurelists', typeof nextProps.tour === 'object' ? nextProps.tour.id : -1)
-    this.setState({selectedRoom     : nextProps.customer.selectedRoom,
-      selectedCustomer : nextProps.customer,
-      selectedDeparture: nextProps.customer.selectedDeparture})
+    this.setState({
+      departurelocationList: nextProps.departures.filter(o => o.tourid.toLowerCase() === nextProps.tour.id.toLowerCase()),
+      selectedRoom         : nextProps.customer.selectedRoom,
+      selectedCustomer     : nextProps.customer,
+      selectedDeparture    : {departurelocation: nextProps.customer.departurelocation},
+      isRoomValid          : false
+    })
   }
 
   showInvoiceInfo = () => {
@@ -56,7 +65,7 @@ class BookingsCustomer extends Component {
 
   handleRoomInput = (value) => {
     const {tour, index, handleChangeRoom} = this.props
-    const selectedRoomMatch = typeof value === 'object' ? value[0] : typeof tour.rooms === 'object' ? tour.rooms.find(o => o.label.toLowerCase() === value.toLowerCase()) : undefined
+    const selectedRoomMatch = typeof value === 'object' ? value[0] : typeof tour.rooms === 'object' ? tour.rooms.find(o => { return o.label.toLowerCase() === value.toLowerCase() }) : undefined
     const isValid = typeof selectedRoomMatch === 'object'
     this.setState({isRoomValid: isValid})
     if (isValid) {
@@ -66,22 +75,30 @@ class BookingsCustomer extends Component {
     }
   }
 
-  handleRoomInput = (value) => {
-    const {tour, index, handleChangeRoom} = this.props
-    const selectedRoomMatch = typeof value === 'object' ? value[0] : typeof tour.rooms === 'object' ? tour.rooms.find(o => o.label.toLowerCase() === value.toLowerCase()) : undefined
-    const isValid = typeof selectedRoomMatch === 'object'
-    this.setState({isRoomValid: isValid})
+  handleDepartureInput = (value) => {
+    const {index, handleChangeDeparture, handleChange} = this.props
+    const {departurelocationList} = this.state
+    const selectedDepartureMatch = typeof value === 'object' ? value[0] : typeof departurelocationList === 'object' ? departurelocationList.find(o => { return o.departurelocation.toLowerCase() === value.toLowerCase() }) : undefined
+    const isValid = typeof selectedDepartureMatch === 'object'
     if (isValid) {
-      handleChangeRoom([selectedRoomMatch], index)
+      if (typeof selectedDepartureMatch.departuretime !== 'undefined') {
+        handleChange({name: 'departuretime', value: selectedDepartureMatch.departuretime}, index)
+      }
+      handleChangeDeparture([selectedDepartureMatch], index)
     } else {
-      handleChangeRoom([], index)
+      handleChangeDeparture([{departurelocation: value}], index)
     }
   }
 
   render () {
-    const {id, number, isOdd, handleChange, index, customer = {}, isSubmitting, removeCustomer, maxInvoice, tour, handleChangeRoom, allCustomers} = this.props
-    const {departurelocationList, selectedRoom, selectedCustomer, selectedDeparture, isRoomValid } = this.state
-
+    const {id, number, isOdd, handleChange, index, customer = {}, isSubmitting, removeCustomer, maxInvoice, tour, allCustomers, handleSelectPerson} = this.props
+    const { departurelocationList, selectedRoom, selectedCustomer, selectedDeparture, isRoomValid } = this.state
+    
+    const matchedCustomer = {...allCustomers.find(o => { return o.id.toLowerCase() === customer.id.toLowerCase() })}
+    _.unset(matchedCustomer, ['compare'])
+    _.unset(matchedCustomer, ['date'])
+    _.unset(matchedCustomer, ['isanonymized'])
+    _.unset(matchedCustomer, ['categories'])
     const invoiceSelector = <select name="invoicenr" value={customer.invoicenr} onChange={e => handleChange(e.target, index)} disabled={isSubmitting} className="rounded d-inline m-0 p-1">
       {Array.from(Array(maxInvoice).keys()).map(i => { return (<option key={i} value={i}>{Number(i).toString().padStart(2, '0')}</option>) })}
     </select>
@@ -102,6 +119,16 @@ class BookingsCustomer extends Component {
             </div>
           </div>
           <div className="row">
+            <div className="col-12 w-100 text-center mt-1">
+              {customer.id === 'new' || typeof matchedCustomer !== 'object'
+                ? <span className="m-1 p-1 text-center bg-info rounded w-100 small d-block">Skapar ny resenär</span>
+                : _.isMatch(customer, matchedCustomer)
+                  ? <span className="m-1 p-1 text-center bg-success rounded w-100 small d-block">Använder tidigare resenär</span>
+                  : <span className="m-1 p-1 text-center bg-warning rounded w-100 small d-block">Ändrar uppgifter: {matchedCustomer.firstname} {matchedCustomer.lastname}</span>
+              }
+            </div>
+          </div>
+          <div className="row">
             <div className="col-5 pr-1">
               <label htmlFor="firstname" className="d-block small mt-1 mb-0">Förnamn</label>
               <Typeahead className="rounded w-100 d-inline-block m-0"
@@ -117,7 +144,8 @@ class BookingsCustomer extends Component {
                 emptyLabel=""
                 labelKey="firstname"
                 newSelectionPrefix="Lägg till: "
-                onChange={() => { console.log('changeTriggered') }}
+                onChange={(c) => handleSelectPerson(c, index)}
+                onInputChange={(value) => { handleChange({name: 'firstname', value: value}, index) }}
                 options={allCustomers}
                 renderMenu={(results, menuProps) => (
                   <Menu {...menuProps}>
@@ -132,7 +160,7 @@ class BookingsCustomer extends Component {
                       </MenuItem>))}
                   </Menu>
                 )}
-                selected={[selectedCustomer]}
+                selected={[customer]}
                 placeholder="Förnamn"
                 // eslint-disable-next-line no-return-assign
                 ref={(ref) => this._customerfirstname = ref}
@@ -153,7 +181,8 @@ class BookingsCustomer extends Component {
                 emptyLabel=""
                 labelKey="lastname"
                 newSelectionPrefix="Lägg till: "
-                onChange={() => { console.log('changeTriggeredlast') }}
+                onChange={(c) => handleSelectPerson(c, index)}
+                onInputChange={(value) => { handleChange({name: 'lastname', value: value}, index) }}
                 options={allCustomers}
                 renderMenu={(results, menuProps) => (
                   <Menu {...menuProps}>
@@ -168,7 +197,7 @@ class BookingsCustomer extends Component {
                       </MenuItem>))}
                   </Menu>
                 )}
-                selected={[selectedCustomer]}
+                selected={[customer]}
                 placeholder="Efternamn"
                 // eslint-disable-next-line no-return-assign
                 ref={(ref) => this._customerlastname = ref}
@@ -207,7 +236,8 @@ class BookingsCustomer extends Component {
                 emptyLabel=""
                 labelKey="phone"
                 newSelectionPrefix="Lägg till: "
-                onChange={() => { console.log('changeTriggeredlast') }}
+                onChange={(c) => handleSelectPerson(c, index)}
+                onInputChange={(value) => { handleChange({name: 'phone', value: value}, index) }}
                 options={allCustomers}
                 renderMenu={(results, menuProps) => (
                   <Menu {...menuProps}>
@@ -222,7 +252,7 @@ class BookingsCustomer extends Component {
                       </MenuItem>))}
                   </Menu>
                 )}
-                selected={[selectedCustomer]}
+                selected={[customer]}
                 placeholder="Telefonnr"
                 inputProps={{type   : 'tel',
                   pattern: '^[^a-zA-Z]+$'}}
@@ -247,7 +277,8 @@ class BookingsCustomer extends Component {
                 emptyLabel=""
                 labelKey="email"
                 newSelectionPrefix="Lägg till: "
-                onChange={() => { console.log('changeTriggeredlast') }}
+                onChange={(c) => handleSelectPerson(c, index)}
+                onInputChange={(value) => { handleChange({name: 'email', value: value}, index) }}
                 options={allCustomers}
                 renderMenu={(results, menuProps) => (
                   <Menu {...menuProps}>
@@ -262,7 +293,7 @@ class BookingsCustomer extends Component {
                       </MenuItem>))}
                   </Menu>
                 )}
-                selected={[selectedCustomer]}
+                selected={[customer]}
                 placeholder="E-post"
                 inputProps={{type   : 'email',
                   pattern: '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$'}}
@@ -274,7 +305,7 @@ class BookingsCustomer extends Component {
           <div className="row">
             <div className="col-12">
               <label htmlFor="priceadjustment" className="d-block small mt-3 mb-0">Rabatt/Tillägg</label>
-              <input placeholder="0" type="text" name="priceadjustment" value={Number(customer.priceadjustment).toFixed(0)} style={{width: '180px'}} onChange={e => handleChange(e.target, index)} className="rounded d-inline-block m-0" /> kr
+              <input placeholder="0" type="number" name="priceadjustment" value={parseInt(customer.priceadjustment) === 0 ? '' : customer.priceadjustment} style={{width: '180px'}} onChange={e => handleChange(e.target, index)} className="rounded d-inline-block m-0" /> kr
             </div>
           </div>
           <div className="row">
@@ -324,13 +355,12 @@ class BookingsCustomer extends Component {
                 clearButton
                 paginationText="Visa fler resultat"
                 emptyLabel=""
-                labelKey="label"
-                filterBy={['label']}
+                labelKey="departurelocation"
                 newSelectionPrefix="Lägg till plats: "
                 selectHintOnEnter
-                isValid
-                onChange={e => handleChangeRoom(e, index)}
-                options={departurelocationList}
+                onChange={(value) => this.handleDepartureInput(value)}
+                onInputChange={(value) => this.handleDepartureInput(value)}
+                options={departurelocationList.length < 1 ? [{departurelocation: ''}] : departurelocationList}
                 selected={[selectedDeparture]}
                 placeholder="Påstigningsplats"
                 // eslint-disable-next-line no-return-assign
@@ -344,7 +374,7 @@ class BookingsCustomer extends Component {
           </div>
           <div className="row">
             <div className="col-12">
-              <label htmlFor="personalnumber" className="d-block small mt-1 mb-0">Personnummer</label>
+              <label htmlFor="personalnumber" className="d-block small mt-1 mb-0">Personnummer <small>(skriv -0000 för endast födelsedata)</small></label>
               <Typeahead className="rounded w-100 d-inline-block m-0"
                 id="personalnumber"
                 name="personalnumber"
@@ -358,7 +388,8 @@ class BookingsCustomer extends Component {
                 emptyLabel=""
                 labelKey="personalnumber"
                 newSelectionPrefix="Lägg till: "
-                onChange={() => { console.log('changeTriggeredlast') }}
+                onChange={(c) => handleSelectPerson(c, index)}
+                onInputChange={(value) => { handleChange({name: 'personalnumber', value: value}, index) }}
                 options={allCustomers}
                 renderMenu={(results, menuProps) => (
                   <Menu {...menuProps}>
@@ -373,7 +404,7 @@ class BookingsCustomer extends Component {
                       </MenuItem>))}
                   </Menu>
                 )}
-                selected={[selectedCustomer]}
+                selected={[customer]}
                 placeholder="XXXXXX-XXXX"
                 inputProps={{pattern: '^[0-9]{6}[-+]{1}[0-9]{4}$', maxLength: '11'}}
                 // eslint-disable-next-line no-return-assign
@@ -384,7 +415,12 @@ class BookingsCustomer extends Component {
           <div className="row">
             <div className="col-12">
               <label htmlFor="requests" className="d-block small mt-1 mb-0">Önskemål</label>
-              <textarea value={customer.requests} onChange={e => handleChange(e.target, index)} className="rounded w-100 d-inline-block m-0 rbt-input-main" style={{height: '100px'}} />
+              <textarea id="requests"
+                name="requests"
+                value={customer.requests}
+                onChange={e => {handleChange(e.target, index)}}
+                className="rounded w-100 d-inline-block m-0 rbt-input-main"
+                style={{height: '100px'}} />
             </div>
           </div>
         </div>
@@ -395,24 +431,28 @@ class BookingsCustomer extends Component {
 }
 
 BookingsCustomer.propTypes = {
-  customer        : PropTypes.object,
-  bookings        : PropTypes.array,
-  id              : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  number          : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  isOdd           : PropTypes.bool,
-  isSubmitting    : PropTypes.bool,
-  handleChange    : PropTypes.func,
-  removeCustomer  : PropTypes.func,
-  index           : PropTypes.number,
-  maxInvoice      : PropTypes.number,
-  infoPopup       : PropTypes.func,
-  tour            : PropTypes.object,
-  handleChangeRoom: PropTypes.func
+  customer             : PropTypes.object,
+  bookings             : PropTypes.array,
+  id                   : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  number               : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  isOdd                : PropTypes.bool,
+  isSubmitting         : PropTypes.bool,
+  handleChange         : PropTypes.func,
+  removeCustomer       : PropTypes.func,
+  index                : PropTypes.number,
+  maxInvoice           : PropTypes.number,
+  infoPopup            : PropTypes.func,
+  tour                 : PropTypes.object,
+  handleChangeRoom     : PropTypes.func,
+  allCustomers         : PropTypes.array,
+  departures           : PropTypes.array,
+  handleChangeDeparture: PropTypes.func
 }
 
 const mapStateToProps = state => ({
   allCustomers: typeof state.lists.customers === 'object' ? state.lists.customers : [],
-  bookings    : typeof state.tours.bookings === 'object' ? state.tours.bookings : []
+  bookings    : typeof state.tours.bookings === 'object' ? state.tours.bookings : [],
+  departures  : typeof state.tours.departurelists === 'object' ? state.tours.departurelists : []
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({

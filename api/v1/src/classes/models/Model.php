@@ -22,5 +22,4 @@ abstract class Model {
 
   abstract public function delete(array $_params);
 
-
 }

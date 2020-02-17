@@ -35,7 +35,8 @@ class Bookings extends Model {
           $result[$key]['group']     = filter_var($result[$key]['group'], FILTER_VALIDATE_BOOLEAN);
           try {
             $sql = "SELECT Customers.id as id, firstName, lastName, street, zip, city, phone,	email, personalNumber, date, compare,	isAnonymized,
-                              Bookings_Customers.id as BookingsCustomersid, custNumber, bookingId, customerId, roomId, requests, priceAdjustment, cancelledCust, departureLocation, departureTime, cancellationinsurance, invoicenr,
+                              Bookings_Customers.id as BookingsCustomersid, custNumber, bookingId, customerId, roomId, requests, priceAdjustment, cancelledCust, 
+                              departureLocation, TIME_FORMAT(Bookings_Customers.departureTime, '%H:%i') as departuretime, cancellationinsurance, invoicenr,
                               label, price, size, Rooms.isDeleted as roomDeleted
                       FROM Customers 
                       INNER JOIN Bookings_Customers 

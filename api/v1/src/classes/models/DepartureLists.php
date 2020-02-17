@@ -13,8 +13,8 @@ class DepartureLists extends Model {
         $sql = "SELECT DISTINCT 
           Bookings_Customers.id as id
           ,Tours.id as tourid
-          ,Bookings_Customers.departureLocation as departureLocation
-          ,Bookings_Customers.departureTime as departureTime FROM Bookings_Customers
+          ,Bookings_Customers.departureLocation as departurelocation
+          ,TIME_FORMAT(Bookings_Customers.departureTime, '%H:%i') as departuretime FROM Bookings_Customers
            INNER JOIN Bookings on Bookings.id = Bookings_Customers.bookingId
            INNER JOIN Tours on Bookings.tourId = Tours.id WHERE Tours.id = :id
            ORDER BY Bookings_Customers.departureTime,Bookings_Customers.departureLocation,Bookings_Customers.id,Tours.id ";

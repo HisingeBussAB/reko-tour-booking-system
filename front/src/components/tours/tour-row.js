@@ -107,8 +107,8 @@ TourRow.propTypes = {
   departuredate      : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   // eslint-disable-next-line react/boolean-prop-naming
   submitToggle       : PropTypes.bool,
-  rooms              : PropTypes.object,
-  categories         : PropTypes.object
+  rooms              : PropTypes.array,
+  categories         : PropTypes.array
 }
 
 const mapDispatchToProps = dispatch => bindActionCreators({
