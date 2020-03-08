@@ -234,10 +234,12 @@ class GroupList extends Component {
       <div className="ListView GroupList">
         {isConfirming && typeof orgSelected[0] !== 'undefined' && <ConfirmPopup doAction={this.doDelete} message={`Vill du verkligen ta bort:\n${orgSelected[0].organisation}\n${orgSelected[0].firstname} ${orgSelected[0].lastname}`} />}
         <form autoComplete="off">
+          <input type="text" name="prevent_autofill" id="prevent_autofill" value="" style={{display: 'none'}} />
+          <input type="password" name="password_fake" id="password_fake" value="" style={{display: 'none'}} />
           <button onClick={() => { history.goBack() }} disabled={isSubmitting} type="button" title="Tillbaka till meny" className="mr-4 btn btn-primary btn-sm custom-scale position-absolute" style={{right: 0}}>
             <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faArrowLeft} size="1x" />&nbsp;Meny</span>
           </button>
-          <fieldset disabled={isSubmitting}>
+          <fieldset disabled={isSubmitting} autoComplete="disabled">
             <div className="container text-left" style={{maxWidth: '850px'}}>
 
               <h3 className="my-3 w-50 mx-auto text-center">Gruppkunder</h3>
@@ -298,29 +300,29 @@ class GroupList extends Component {
                 <div className="row m-0 p-0">
                   <div className="text-center col-12 px-1 py-0 m-0">
                     <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="street">Gatuadress:</label>
-                    <input placeholder="Gatuadress" type="text" name="street" value={street} onChange={e => this.handleChange(e.target)} className="rounded w-100 d-inline-block m-0" />
+                    <input autoComplete="disabled" placeholder="Gatuadress" type="text" name="street" value={street} onChange={e => this.handleChange(e.target)} className="rounded w-100 d-inline-block m-0" />
                   </div>
                 </div>
                 <div className="row m-0 p-0">
                   <div className="text-center col-5 px-1 py-0 m-0">
                     <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="zip">Postnr:</label>
-                    <input placeholder="Postnr" type="text" pattern="^[0-9]{3}[ ]?[0-9]{2}$" maxLength="6" name="zip" value={zip} onChange={e => this.handleChange(e.target)} className="rounded w-100 d-inline-block m-0" />
+                    <input autoComplete="disabled" placeholder="Postnr" type="text" pattern="^[0-9]{3}[ ]?[0-9]{2}$" maxLength="6" name="zip" value={zip} onChange={e => this.handleChange(e.target)} className="rounded w-100 d-inline-block m-0" />
                   </div>
                   <div className="text-center col-7 px-1 py-0 m-0">
                     <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="city">Postort:</label>
-                    <input placeholder="Postort" type="text" name="city" value={city} onChange={e => this.handleChange(e.target)} className="rounded w-100 d-inline-block m-0" />
+                    <input autoComplete="disabled" placeholder="Postort" type="text" name="city" value={city} onChange={e => this.handleChange(e.target)} className="rounded w-100 d-inline-block m-0" />
                   </div>
                 </div>
                 <div className="row m-0 p-0">
                   <div className="text-center col-12 px-1 py-0 m-0">
                     <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="phone">Telefonnr:</label>
-                    <input placeholder="Telefonnr" type="tel" pattern="^[^a-zA-Z]+$" name="phone" value={phone} onChange={e => this.handleChange(e.target)} className="rounded w-100 d-inline-block m-0" />
+                    <input autoComplete="disabled" placeholder="Telefonnr" type="tel" pattern="^[^a-zA-Z]+$" name="phone" value={phone} onChange={e => this.handleChange(e.target)} className="rounded w-100 d-inline-block m-0" />
                   </div>
                 </div>
                 <div className="row m-0 p-0">
                   <div className="text-center col-12 px-1 py-0 m-0">
                     <label className="small w-100 text-left p-0 mx-0 mt-1 mb-0 d-block" htmlFor="email">E-post:</label>
-                    <input placeholder="E-post" type="email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" name="email" value={email} onChange={e => this.handleChange(e.target)} className="rounded w-100 d-inline-block m-0" />
+                    <input autoComplete="disabled" placeholder="E-post" type="email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" name="email" value={email} onChange={e => this.handleChange(e.target)} className="rounded w-100 d-inline-block m-0" />
                   </div>
                 </div>
                 <div className="row m-0 p-0">

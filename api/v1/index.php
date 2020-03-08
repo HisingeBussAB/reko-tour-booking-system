@@ -216,6 +216,7 @@ $router->addRoutes(array(
   array('GET|PUT|DELETE', '/deadlines/[i:id]?[/]?',         function($id = -1) { $start = new Controller; echo $start->start('Deadlines',        $id);   }),
   array('GET|POST',       '/deadlines[/]?',                 function()         { $start = new Controller; echo $start->start('Deadlines'            );   }),
   array('GET',            '/departurelists/[i:id]?[/]?',    function($id = -1) { $start = new Controller; echo $start->start('DepartureLists',   $id);   }),
+  array('GET',            '/bookingssearchlist/[/]?',       function()         { $start = new Controller; echo $start->start('BookingSearchList'    );   }),
   array('GET',            '/pendingcount[/]?',              function()         { $start = new Controller; echo $start->start('PendingCount'         );   }),
   array('GET|PUT',        '/pendingnewsletter/[i:id]?[/]?', function($id = -1) { $start = new Controller; echo $start->start('PendingNewsletter',$id);   }),
   array('GET',            '/pendingnewsletter[/]?',         function()         { $start = new Controller; echo $start->start('PendingNewsletter'    );   }),

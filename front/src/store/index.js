@@ -28,15 +28,16 @@ const initialState = {
     refreshExpires: 0
   },
   tours: {
-    categories: [],
-    tours     : [],
-    bookings  : [],
-    departurelists : []
+    categories    : [],
+    tours         : [],
+    bookings      : [],
+    departurelists: []
   },
   lists: {
     groupcustomers: [],
     newsletter    : [],
-    customers     : []
+    customers     : [],
+    bookingssearchlist: []
   },
   budgets: {
     budgetgroups: [],

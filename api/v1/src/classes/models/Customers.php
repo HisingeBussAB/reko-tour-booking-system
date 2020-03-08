@@ -9,19 +9,19 @@ class Customers extends Model {
   public function get(array $params) {
     if ($params['id'] > 0 || $params['id'] == -1) {
       try {
-        $sql = "SELECT id
-                    ,firstname
-                    ,lastname
-                    ,street
-                    ,zip
-                    ,city
-                    ,phone
-                    ,email
-                    ,personalNumber	
-                    ,date
-                    ,compare 
-                    ,isAnonymized
-                    FROM Customers";
+        $sql = "SELECT `id`
+                      ,`firstName`
+                      ,`lastName`
+                      ,`street`
+                      ,`zip`
+                      ,`city`
+                      ,`phone`
+                      ,`email`
+                      ,`personalNumber`
+                      ,`date`
+                      ,`compare`
+                      ,`isAnonymized`
+                    FROM `Customers`";
         $sql .= ($params['id'] != -1) 
                     ? " WHERE id = :id AND isAnonymized = 0"
                     : " WHERE isAnonymized = 0";
@@ -119,13 +119,6 @@ class Customers extends Model {
       $sth = $this->pdo->prepare($sql);
       $sth->execute(); 
       $result = $sth->fetch(\PDO::FETCH_ASSOC); 
-      foreach ($params['bookings'] as $booking) {
-        $sql = "INSERT INTO Bookings_Customers (customerId, bookingId) VALUES (:cid, :bid);";
-        $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':cid', $result['id'],                  \PDO::PARAM_INT);
-        $sth->bindParam(':bid', $booking['id'],                 \PDO::PARAM_INT);
-        $sth->execute();
-      } 
       $this->pdo->commit();
     } catch(\PDOException $e) {
       $this->pdo->rollBack();
@@ -168,17 +161,6 @@ class Customers extends Model {
         $sth->bindParam(':date',              $params['date'],           \PDO::PARAM_STR);
         $sth->bindParam(':compare',           $comp,                     \PDO::PARAM_STR);
         $sth->execute(); 
-        $sql = "DELETE FROM Bookings_Customers WHERE customerId = :cid;";
-        $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':cid',               $params['id'],             \PDO::PARAM_INT);
-        $sth->execute(); 
-        foreach ($params['bookings'] as $booking) {
-          $sql = "INSERT INTO Bookings_Customers (customerId, bookingId) VALUES (:cid, :bid);";
-          $sth = $this->pdo->prepare($sql);
-          $sth->bindParam(':cid', $result['id'],                  \PDO::PARAM_INT);
-          $sth->bindParam(':bid', $booking['id'],                 \PDO::PARAM_INT);
-          $sth->execute();
-        } 
         $this->pdo->commit();
       } catch(\PDOException $e) {
         $this->response->DBError($e, __CLASS__, $sql);
@@ -197,7 +179,11 @@ class Customers extends Model {
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
         $sth->execute();
-        $sql = "DELETE FROM Bookings_Customers WHERE customerpid = :id;";
+        $sql = "DELETE FROM Bookings_Customers WHERE customerid = :id;";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
+        $sth->execute();
+        $sql = "DELETE FROM Categories_CustomersLeads WHERE customerid = :id;";
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id', $params['id'],     \PDO::PARAM_INT);
         $sth->execute();
@@ -261,40 +247,7 @@ class Customers extends Model {
     $passed = true;
     $result = array();
 
-    $result['bookings'] = array();
-    if ($validateBookings) {
-      if (isset($params['bookings']) && is_array($params['bookings'])) {
-        foreach($params['bookings'] as $booking) {
-          $sqlresult = false;
-          if (isset($booking['id'])) {
-            $booking['id'] = Functions::validateInt($booking['id']);
-            try {
-              $sql = "SELECT id FROM Bookings where id = :id";
-              $sth = $this->pdo->prepare($sql);
-              $sth->bindParam(':id', $booking['id'], \PDO::PARAM_INT);
-              $sth->execute(); 
-              $sqlresult = $sth->fetchAll(\PDO::FETCH_ASSOC); 
-            } catch(\PDOException $e) {
-              $this->response->DBError($e, __CLASS__, $sql);
-              $this->response->Exit(500);
-            }
-            if ($sqlresult == false || count($sqlresult) < 1) {
-              $this->response->AddResponse('error', 'Kunden måste kopplas till en giltig bokning.');
-              $this->response->AddResponsePushToArray('invalidFields', array('bookings'));
-              $passed = false;
-            } else {
-              array_push($result['bookings'], $booking);
-            }
-          }
-        }
-      } else {
-        $this->response->AddResponse('error', 'Kunden måste kopplas till en giltig bokning.');
-        $this->response->AddResponsePushToArray('invalidFields', array('bookings'));
-        $passed = false;
-      }
-      
-    }
-   
+    
     if (isset($params['firstname']) && !empty($params['firstname'])) {
       $result['firstname'] = Functions::sanatizeStringUnsafe($params['firstname'], 100);
       if (is_null($result['firstname'])) {

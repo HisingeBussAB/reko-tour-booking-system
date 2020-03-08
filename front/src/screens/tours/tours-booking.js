@@ -79,8 +79,9 @@ class NewTourBooking extends Component {
   handleSave = async () => {
     const {id, ...state} = this.state
     const {postItem, putItem, getItem} = this.props
-    /* this.setState({isSubmitting: true})
-    const data = {}
+    this.setState({isSubmitting: true})
+    console.log(state)
+    const data = state
     const reply = id === 'new' ? await postItem('bookings', data) : await putItem('bookings', id, data)
     if (reply !== false && !isNaN(reply)) {
       getItem('categories', 'all')
@@ -89,7 +90,7 @@ class NewTourBooking extends Component {
         this.setState({redirectTo: '/bokningar/bookings/' + reply}, () => { this.setState({redirectTo: false}) })
       }
     }
-    this.setState({isSubmitting: false}) */
+    this.setState({isSubmitting: false}) 
   }
 
   handleChange = (e) => {
@@ -127,8 +128,6 @@ class NewTourBooking extends Component {
   handleSelectPerson = (selectedCustomer, i) => {
     const {customers = []} = this.state
     const {allCustomers = []} = this.props
-    console.log(customers[i])
-    console.log(selectedCustomer)
     if (typeof selectedCustomer === 'object' && typeof selectedCustomer[0] === 'object') {
       if (selectedCustomer[0].customOption) {
         console.log('custom option')
@@ -307,11 +306,13 @@ class NewTourBooking extends Component {
       <div className="TourView NewTour">
         {isConfirming && <ConfirmPopup doAction={this.doDelete} message={`Vill du verkligen markulera bokning:\n${number} ${tourSelected[0].label}.\nBokningen makuleras för alla resenärer. Det går också att byta ut enskilda resenärer istället.`} />}
 
-        <form autoComplete="off">
+        <form autoComplete="off" autoCorrect="off">
+          <input type="text" name="prevent_autofill" id="prevent_autofill" value="" style={{display:'none'}} />
+          <input type="password" name="password_fake" id="password_fake" value="" style={{display:'none'}} />
           <button onClick={() => { history.goBack() }} disabled={isSubmitting} type="button" title="Tillbaka till meny" className="mr-4 btn btn-primary btn-sm custom-scale position-absolute" style={{right: 0}}>
             <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faArrowLeft} size="1x" />&nbsp;Meny</span>
           </button>
-          <fieldset disabled={isSubmitting}>
+          <fieldset disabled={isSubmitting} autoComplete="disabled">
             <div className="container text-left" style={{maxWidth: '1150px'}}>
 
               <h3 className="my-3 w-100 mx-auto text-center">{id !== 'new' ? `Ändra bokning: ${number} på ${tourSelected[0].label}.` : 'Skapa ny bokning'}</h3>
@@ -356,7 +357,7 @@ class NewTourBooking extends Component {
                     <div className="row">
                       <div className="col-12">
                         <label htmlFor="bookingDate" className="d-block small mt-1 mb-0">Bokningsdatum (åååå-mm-dd)</label>
-                        <input id="bookingDate" name="bookingdate" value={bookingdate} onChange={(e) => { this.handleChange(e.target) }} className="rounded" type="date" style={{width: '166px'}} min="2000-01-01" max="3000-01-01" placeholder="0" required />
+                        <input autoComplete="off" id="bookingDate" name="bookingdate" value={bookingdate} onChange={(e) => { this.handleChange(e.target) }} className="rounded" type="date" style={{width: '166px'}} min="2000-01-01" max="3000-01-01" placeholder="0" required />
                       </div>
                     </div>
                     <div className="row">

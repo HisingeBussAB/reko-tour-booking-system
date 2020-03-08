@@ -435,27 +435,6 @@ class Bookings extends Model {
 
     if (isset($params['customers']) && is_array($params['customers'])) {
       foreach($params['customers'] as $key=>$customer) {
-        if (isset($customer['firstname'])) {
-          $result['customers'][$key]['firstname'] = Functions::sanatizeStringUnsafe($customer['firstname'], 100);
-        } else {
-          $result['customers'][$key]['firstname'] = '';
-        }
-        if (empty($result['customers'][$key]['firstname'])) {
-          $this->response->AddResponse('error', 'Förnamn måste anges.');
-          $this->response->AddResponsePushToArray('invalidFields', array('customers.' . $key . '.fistname'));
-          $passed = false;
-        }
-
-        if (isset($customer['lastname'])) {
-          $result['customers'][$key]['lastname'] = Functions::sanatizeStringUnsafe($customer['lastname'], 100);
-        } else {
-          $result['customers'][$key]['lastname'] = '';
-        }
-        if (empty($result['customers'][$key]['lastname'])) {
-          $this->response->AddResponse('error', 'Efternamn måste anges.');
-          $this->response->AddResponsePushToArray('invalidFields', array('customers.' . $key . '.lastname'));
-          $passed = false;
-        }
 
         if (isset($customer['invoicenr'])) {
           $result['customers'][$key]['invoicenr'] = Functions::validateInt($customer['invoicenr'], 0, 127);
@@ -466,89 +445,6 @@ class Bookings extends Model {
           }
         } else {
           $result['customers'][$key]['invoicenr'] = 0;
-        }
-
-        if (isset($customer['street']) && !empty($customer['street'])) {
-          $result['customers'][$key]['street'] = Functions::sanatizeStringUnsafe($customer['street'], 100);
-          if (is_null($result['customers'][$key]['street'])) {
-            $this->response->AddResponse('error', 'Gatunamnet innehåller ogiltiga tecken.');
-            $this->response->AddResponsePushToArray('invalidFields', array('customers.' . $key . '.street'));
-            $passed = false;
-          }
-        } else {
-          $result['customers'][$key]['street'] = '';
-        }
-      
-        if (isset($customer['zip']) && !empty($customer['zip'])) {
-          $result['customers'][$key]['zip'] = Functions::validateZIP($customer['zip']);
-          if (is_null($result['customers'][$key]['street'])) {
-            $this->response->AddResponse('error', 'Gatunamnet innehåller ogiltiga tecken.');
-            $this->response->AddResponsePushToArray('invalidFields', array('customers.' . $key . '.street'));
-            $passed = false;
-          }
-        } else {
-          $result['customers'][$key]['zip'] = '';
-        }
-        
-        if (isset($customer['city']) && !empty($customer['city'])) {
-          $result['customers'][$key]['city'] = Functions::sanatizeStringUnsafe($customer['city'], 100);
-          if (is_null($result['customers'][$key]['city'])) {
-            $this->response->AddResponse('error', 'Stadsnamet innehåller ogiltiga tecken.');
-            $this->response->AddResponsePushToArray('invalidFields', array('customers.' . $key . '.city'));
-            $passed = false;
-          }
-        } else {
-          $result['customers'][$key]['city'] = '';
-        }
-        
-        if (isset($customer['phone']) && !empty($customer['phone'])) {
-          $result['customers'][$key]['phone'] = Functions::validatePhone($customer['phone']);
-          if (is_null($result['customers'][$key]['phone'])) {
-            $this->response->AddResponse('error', 'Telefonnummret innehåller ogiltiga tecken.');
-            $this->response->AddResponsePushToArray('invalidFields', array('customers.' . $key . '.phone'));
-            $passed = false;
-          }
-        } else {
-          $result['customers'][$key]['phone'] = '';
-        }
-
-        if (isset($customer['email']) && !empty($customer['email'])) {
-          $result['customers'][$key]['email'] = Functions::validateEmail($customer['email']);
-          if (is_null($result['customers'][$key]['email'])) {
-            $this->response->AddResponse('error', 'E-post addressen måste ha giltigt format.');
-            $this->response->AddResponsePushToArray('invalidFields', array('customers.' . $key . '.email'));
-            $passed = false;
-          }
-        } else {
-          $result['customers'][$key]['email'] = '';
-        }
-
-        if (isset($customer['personalnumber']) && !empty($customer['personalnumber'])) {
-          $result['customers'][$key]['personalnumber'] = Functions::validatePersonalNumber($customer['personalnumber']);
-          if (is_null($result['customers'][$key]['personalnumber'])) {
-            $this->response->AddResponse('error', 'Personnummer anges XXXXXX-XXXX och måste ha giltig kontrollsiffra.');
-            $this->response->AddResponsePushToArray('invalidFields', array('customers.' . $key . '.personalnumber'));
-            $passed = false;
-          }
-        } else {
-          $result['customers'][$key]['personalNumber'] = '';
-        }
-
-        if (isset($customer['date'])) {
-          $result['customers'][$key]['date'] = Functions::validateDate($customer['date']);
-        } else {
-          $result['customers'][$key]['date'] = Functions::validateDate((string)date_create()->format('Y-m-d'));
-        }
-        if (is_null($result['customers'][$key]['date'])) {
-          //default to today
-          $result['customers'][$key]['date'] = Functions::validateDate((string)date_create()->format('Y-m-d'));
-        }
-
-        if (isset($customer['isanonymized'])) {
-          $result['customers'][$key]['isanonymized'] = Functions::validateBoolToBit($customer['isanonymized']);
-        } else {
-          //default to 0
-          $result['customers'][$key]['isanonymized'] = 0;
         }
 
         if (isset($customer['roomid'])) {

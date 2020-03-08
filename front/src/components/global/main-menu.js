@@ -1,16 +1,29 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import Logo from '../../img/logo.gif'
-import SearchIcon from '../../img/searchicon.png'
-import { Link } from 'react-router-dom'
+import { Link, Redirect } from 'react-router-dom'
+import {getItem} from '../../actions'
+import { bindActionCreators } from 'redux'
+import { Typeahead, Menu, MenuItem } from 'react-bootstrap-typeahead'
+import searchStyle from '../../styles/searchStyle'
+import PropTypes from 'prop-types'
+import moment from 'moment'
+import 'moment/locale/sv'
 
 class MainMenu extends Component {
   constructor (props) {
     super(props)
     this.state = {
       shortcutToggle: false,
-      tourToggle    : false
+      tourToggle    : false,
+      searchResult  : [],
+      redirect: null
     }
+  }
+
+  componentDidMount () {
+    const {getItem} = this.props
+    getItem('bookingssearchlist', 'all')
   }
 
   shortcutToggler = (flag) => {
@@ -29,15 +42,19 @@ class MainMenu extends Component {
     this.setState({tourToggle: flag})
   }
 
-  render () {
-    const {shortcutToggle = false} = this.state
+  onSearchSelect = (selected) => {
+    const redirect = typeof selected[0] === 'object' && selected[0].bookingnr !== 'undefined' ? selected[0].bookingnr : null
+    this.setState({searchResult: selected, redirect: redirect})
+  }
 
-    const searchStyle = {
-      backgroundImage: 'url(' + SearchIcon + ')'
-    }
+  render () {
+    const {shortcutToggle = false, searchResult = [], searchOptions = [], redirect = null} = this.state
+    const {bookingssearchlist} = this.props
+
+    console.log(bookingssearchlist)
 
     const tours =
-      <div className="dropdown-wrapper my-2 mx-3 custom-order-sm-10">
+      <div className="m-2 dropdown-wrapper custom-order-sm-10">
         <div className="dropdown">
           <div className="list-group text-uppercase font-weight-bold dropdown-menu custom-dropdown" onMouseEnter={() => this.tourToggler(true)} onMouseLeave={() => this.tourToggler(false)}>
             <div className="list-group-item dropdown-toggle active custom-wide-text cursor-pointer" onClick={() => this.tourToggler(null)}>Bokningsläge</div>
@@ -53,15 +70,49 @@ class MainMenu extends Component {
       'Ny resa',
       'Ny kalkyl'
     ] : []
-
+console.log(this.state)
+console.log(this.props)
+    if (redirect) {
+      return <Redirect to={redirect} />
+    }
     return (
       <div className="MainMenu d-print-none">
 
         <nav className="my-1 mx-1">
-          <div className="d-flex flex-wrap justify-content-between align-items-baseline my-2 py-1">
-            <Link to={'/'}><img src={Logo} alt="Logo" className="rounded custom-scale mx-3" title="Startsida" id="mainLogo" /></Link>
-            <input type="search" placeholder="Bokningsnr eller namn" style={searchStyle} className="rounded my-2 mx-3" />
-            <div className="dropdown-wrapper dropdown-wrapper-smaller my-2 mx-3 custom-order-sm-9">
+          <div className="d-flex flex-wrap flex-row justify-content-between align-items-baseline my-2 py-1">
+            <Link to={'/'}><img src={Logo} alt="Logo" className="m-2 rounded custom-scale" title="Startsida" id="mainLogo" /></Link>
+            <Typeahead className="m-2 rounded"
+              inputProps={{style: searchStyle, type: 'search', title: 'Sök på bokningsnr, resa, namn, e-post eller telefonnr.'}}
+              id="searchBox"
+              name="searchBox"
+              minLength={1}
+              maxResults={20}
+              flip
+              emptyLabel=""
+              paginationText="Visa fler resultat"
+              onChange={(searchResult) => this.onSearchSelect(searchResult)}
+              labelKey="bookingnr"
+              filterBy={['bookingnr', 'lastname', 'fullname', 'phone', 'email', 'tour']}
+              options={bookingssearchlist}
+              selected={searchResult}
+              placeholder="Sök bokning..."
+              renderMenu={(results, menuProps) => (
+                <Menu {...menuProps}>
+                  {results.map((result, index) => (
+                    <MenuItem key={index} option={result} position={index}>
+                      <div key={index} className="small m-0 p-0">
+                        <p className="m-0 p-0">{result.bookingnr} {result.tour} {moment(result.departuredate).format('D/M-YY')}</p>
+                        <p className="m-0 p-0">{result.firstname} {result.lastname}</p>
+                        <p className="m-0 p-0">{result.email}</p>
+                        <p className="m-0 p-0">{result.phone}</p>
+                      </div>
+                    </MenuItem>))}
+                </Menu>
+              )}
+              // eslint-disable-next-line no-return-assign
+              ref={(ref) => this._SearchBox = ref}
+            />
+            <div className="m-2 dropdown-wrapper dropdown-wrapper-smaller custom-order-sm-9">
               <div className="dropdown">
                 <div className="list-group text-uppercase font-weight-bold dropdown-menu dropdown-menu-smaller custom-dropdown" onMouseEnter={() => this.shortcutToggler(true)} onMouseLeave={() => this.shortcutToggler(false)}>
                   <div className="list-group-item dropdown-toggle active custom-wide-text cursor-pointer" onClick={() => this.shortcutToggler(null)} >Genvägar</div>
@@ -74,9 +125,9 @@ class MainMenu extends Component {
               </div>
             </div>
             {tours}
-            <span className="my-2 mx-3"><Link to={'/bokningar/'}><button style={{minWidth: '140px'}} type="button" title="Resor, bokningar och betalningar" className="text-uppercase font-weight-bold btn btn-primary custom-scale custom-wide-text">Bokningar</button></Link></span>
-            <span className="my-2 mx-3"><Link to={'/kalkyler/'}><button style={{minWidth: '140px'}} type="button" title="Resekalkyler" className="text-uppercase font-weight-bold btn btn-primary custom-scale custom-wide-text">Kalkyler</button></Link></span>
-            <span className="my-2 mx-3"><Link to={'/utskick/'}><button style={{minWidth: '180px'}} title="Adresslistor för utskick" type="button" className="text-uppercase font-weight-bold btn btn-primary custom-scale custom-wide-text">Utskick/Register</button></Link></span>
+            <span className="m-2 "><Link to={'/bokningar/'}><button style={{minWidth: '140px'}} type="button" title="Resor, bokningar och betalningar" className="text-uppercase font-weight-bold btn btn-primary custom-scale custom-wide-text">Bokningar</button></Link></span>
+            <span className="m-2 "><Link to={'/kalkyler/'}><button style={{minWidth: '140px'}} type="button" title="Resekalkyler" className="text-uppercase font-weight-bold btn btn-primary custom-scale custom-wide-text">Kalkyler</button></Link></span>
+            <span className="m-2 "><Link to={'/utskick/'}><button style={{minWidth: '180px'}} title="Adresslistor för utskick" type="button" className="text-uppercase font-weight-bold btn btn-primary custom-scale custom-wide-text">Utskick/Register</button></Link></span>
           </div>
         </nav>
 
@@ -85,4 +136,17 @@ class MainMenu extends Component {
   }
 }
 
-export default connect(null, null)(MainMenu)
+MainMenu.propTypes = {
+  getItem           : PropTypes.func,
+  bookingssearchlist: PropTypes.array
+}
+
+const mapStateToProps = state => ({
+  bookingssearchlist: state.lists.bookingssearchlist
+})
+
+const mapDispatchToProps = dispatch => bindActionCreators({
+  getItem
+}, dispatch)
+
+export default connect(mapStateToProps, mapDispatchToProps)(MainMenu)

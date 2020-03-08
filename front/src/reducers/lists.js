@@ -20,6 +20,12 @@ export default function lists (state = {}, action) {
       } else {
         return {...state, newsletter: mergeObjectArrays(state.newsletter, action.payload.newsletter, 'id')}
       }
+      case 'DATA_BOOKINGSSEARCHLIST_SAVE':
+      if (action.payload.id === 'all' || typeof state.bookingssearchlist === 'undefined') {
+        return {...state, bookingssearchlist: action.payload.bookingssearchlist}
+      } else {
+        return {...state, bookingssearchlist: mergeObjectArrays(state.bookingssearchlist, action.payload.bookingssearchlist, 'id')}
+      }
     default:
       return state
   }

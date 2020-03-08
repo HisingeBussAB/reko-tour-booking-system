@@ -5,11 +5,8 @@ import { bindActionCreators } from 'redux'
 import {faSpinner, faTrash, faInfoCircle} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import { Typeahead, Menu, MenuItem } from 'react-bootstrap-typeahead'
-import moment from 'moment'
 import 'moment/locale/sv'
 import { infoPopup, getItem } from '../../actions'
-import toursBooking from '../../screens/tours/tours-booking'
-import { findByKey } from '../../utils'
 import _ from 'lodash'
 
 class BookingsCustomer extends Component {
@@ -45,7 +42,6 @@ class BookingsCustomer extends Component {
     this.setState({
       departurelocationList: nextProps.departures.filter(o => o.tourid.toLowerCase() === nextProps.tour.id.toLowerCase()),
       selectedRoom         : nextProps.customer.selectedRoom,
-      selectedCustomer     : nextProps.customer,
       selectedDeparture    : {departurelocation: nextProps.customer.departurelocation},
       isRoomValid          : false
     })
@@ -92,8 +88,8 @@ class BookingsCustomer extends Component {
 
   render () {
     const {id, number, isOdd, handleChange, index, customer = {}, isSubmitting, removeCustomer, maxInvoice, tour, allCustomers, handleSelectPerson} = this.props
-    const { departurelocationList, selectedRoom, selectedCustomer, selectedDeparture, isRoomValid } = this.state
-    
+    const { departurelocationList, selectedRoom, selectedDeparture, isRoomValid } = this.state
+
     const matchedCustomer = {...allCustomers.find(o => { return o.id.toLowerCase() === customer.id.toLowerCase() })}
     _.unset(matchedCustomer, ['compare'])
     _.unset(matchedCustomer, ['date'])
@@ -104,9 +100,7 @@ class BookingsCustomer extends Component {
     </select>
 
     return (
-
       <div className={(isOdd ? 'pl-5' : 'pr-5') + ' col-6'} key={number} id={'customer' + id}>
-
         <div className="container p-0 mt-2">
           <div className="row">
             <div className="col-7 pr-1">
@@ -207,17 +201,17 @@ class BookingsCustomer extends Component {
           <div className="row">
             <div className="col-12">
               <label htmlFor="street" className="d-block small mt-1 mb-0">Gatuadress</label>
-              <input placeholder="Gatuadress" type="text" name="street" value={customer.street} onChange={e => handleChange(e.target, index)} className="rounded w-100 d-inline-block m-0" />
+              <input autoComplete="disabled" placeholder="Gatuadress" type="text" name="street" value={customer.street} onChange={e => handleChange(e.target, index)} role="combobox" className="rounded w-100 d-inline-block m-0" />
             </div>
           </div>
           <div className="row">
             <div className="col-4 pr-1">
               <label htmlFor="zip" className="d-block small mt-1 mb-0">Postnr</label>
-              <input placeholder="Postnr" type="text" pattern="^[0-9]{3}[ ]?[0-9]{2}$" maxLength="6" name="zip" value={customer.zip} onChange={e => handleChange(e.target, index)} className="rounded w-100 d-inline-block m-0" />
+              <input autoComplete="disabled" placeholder="Postnr" type="text" pattern="^[0-9]{3}[ ]?[0-9]{2}$" maxLength="6" name="zip" value={customer.zip} onChange={e => handleChange(e.target, index)} className="rounded w-100 d-inline-block m-0" />
             </div>
             <div className="col-8 pl-1">
               <label htmlFor="city" className="d-block small mt-1 mb-0">Postort</label>
-              <input placeholder="Postort" type="text" name="city" value={customer.city} onChange={e => handleChange(e.target, index)} className="rounded w-100 d-inline-block m-0" />
+              <input autoComplete="disabled" placeholder="Postort" type="text" name="city" value={customer.city} onChange={e => handleChange(e.target, index)} className="rounded w-100 d-inline-block m-0" />
             </div>
           </div>
           <div className="row">
@@ -254,8 +248,7 @@ class BookingsCustomer extends Component {
                 )}
                 selected={[customer]}
                 placeholder="Telefonnr"
-                inputProps={{type   : 'tel',
-                  pattern: '^[^a-zA-Z]+$'}}
+                inputProps={{type: 'tel', pattern: '^[^a-zA-Z]+$', autoComplete: 'new-password'}}
                 // eslint-disable-next-line no-return-assign
                 ref={(ref) => this._customerphone = ref}
               />
@@ -295,8 +288,7 @@ class BookingsCustomer extends Component {
                 )}
                 selected={[customer]}
                 placeholder="E-post"
-                inputProps={{type   : 'email',
-                  pattern: '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$'}}
+                inputProps={{type: 'email', pattern: '[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,}$', autoComplete: 'new-password'}}
                 // eslint-disable-next-line no-return-assign
                 ref={(ref) => this._customeremail = ref}
               />
@@ -305,7 +297,7 @@ class BookingsCustomer extends Component {
           <div className="row">
             <div className="col-12">
               <label htmlFor="priceadjustment" className="d-block small mt-3 mb-0">Rabatt/Tillägg</label>
-              <input placeholder="0" type="number" name="priceadjustment" value={parseInt(customer.priceadjustment) === 0 ? '' : customer.priceadjustment} style={{width: '180px'}} onChange={e => handleChange(e.target, index)} className="rounded d-inline-block m-0" /> kr
+              <input autoComplete="off" placeholder="0" type="number" name="priceadjustment" value={parseInt(customer.priceadjustment) === 0 ? '' : customer.priceadjustment} style={{width: '180px'}} onChange={e => handleChange(e.target, index)} className="rounded d-inline-block m-0" /> kr
             </div>
           </div>
           <div className="row">
@@ -406,7 +398,7 @@ class BookingsCustomer extends Component {
                 )}
                 selected={[customer]}
                 placeholder="XXXXXX-XXXX"
-                inputProps={{pattern: '^[0-9]{6}[-+]{1}[0-9]{4}$', maxLength: '11'}}
+                inputProps={{pattern: '^[0-9]{6}[-+]{1}[0-9]{4}$', maxLength: '11', autoComplete: 'off'}}
                 // eslint-disable-next-line no-return-assign
                 ref={(ref) => this._customerpersonalnumber = ref}
               />
@@ -418,7 +410,7 @@ class BookingsCustomer extends Component {
               <textarea id="requests"
                 name="requests"
                 value={customer.requests}
-                onChange={e => {handleChange(e.target, index)}}
+                onChange={e => { handleChange(e.target, index) }}
                 className="rounded w-100 d-inline-block m-0 rbt-input-main"
                 style={{height: '100px'}} />
             </div>
@@ -446,7 +438,8 @@ BookingsCustomer.propTypes = {
   handleChangeRoom     : PropTypes.func,
   allCustomers         : PropTypes.array,
   departures           : PropTypes.array,
-  handleChangeDeparture: PropTypes.func
+  handleChangeDeparture: PropTypes.func,
+  handleSelectPerson   : PropTypes.func
 }
 
 const mapStateToProps = state => ({
