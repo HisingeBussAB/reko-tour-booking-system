@@ -17,7 +17,7 @@ class MainMenu extends Component {
       shortcutToggle: false,
       tourToggle    : false,
       searchResult  : [],
-      redirect: null
+      redirect      : null
     }
   }
 
@@ -43,15 +43,13 @@ class MainMenu extends Component {
   }
 
   onSearchSelect = (selected) => {
-    const redirect = typeof selected[0] === 'object' && selected[0].bookingnr !== 'undefined' ? selected[0].bookingnr : null
+    const redirect = typeof selected[0] === 'object' && selected[0].bookingnr !== 'undefined' ? '/bokningar/bokning/' + selected[0].bookingnr : null
     this.setState({searchResult: selected, redirect: redirect})
   }
 
   render () {
-    const {shortcutToggle = false, searchResult = [], searchOptions = [], redirect = null} = this.state
+    const {shortcutToggle = false, searchResult = [], redirect = null} = this.state
     const {bookingssearchlist} = this.props
-
-    console.log(bookingssearchlist)
 
     const tours =
       <div className="m-2 dropdown-wrapper custom-order-sm-10">
@@ -70,8 +68,6 @@ class MainMenu extends Component {
       'Ny resa',
       'Ny kalkyl'
     ] : []
-console.log(this.state)
-console.log(this.props)
     if (redirect) {
       return <Redirect to={redirect} />
     }

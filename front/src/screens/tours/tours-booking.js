@@ -28,7 +28,7 @@ class NewTourBooking extends Component {
       paydate2    : moment().format('YYYY-MM-DD'),
       usepaydate1 : true,
       customers   : [],
-      tourSelected: [{'label': ''}],
+      tourSelected: [{'label': '', rooms: [{label: ''}]}],
       redirectTo  : false,
       isConfirming: false
     }
@@ -53,6 +53,11 @@ class NewTourBooking extends Component {
   }
 
   Initate = (nextProps) => {
+    getItem('bookings', 'all')
+    getItem('categories', 'all')
+    getItem('tours', 'all')
+    getItem('customers', 'all')
+    getItemWeb('resor', 'all')
     const newState = {
       redirectTo  : false,
       isConfirming: false
@@ -90,7 +95,7 @@ class NewTourBooking extends Component {
         this.setState({redirectTo: '/bokningar/bookings/' + reply}, () => { this.setState({redirectTo: false}) })
       }
     }
-    this.setState({isSubmitting: false}) 
+    this.setState({isSubmitting: false})
   }
 
   handleChange = (e) => {
@@ -279,10 +284,11 @@ class NewTourBooking extends Component {
     const toursActivePlusSelected = [...getActivePlusSelectedTours(tours, tourSelected)]
     const tourIsSelected = typeof tourSelected === 'object' && tourSelected.length > 0 && typeof tourSelected[0].id !== 'undefined' && typeof tourSelected[0].label !== 'undefined' && Number(tourSelected[0].id).toString() === tourSelected[0].id
     toursActivePlusSelected.sort(dynamicSort('label'))
-
+    console.log(this.state)
     if (redirectTo !== false) { return <Redirect to={redirectTo} /> }
     let odd = -1
     const customerForms = customers.map((c, i) => {
+      console.log(c)
       odd++
       return (<BookingsCustomer
         index={i}
@@ -307,8 +313,8 @@ class NewTourBooking extends Component {
         {isConfirming && <ConfirmPopup doAction={this.doDelete} message={`Vill du verkligen markulera bokning:\n${number} ${tourSelected[0].label}.\nBokningen makuleras för alla resenärer. Det går också att byta ut enskilda resenärer istället.`} />}
 
         <form autoComplete="off" autoCorrect="off">
-          <input type="text" name="prevent_autofill" id="prevent_autofill" value="" style={{display:'none'}} />
-          <input type="password" name="password_fake" id="password_fake" value="" style={{display:'none'}} />
+          <input type="text" name="prevent_autofill" id="prevent_autofill" defaultValue="" style={{display: 'none'}} />
+          <input type="password" name="password_fake" id="password_fake" defaultValue="" style={{display: 'none'}} />
           <button onClick={() => { history.goBack() }} disabled={isSubmitting} type="button" title="Tillbaka till meny" className="mr-4 btn btn-primary btn-sm custom-scale position-absolute" style={{right: 0}}>
             <span className="mt-1 text-uppercase"><FontAwesomeIcon icon={faArrowLeft} size="1x" />&nbsp;Meny</span>
           </button>
@@ -339,6 +345,7 @@ class NewTourBooking extends Component {
                       disabled={isSubmitting || (id !== 'new' && number !== 'new')}
                       clearButton
                       paginationText="Visa fler resultat"
+                      paginate
                       emptyLabel=""
                       onChange={(tourSelected) => { this.tourSelected(tourSelected) }}
                       labelKey="label"

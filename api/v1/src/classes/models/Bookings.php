@@ -37,7 +37,7 @@ class Bookings extends Model {
             $sql = "SELECT Customers.id as id, firstName, lastName, street, zip, city, phone,	email, personalNumber, date, compare,	isAnonymized,
                               Bookings_Customers.id as BookingsCustomersid, custNumber, bookingId, customerId, roomId, requests, priceAdjustment, cancelledCust, 
                               departureLocation, TIME_FORMAT(Bookings_Customers.departureTime, '%H:%i') as departuretime, cancellationinsurance, invoicenr,
-                              label, price, size, Rooms.isDeleted as roomDeleted
+                              label, price, size, Rooms.isDeleted as roomDeleted, numberavaliable
                       FROM Customers 
                       INNER JOIN Bookings_Customers 
                         ON Bookings_Customers.customerid = Customers.id AND Customers.isAnonymized = 0
@@ -60,6 +60,12 @@ class Bookings extends Model {
             $customersresult[$k]['cancelledcust']           = filter_var($customersresult[$k]['cancelledcust'], FILTER_VALIDATE_BOOLEAN);
             $customersresult[$k]['roomdeleted']             = filter_var($customersresult[$k]['roomdeleted'], FILTER_VALIDATE_BOOLEAN);
             $customersresult[$k]['zip']                     = wordwrap($customersresult[$k]['zip'], 3, ' ', true );
+            $customersresult[$k]['selectedRoom']            = array(
+                                                                array('id' => $customersresult[$k]['roomid']
+                                                                      ,'label' => $customersresult[$k]['label']
+                                                                      ,'price' => $customersresult[$k]['price']
+                                                                      ,'numberavaliable' => $customersresult[$k]['numberavaliable']
+                                                              ));
           }
           $result[$key]['customers'] = $customersresult;
         }

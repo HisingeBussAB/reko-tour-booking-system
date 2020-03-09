@@ -87,9 +87,10 @@ class BookingsCustomer extends Component {
   }
 
   render () {
-    const {id, number, isOdd, handleChange, index, customer = {}, isSubmitting, removeCustomer, maxInvoice, tour, allCustomers, handleSelectPerson} = this.props
+    const {id, number, isOdd, handleChange, index, customer = {}, isSubmitting, removeCustomer, maxInvoice, tour = [{label: '', rooms:[{label: ''}]}], allCustomers, handleSelectPerson} = this.props
     const { departurelocationList, selectedRoom, selectedDeparture, isRoomValid } = this.state
-
+    console.log(tour)
+    console.log(tour.rooms)
     const matchedCustomer = {...allCustomers.find(o => { return o.id.toLowerCase() === customer.id.toLowerCase() })}
     _.unset(matchedCustomer, ['compare'])
     _.unset(matchedCustomer, ['date'])
@@ -311,6 +312,7 @@ class BookingsCustomer extends Component {
                 flip
                 disabled={isSubmitting}
                 clearButton
+                paginate
                 paginationText="Visa fler resultat"
                 selectHintOnEnter
                 emptyLabel=""
