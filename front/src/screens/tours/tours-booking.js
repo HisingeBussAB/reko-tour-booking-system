@@ -85,7 +85,6 @@ class NewTourBooking extends Component {
     const {id, ...state} = this.state
     const {postItem, putItem, getItem} = this.props
     this.setState({isSubmitting: true})
-    console.log(state)
     const data = state
     const reply = id === 'new' ? await postItem('bookings', data) : await putItem('bookings', id, data)
     if (reply !== false && !isNaN(reply)) {
@@ -135,7 +134,6 @@ class NewTourBooking extends Component {
     const {allCustomers = []} = this.props
     if (typeof selectedCustomer === 'object' && typeof selectedCustomer[0] === 'object') {
       if (selectedCustomer[0].customOption) {
-        console.log('custom option')
         const mergeChange = _.merge(selectedCustomer[0], customers[i])
         const newcustomer = update(customers, {[[i]]:
           {id            : {$set: 'new'},
@@ -284,11 +282,9 @@ class NewTourBooking extends Component {
     const toursActivePlusSelected = [...getActivePlusSelectedTours(tours, tourSelected)]
     const tourIsSelected = typeof tourSelected === 'object' && tourSelected.length > 0 && typeof tourSelected[0].id !== 'undefined' && typeof tourSelected[0].label !== 'undefined' && Number(tourSelected[0].id).toString() === tourSelected[0].id
     toursActivePlusSelected.sort(dynamicSort('label'))
-    console.log(this.state)
     if (redirectTo !== false) { return <Redirect to={redirectTo} /> }
     let odd = -1
     const customerForms = customers.map((c, i) => {
-      console.log(c)
       odd++
       return (<BookingsCustomer
         index={i}

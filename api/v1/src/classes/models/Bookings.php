@@ -60,12 +60,11 @@ class Bookings extends Model {
             $customersresult[$k]['cancelledcust']           = filter_var($customersresult[$k]['cancelledcust'], FILTER_VALIDATE_BOOLEAN);
             $customersresult[$k]['roomdeleted']             = filter_var($customersresult[$k]['roomdeleted'], FILTER_VALIDATE_BOOLEAN);
             $customersresult[$k]['zip']                     = wordwrap($customersresult[$k]['zip'], 3, ' ', true );
-            $customersresult[$k]['selectedRoom']            = array(
-                                                                array('id' => $customersresult[$k]['roomid']
+            $customersresult[$k]['selectedRoom']            = array('id' => $customersresult[$k]['roomid']
                                                                       ,'label' => $customersresult[$k]['label']
                                                                       ,'price' => $customersresult[$k]['price']
                                                                       ,'numberavaliable' => $customersresult[$k]['numberavaliable']
-                                                              ));
+                                                              );
           }
           $result[$key]['customers'] = $customersresult;
         }

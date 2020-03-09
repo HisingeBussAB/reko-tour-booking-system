@@ -16,7 +16,7 @@ class BookingsCustomer extends Component {
       departurelocationList: props.departures.filter(o => o.tourid.toLowerCase() === props.tour.id.toLowerCase()),
       selectedRoom         : props.customer.selectedRoom,
       selectedDeparture    : {departurelocation: props.customer.departurelocation},
-      isRoomValid          : false
+      isRoomValid          : this.validateRoomInitiation(props.customer.selectedRoom)
     }
   }
 
@@ -43,7 +43,7 @@ class BookingsCustomer extends Component {
       departurelocationList: nextProps.departures.filter(o => o.tourid.toLowerCase() === nextProps.tour.id.toLowerCase()),
       selectedRoom         : nextProps.customer.selectedRoom,
       selectedDeparture    : {departurelocation: nextProps.customer.departurelocation},
-      isRoomValid          : false
+      isRoomValid          : this.validateRoomInitiation(nextProps.customer.selectedRoom)
     })
   }
 
@@ -57,6 +57,12 @@ class BookingsCustomer extends Component {
                 Fakturanummret är de två sista siffrorna (efter bokningsnummret) av referensnummret för fakturan.
                 Fakturanummren börjar på 00.`,
       suppressed: false})
+  }
+
+  validateRoomInitiation = (value) => {
+    const {tour} = this.props
+    return typeof value === 'object' && typeof tour.rooms === 'object'
+      ? typeof tour.rooms.find(o => { return o.label.toLowerCase() === value.label.toLowerCase() }) === 'object' : false
   }
 
   handleRoomInput = (value) => {
@@ -87,10 +93,8 @@ class BookingsCustomer extends Component {
   }
 
   render () {
-    const {id, number, isOdd, handleChange, index, customer = {}, isSubmitting, removeCustomer, maxInvoice, tour = [{label: '', rooms:[{label: ''}]}], allCustomers, handleSelectPerson} = this.props
+    const {id, number, isOdd, handleChange, index, customer = {}, isSubmitting, removeCustomer, maxInvoice, tour = [{label: '', rooms: [{label: ''}]}], allCustomers, handleSelectPerson} = this.props
     const { departurelocationList, selectedRoom, selectedDeparture, isRoomValid } = this.state
-    console.log(tour)
-    console.log(tour.rooms)
     const matchedCustomer = {...allCustomers.find(o => { return o.id.toLowerCase() === customer.id.toLowerCase() })}
     _.unset(matchedCustomer, ['compare'])
     _.unset(matchedCustomer, ['date'])

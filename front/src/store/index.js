@@ -34,9 +34,9 @@ const initialState = {
     departurelists: []
   },
   lists: {
-    groupcustomers: [],
-    newsletter    : [],
-    customers     : [],
+    groupcustomers    : [],
+    newsletter        : [],
+    customers         : [],
     bookingssearchlist: []
   },
   budgets: {
