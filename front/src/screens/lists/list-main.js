@@ -15,15 +15,14 @@ class ListViewMain extends Component {
             </div>
             <div className="col-lg-4 col-md-12">
               <h4 className="w-75 my-3 mx-auto">E-postutskick</h4>
-              
-
+              <Link to={'/utskick/skickanyhetsbrev'} className="btn w-75 btn-primary my-3 mx-auto py-2">Gör nyhetsbrevsutskick</Link>
             </div>
             <div className="col-lg-4 col-md-12">
               <h4 className="w-75 my-3 mx-auto">Hantera register</h4>
               <Link to={'/utskick/nyhetsbrev'} className="btn w-75 btn-primary my-3 mx-auto py-2">Nyhetsbrev (e-post)</Link>
               <button className="btn w-75 btn-primary my-3 mx-auto py-2">Register enskilda</button>
               <Link to={'/utskick/gruppregister'} className="btn w-75 btn-primary my-3 mx-auto py-2">Gruppregister</Link>
-
+              
             </div>
           </div>
         </div>

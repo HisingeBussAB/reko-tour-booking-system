@@ -227,6 +227,9 @@ $router->addRoutes(array(
   //FIREWALL
   array('GET|POST',       '/updatefirewall[/]?', function(){
     file_put_contents('cloudflareips.txt', file_get_contents('https://www.cloudflare.com/ips-v4'));
+    if (strpos($_SERVER['REQUEST_URI'], AUTH_SECRET_LINK) != false) {
+      define(ENV_ADD_DYNAMIC_REMOTE_ADDR, array(ENV_REMOTE_ADDR));
+    }
     updateDynamicIPBlock('dynamic_allowed_ips.txt', true);
     $allowed_ips = "";
     foreach(ENV_CLOUDFLARE_ALLOWED_HOSTS as $host) {
@@ -241,8 +244,12 @@ $router->addRoutes(array(
     foreach(ENV_SERVER_IP as $ip) {
       $allowed_ips = $allowed_ips . ' ' . $ip;
     }
+    if(!empty(ENV_ADD_DYNAMIC_REMOTE_ADDR)) {
+      foreach(ENV_ADD_DYNAMIC_REMOTE_ADDR as $ip) {
+        $allowed_ips = $allowed_ips . ' ' . $ip;
+      }
+    }
     $allowed_ips = trim($allowed_ips); 
-
     //Edit IDs in these rules
     $rule1 = array("id" => ENV_CLOUDFLARE_API_FILTER_ID,"expression" => "(ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"https://api.rekoresor.app\") or (ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"https://apitest.rekoresor.app\")","paused"=> false,"description"=> "DynamicUpdateAllowedIPs API");
     $rule2 = array("id"=> ENV_CLOUDFLARE_WEB_FILTER_ID,"expression"=>"(ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"://bokningar.rekoresor.app\") or (ip.src in {" . $allowed_ips . "} and http.request.full_uri contains \"://bokningartest.rekoresor.app\")","paused"=> false,"description"=> "DynamicUpdateAllowedIPs Web");
@@ -365,20 +372,36 @@ function Set_ENV_REMOTE_ADDR($cloudlfarefile) {
   function updateDynamicIPBlock($file = 'dynamic_allowed_ips.txt', $force = false) {
     $allowed_ips = '';
     if ($force || !file_exists($file) || (file_exists($file) && filemtime($file) < mktime(0, 0, 0, date("m"), date("d")-1, date("Y")))) {
-
+      $current_time   =   date('d M Y H:i:s');
+      $current_hour   =   date('H', strtotime($current_time));
+      if ($current_hour >= 5 && file_exists($file)) {
+        $allowed_ips = ' ' . str_replace(',', ' ',file_get_contents($file));
+      }
       foreach(ENV_IP_DYNAMIC_LOCK_ALLOWED_IPS as $host) {
         $ip = gethostbyname($host);
         if ($ip != $host) {
-          $allowed_ips = $allowed_ips . ' ' . $ip;
+          if(strpos($allowed_ips, $ip) == false){
+            $allowed_ips = $allowed_ips . ' ' . $ip;
+          }
         }
       }
       foreach(ENV_SERVER_IP as $ip) {
-        $allowed_ips = $allowed_ips . ' ' . $ip;
+        if(strpos($allowed_ips, $ip) == false){
+          $allowed_ips = $allowed_ips . ' ' . $ip;
+        }
+      }
+      if(!empty(ENV_ADD_DYNAMIC_REMOTE_ADDR)) {
+        foreach(ENV_ADD_DYNAMIC_REMOTE_ADDR as $ip) {
+          if(strpos($allowed_ips, $ip) == false){
+            $allowed_ips = $allowed_ips . ' ' . $ip;
+          }
+        }
       }
       $ipsformatted = str_replace(' ', ',', trim($allowed_ips));
       file_put_contents($file, $ipsformatted);
     }    
   }
+
   
     /*
    * ip_in_range.php - Function to determine if an IP is located in a
@@ -519,3 +542,4 @@ function Set_ENV_REMOTE_ADDR($cloudlfarefile) {
       } 
       return json_decode($http_response);
     }
+  

@@ -81,7 +81,7 @@ class NewsletterList extends Component {
     const newsletterSorted = [...newsletter]
     newsletterSorted.sort(dynamicSort('email'))
     const EmailList = newsletterSorted.map(nl => { return <tr key={nl.id}><td>{nl.email}</td></tr> })
-    const EmailSepList = newsletterSorted.map(nl => { return nl.email + '; ' })
+    const EmailSepList = newsletterSorted.map((nl,i) => { return <span key={i}>{nl.email+ '; '}{(i%490 == 0 && i >= 490) ? <p style={{margin: '20px', textAlign: 'center'}}>------ blockbryte ------</p> : null}</span>})
     return (
       <div className="ListView NewsletterList">
 

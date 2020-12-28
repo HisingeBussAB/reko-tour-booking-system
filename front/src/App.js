@@ -83,7 +83,7 @@ class App extends Component {
 
   componentDidCatch () {
     /* TODO log */
-    //window.alert('Kritiskt fel! Applikationen har krashat.')
+    // window.alert('Kritiskt fel! Applikationen har krashat.')
     clearInterval(this.refreshLogin)
   }
 
