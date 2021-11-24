@@ -23,12 +23,12 @@ class NewTourBooking extends Component {
       id          : 'new',
       number      : 'new',
       bookingdate : moment().format('YYYY-MM-DD'),
-      bookinggroup: false,
+      group       : false,
       paydate1    : moment().format('YYYY-MM-DD'),
       paydate2    : moment().format('YYYY-MM-DD'),
       usepaydate1 : true,
       customers   : [],
-      tourSelected: [{'label': '', rooms: [{label: ''}]}],
+      tourSelected: [{label: '', id: 'new', rooms: [{label: ''}]}],
       redirectTo  : false,
       isConfirming: false
     }
@@ -69,7 +69,7 @@ class NewTourBooking extends Component {
         newState.number = booking.number
         newState.paydate1 = booking.paydate1
         newState.paydate2 = booking.paydate2
-        newState.bookinggroup = booking.bookinggroup
+        newState.group = booking.group
         newState.customers = booking.customers
         newState.usepaydate1 = booking.paydate1 !== booking.paydate2 && (booking.paydate1 !== null || booking.paydate1 !== 'null' || typeof booking.paydate1 !== 'undefined')
         if (Number(booking.tourid) >= 0 && typeof nextProps.tours === 'object' && nextProps.tours.length > 0) {
@@ -85,7 +85,16 @@ class NewTourBooking extends Component {
     const {id, ...state} = this.state
     const {postItem, putItem, getItem} = this.props
     this.setState({isSubmitting: true})
-    const data = state
+    const data = {
+      tourid     : state.tourSelected[0].id,
+      bookingid  : id,
+      group      : state.group,
+      paydate1   : state.paydate1,
+      paydate2   : state.paydate2,
+      usepaydate1: state.usepaydate1,
+      number     : state.number,
+      customers  : state.customers
+    }
     const reply = id === 'new' ? await postItem('bookings', data) : await putItem('bookings', id, data)
     if (reply !== false && !isNaN(reply)) {
       getItem('categories', 'all')
@@ -264,7 +273,7 @@ class NewTourBooking extends Component {
   }
 
   toggleGroup = (b) => {
-    this.setState({ bookinggroup: !!b })
+    this.setState({ group: !!b })
   }
 
   togglePayDate1 = () => {
@@ -277,7 +286,7 @@ class NewTourBooking extends Component {
   }
 
   render () {
-    const { id = 'new', isSubmitting, number = 'new', tourSelected, redirectTo, isConfirming, bookingdate, bookinggroup, usepaydate1, paydate1, paydate2, customers = [] } = this.state
+    const { id = 'new', isSubmitting, number = 'new', tourSelected, redirectTo, isConfirming, bookingdate, group, usepaydate1, paydate1, paydate2, customers = [] } = this.state
     const { history, tours } = this.props
     const toursActivePlusSelected = [...getActivePlusSelectedTours(tours, tourSelected)]
     const tourIsSelected = typeof tourSelected === 'object' && tourSelected.length > 0 && typeof tourSelected[0].id !== 'undefined' && typeof tourSelected[0].label !== 'undefined' && Number(tourSelected[0].id).toString() === tourSelected[0].id
@@ -366,8 +375,8 @@ class NewTourBooking extends Component {
                     <div className="row">
                       <div className="col-12">
                         <label className="d-block small mt-1 mb-0 p-0 col-12">Gruppresa</label>
-                        <button type="button" name="bookingGroup" onClick={(e) => { e.preventDefault(); this.toggleGroup(false) }} className={bookinggroup ? 'btn btn-secondary mr-2' : 'btn btn-primary active mr-2'} aria-pressed={!bookinggroup}>{bookinggroup ? null : <FontAwesomeIcon icon={faCheck} size="1x" />}&nbsp;Individuell <p className="small m-0">(anger att bokningen skall bokföras på konto 3021)</p></button>
-                        <button type="button" name="bookingGroup" onClick={(e) => { e.preventDefault(); this.toggleGroup(true) }} className={bookinggroup ? 'btn btn-primary active ml-2' : 'btn btn-secondary ml-2'} aria-pressed={bookinggroup}>{bookinggroup ? <FontAwesomeIcon icon={faCheck} size="1x" /> : null}&nbsp;Grupp <p className="small m-0">(anger att bokningen skall bokföras på konto 3020)</p></button>
+                        <button type="button" name="bookingGroup" onClick={(e) => { e.preventDefault(); this.toggleGroup(false) }} className={group ? 'btn btn-secondary mr-2' : 'btn btn-primary active mr-2'} aria-pressed={!group}>{group ? null : <FontAwesomeIcon icon={faCheck} size="1x" />}&nbsp;Individuell <p className="small m-0">(anger att bokningen skall bokföras på konto 3021)</p></button>
+                        <button type="button" name="bookingGroup" onClick={(e) => { e.preventDefault(); this.toggleGroup(true) }} className={group ? 'btn btn-primary active ml-2' : 'btn btn-secondary ml-2'} aria-pressed={group}>{group ? <FontAwesomeIcon icon={faCheck} size="1x" /> : null}&nbsp;Grupp <p className="small m-0">(anger att bokningen skall bokföras på konto 3020)</p></button>
                       </div>
                     </div>
                     <div className="row">

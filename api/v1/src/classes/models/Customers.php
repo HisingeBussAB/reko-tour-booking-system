@@ -75,6 +75,9 @@ class Customers extends Model {
   }
 
   public function post(array $_params) {
+
+    print_r($_params);
+
     $params = $this->paramsValidationWithExit($_params, true);
     $comp = Functions::getCompString($params['firstname'],$params['lastname'],$params['zip'],$params['street']);
     $sql = "INSERT INTO Customers (
@@ -102,7 +105,6 @@ class Customers extends Model {
       ,:compare
       ,0);";
     try {     
-      $this->pdo->beginTransaction();
       $sth = $this->pdo->prepare($sql);
       $sth->bindParam(':firstname',         $params['firstname'],      \PDO::PARAM_STR);
       $sth->bindParam(':lastname',          $params['lastname'],       \PDO::PARAM_STR);
@@ -119,9 +121,7 @@ class Customers extends Model {
       $sth = $this->pdo->prepare($sql);
       $sth->execute(); 
       $result = $sth->fetch(\PDO::FETCH_ASSOC); 
-      $this->pdo->commit();
     } catch(\PDOException $e) {
-      $this->pdo->rollBack();
       $this->response->DBError($e, __CLASS__, $sql);
       $this->response->Exit(500);
     }
@@ -147,7 +147,6 @@ class Customers extends Model {
         ,isAnonymized = 0
         WHERE id = :id AND isAnonymized = 0;";
         
-        $this->pdo->beginTransaction();
         $sth = $this->pdo->prepare($sql);
         $sth->bindParam(':id',                $params['id'],             \PDO::PARAM_INT);
         $sth->bindParam(':firstname',         $params['firstname'],      \PDO::PARAM_STR);
@@ -161,7 +160,6 @@ class Customers extends Model {
         $sth->bindParam(':date',              $params['date'],           \PDO::PARAM_STR);
         $sth->bindParam(':compare',           $comp,                     \PDO::PARAM_STR);
         $sth->execute(); 
-        $this->pdo->commit();
       } catch(\PDOException $e) {
         $this->response->DBError($e, __CLASS__, $sql);
         $this->response->Exit(500);

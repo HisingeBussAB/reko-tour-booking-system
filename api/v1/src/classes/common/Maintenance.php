@@ -9,7 +9,6 @@ final class Maintenance {
 
   public static function refreshSecrets(Responder $response, \PDO $pdo): bool {
     $now = time();
-
     //Check and update last run
     try {
       $sql = "SELECT created FROM Tokens WHERE tokentype = 'LastMaintenanceRun' ORDER BY created DESC LIMIT 1;";

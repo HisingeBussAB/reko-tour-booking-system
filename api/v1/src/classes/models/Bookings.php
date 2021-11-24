@@ -3,6 +3,7 @@ namespace RekoBooking\classes\models;
 
 use RekoBooking\classes\models\Model;
 use RekoBooking\classes\models\Tours;
+use RekoBooking\classes\models\Customers;
 use RekoBooking\classes\Functions;
 
 class Bookings extends Model {
@@ -80,82 +81,69 @@ class Bookings extends Model {
 
   public function post(array $_params) {
     $params = $this->paramsValidationWithExit($_params);
+    print_r($params);
+    $sql = "";
     try {     
+      $this->pdo->exec("set autocommit=0;");
       $this->pdo->beginTransaction();
-      $this->pdo->exec("LOCK TABLES Bookings WRITE, Customers WRITE, Bookings_Customers WRITE;"); 
-      $sql = "INSERT INTO Bookings(tourid, `group`, paydate1, paydate2, bookingdate) VALUES (:tourid, :group, :paydate1, :paydate2, :bookingdate);";
+      $this->pdo->exec("LOCK TABLES Bookings WRITE, Customers WRITE, Bookings_Customers WRITE, seq_1_to_999999 READ;"); 
+
+      $sql = "SELECT min(SEQ) as nr FROM seq_1_to_999999 
+                WHERE SEQ NOT IN (SELECT cast(substring(`number`,2) as int) as nr FROM Bookings);";
+      $sth = $this->pdo->prepare($sql);
+      $sth->execute();
+      
+      $nextnr = $sth->fetch(\PDO::FETCH_ASSOC);
+      $nr = ($params['group'] == 1) ? '2' : '1';
+      $nr .= str_pad($nextnr['nr'], 6, "0", STR_PAD_LEFT);
+      
+      $sql = "INSERT INTO Bookings(tourid, `group`, paydate1, paydate2, bookingdate, `number`) VALUES (:tourid, :group, :paydate1, :paydate2, :bookingdate, :nr);";
       $sth = $this->pdo->prepare($sql);
       $sth->bindParam(':tourid',      $params['tourid'],      \PDO::PARAM_INT);
       $sth->bindParam(':group',       $params['group'],       \PDO::PARAM_INT);
       $sth->bindParam(':paydate1',    $params['paydate1'],    \PDO::PARAM_STR);
       $sth->bindParam(':paydate2',    $params['paydate2'],    \PDO::PARAM_STR);
       $sth->bindParam(':bookingdate', $params['bookingdate'], \PDO::PARAM_STR);
+      $sth->bindParam(':nr',          $nr,                    \PDO::PARAM_INT);
       $sth->execute(); 
 
       $sql = "SELECT LAST_INSERT_ID() as id;";
       $sth = $this->pdo->prepare($sql);
       $sth->execute(); 
+      $lastID = $sth->fetch(\PDO::FETCH_ASSOC);
+      $bookingid = $lastID['id'];
 
-      $bookingid = $sth->fetch(\PDO::FETCH_ASSOC); 
-      $nr = ($params['group'] == 1) ? '2' : '1';
-      $nr .= str_pad($bookingid['id'], 6, "0", STR_PAD_LEFT);
-      $sql = "UPDATE Bookings SET number = :nr WHERE id = :id;";
-      $sth = $this->pdo->prepare($sql);
-      $sth->bindParam(':nr',    $nr,                 \PDO::PARAM_INT);
-      $sth->bindParam(':id',    $bookingid['id'],    \PDO::PARAM_INT);
-      $sth->execute(); 
-      $i = 0;
       foreach($params['customers'] as $customer) {
-        $customerid = 0;
-        if (is_numeric($customer['id']) && $customer['id'] >= 0) {
-          $customerid = $customer['id'];
+        print_r($customer);
+        if ($customer['id'] != 0) {
+          print_r("old!");
+          print_r($customer);
         } else {
-          $comp = Functions::getCompString($customer['firstname'],$customer['lastname'],$customer['zip'],$customer['street']);
-          $sql = "INSERT INTO Customers(firstname, lastname, street, zip, city, phone, email, personalnumber, compare) 
-          VALUES (:firstname, :lastname, :street, :zip, :city, :phone, :email, :personalnumber, :compare);";
-          $sth = $this->pdo->prepare($sql);
-          $sth->bindParam(':firstname',         $customer['firstname'],      \PDO::PARAM_STR);
-          $sth->bindParam(':lastname',          $customer['lastname'],       \PDO::PARAM_STR);
-          $sth->bindParam(':street',            $customer['street'],         \PDO::PARAM_STR);
-          $sth->bindParam(':zip',               $customer['zip'],            \PDO::PARAM_INT);
-          $sth->bindParam(':city',              $customer['city'],           \PDO::PARAM_STR);
-          $sth->bindParam(':phone',             $customer['phone'],          \PDO::PARAM_STR);
-          $sth->bindParam(':email',             $customer['email'],          \PDO::PARAM_STR);
-          $sth->bindParam(':personalnumber',    $customer['personalnumber'], \PDO::PARAM_STR);
-          $sth->bindParam(':compare',           $comp,                       \PDO::PARAM_STR);
-          $sth->execute(); 
-          $sql = "SELECT LAST_INSERT_ID() as id;";
-          $sth = $this->pdo->prepare($sql);
-          $sth->execute(); 
-          $customerid = $sth->fetch(\PDO::FETCH_ASSOC); 
+          print_r("New!");
+          print_r($customer);
+          $cust = new Customers($this->response, $this->pdo);
+          $cust->post($customer['data_RAW']);
         }
-        $sql = "INSERT INTO Bookings_Customers(bookingid, customerid, roomid, requests, priceadjustment, departurelocation, departuretime, custnumber, invoicenr)
-        VALUES (:bookingid, :customerid, :roomid, :requests, :priceadjustment, :departurelocation, :departuretime, :custnumber, :invoicenr);";
-        $sth = $this->pdo->prepare($sql);
-        $sth->bindParam(':bookingid',         $bookingid['id'],              \PDO::PARAM_INT);
-        $sth->bindParam(':customerid',        $customerid['id'],             \PDO::PARAM_INT);
-        $sth->bindParam(':roomid',            $customer['roomid'],           \PDO::PARAM_INT);
-        $sth->bindParam(':requests',          $customer['requests'],         \PDO::PARAM_STR);
-        $sth->bindParam(':priceadjustment',   $customer['priceadjustment'],  \PDO::PARAM_INT);
-        $sth->bindParam(':departurelocation', $customer['departurelocation'],\PDO::PARAM_STR);
-        $sth->bindParam(':departuretime',     $customer['departuretime'],    \PDO::PARAM_STR);
-        $sth->bindParam(':custnumber',        $i,                            \PDO::PARAM_INT);
-        $sth->bindParam(':invoicenr',         $customer['invoicenr'],        \PDO::PARAM_INT);
-        $sth->execute(); 
-        $i++;
+
       }
+      
+
       $this->pdo->exec("UNLOCK TABLES;");
       $this->pdo->commit();
+      $this->pdo->exec("set autocommit=1;");
     } catch(\PDOException $e) {
+      print_r('start catch');
       $this->response->DBError($e, __CLASS__, $sql);
       $this->pdo->rollBack();
       try {
         $this->pdo->exec("UNLOCK TABLES;");
+        $this->pdo->exec("set autocommit=1;");
       } catch(\PDOException $e) {
         $this->response->Exit(500);
       }
       $this->response->Exit(500);
     }
+    print_r($nr);
     return array('updatedid' => $nr);
   }
 
@@ -165,6 +153,15 @@ class Bookings extends Model {
     try {     
       $this->pdo->beginTransaction();
       $this->pdo->exec("LOCK TABLES Bookings WRITE, Customers WRITE, Bookings_Customers WRITE;"); 
+      $sql = "SELECT id from Bookings where number = :number;";
+      $sth = $this->pdo->prepare($sql);
+      $sth->bindParam(':number',        $params['number'],        \PDO::PARAM_INT);
+      $sth->execute(); 
+      $bookingsr = $sth->fetch(\PDO::FETCH_ASSOC);
+      $bookingid = $bookingsr['id'];
+      var_dump($bookingid);
+
+
       $sql = "UPDATE Bookings SET tourid = :tourid, `group` = :group, paydate1 = :paydate1, paydate2 = :paydate2, bookingdate = :bookingdate, cancelled = :cancelled, cancelleddate = :cancelleddate
       WHERE number = :number;";
       $sth = $this->pdo->prepare($sql);
@@ -177,12 +174,7 @@ class Bookings extends Model {
       $sth->bindParam(':cancelleddate', $params['cancelleddate'], \PDO::PARAM_STR);
       $sth->bindParam(':number',        $params['number'],        \PDO::PARAM_INT);
       $sth->execute();
-      $sql = "SELECT id from Bookings where number = :number;";
-      $sth = $this->pdo->prepare($sql);
-      $sth->bindParam(':number',        $params['number'],        \PDO::PARAM_INT);
-      $sth->execute(); 
-      $bookingsr = $sth->fetch(\PDO::FETCH_ASSOC);
-      $bookingsid = $bookingsr['id'];
+      
       $idsonly = array_column($params['customers'], 'id');
       $customerids = '';
       foreach ($idsonly as $id) {
@@ -395,7 +387,7 @@ class Bookings extends Model {
     }
 
     if (isset($params['paydate1'])) {
-      $result['paydate1'] = Functions::validateDate($params['paydate1']);
+      $result['paydate1'] = Functions::validateBoolToBit($params['usepaydate1']) == 1 ? Functions::validateDate($params['paydate1']) : NULL;
     } else {
       $result['paydate1'] = NULL;
     }
@@ -440,6 +432,12 @@ class Bookings extends Model {
 
     if (isset($params['customers']) && is_array($params['customers'])) {
       foreach($params['customers'] as $key=>$customer) {
+        
+        $Customers = new Customers($this->response, $this->pdo);
+        if ($customer['id'] !== 'new') {
+          $Customers->get(array('id' => $customer['id'])); //kommer bryta i customer om den inte hittas
+        }
+
 
         if (isset($customer['invoicenr'])) {
           $result['customers'][$key]['invoicenr'] = Functions::validateInt($customer['invoicenr'], 0, 127);
@@ -531,6 +529,11 @@ class Bookings extends Model {
           //default to 0
           $result['customers'][$key]['cancelledcust'] = 0;
         }
+
+        $result['customers'][$key]['data_RAW'] = array('firstname' => $customer['firstname'],'lastname' => $customer['lastname'],'street' => $customer['street'],'city' => $customer['city'],'zip' =>$customer['zip'],
+                    'phone' => $customer['phone'],'email' => $customer['email'],'personalnumber' => $customer['personalnumber'],'id' => $customer['id']);
+
+
 
 
       }

@@ -13,11 +13,12 @@ final class DB {
   public static function get(Responder $response) {
 
   if(!isset(self::$pdo)) {
-    try{
+    try {
       self::$pdo = new \PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4', DB_USER, DB_PASSWORD);
       self::$pdo->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_LOWER); //Forces table names to lower case
       self::$pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION); //Error throw exceptions, catch with code.
       self::$pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false); //Not compatible with all drives, defaults to false if not supported. Prepare each statement instead.
+      self::$pdo->setAttribute(\PDO::ATTR_AUTOCOMMIT, 1);
       } catch(\PDOException $e) {
         $response->DBError($e, __CLASS__);
         return false;
@@ -28,7 +29,7 @@ final class DB {
 
   public static function getweb(Responder $response) {
   if(!isset(self::$pdoweb)) {
-    try{
+    try {
       self::$pdoweb = new \PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_WEB_NAME . ';charset=utf8mb4', DB_USER, DB_PASSWORD);
       self::$pdoweb->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_LOWER); //Forces table names to lower case
       self::$pdoweb->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION); //Error throw exceptions, catch with code.

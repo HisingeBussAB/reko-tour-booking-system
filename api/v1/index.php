@@ -229,6 +229,8 @@ $router->addRoutes(array(
     file_put_contents('cloudflareips.txt', file_get_contents('https://www.cloudflare.com/ips-v4'));
     if (strpos($_SERVER['REQUEST_URI'], AUTH_SECRET_LINK) != false) {
       define(ENV_ADD_DYNAMIC_REMOTE_ADDR, array(ENV_REMOTE_ADDR));
+    } else {
+      define(ENV_ADD_DYNAMIC_REMOTE_ADDR, array());
     }
     updateDynamicIPBlock('dynamic_allowed_ips.txt', true);
     $allowed_ips = "";

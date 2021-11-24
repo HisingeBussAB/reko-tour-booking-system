@@ -106,7 +106,7 @@ TourRow.propTypes = {
   reservationfeeprice: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   departuredate      : PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   // eslint-disable-next-line react/boolean-prop-naming
-  submitToggle       : PropTypes.bool,
+  submitToggle       : PropTypes.func,
   rooms              : PropTypes.array,
   categories         : PropTypes.array
 }

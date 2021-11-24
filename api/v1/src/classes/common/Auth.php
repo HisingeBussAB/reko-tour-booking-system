@@ -104,6 +104,7 @@ final class Auth {
     $user = trim(filter_var($unvalidatedData['user'], FILTER_SANITIZE_STRING));
       
     // Get the users refresh JWT secret. Also verifies the user is logged in with a matching session.
+
     try {
       $sql = "SELECT token FROM Tokens WHERE username = :user AND tokentype = 'refreshsecret' AND session = :session ORDER BY created DESC LIMIT 1;";
       $sth = $pdo->prepare($sql);
@@ -366,7 +367,6 @@ private static function generateJWT(string $type, Responder $response, \PDO $pdo
     $refreshSecret = bin2hex(random_bytes(24));
     try {
       $refreshToken = JWT::encode($token, $refreshSecret . AUTH_JWT_SECRET_PEPPER, 'HS512');
-      
     } catch (\Exception $e) {
       $response->AddResponse('error', 'Kunde inte kryptera refreshtoken.');
       $response->LogError($e->getMessage(), __CLASS__);
@@ -384,6 +384,8 @@ private static function generateJWT(string $type, Responder $response, \PDO $pdo
       $response->DBError($e, __CLASS__, $sql);
       $response->Exit(500);
     }
+
+    
     //Save refresh secret
     try {
       $sql = "INSERT INTO Tokens (Token, TokenType, Created, username, session) VALUES (:token, 'refreshsecret', :created, :user, :session);";
@@ -391,7 +393,7 @@ private static function generateJWT(string $type, Responder $response, \PDO $pdo
       $sth->bindParam(':token', $refreshSecret, \PDO::PARAM_STR);
       $sth->bindParam(':created', $now, \PDO::PARAM_INT);
       $sth->bindParam(':user', $user, \PDO::PARAM_STR);
-      $sth->bindParam(':session', $session, \PDO::PARAM_STR);
+      $sth->bindParam(':session', $session, \PDO::PARAM_STR);     
       $sth->execute(); 
     } catch(\PDOException $e) {
       $response->DBError($e, __CLASS__, $sql);

@@ -69,7 +69,8 @@ class BookingsCustomer extends Component {
     const {tour, index, handleChangeRoom} = this.props
     const selectedRoomMatch = typeof value === 'object' ? value[0] : typeof tour.rooms === 'object' ? tour.rooms.find(o => { return o.label.toLowerCase() === value.toLowerCase() }) : undefined
     const isValid = typeof selectedRoomMatch === 'object'
-    this.setState({isRoomValid: isValid})
+    const selectedRoomUpdate = isValid ? selectedRoomMatch : {label: ''}
+    this.setState({selectedRoom: selectedRoomUpdate, isRoomValid: isValid})
     if (isValid) {
       handleChangeRoom([selectedRoomMatch], index)
     } else {
@@ -87,8 +88,17 @@ class BookingsCustomer extends Component {
         handleChange({name: 'departuretime', value: selectedDepartureMatch.departuretime}, index)
       }
       handleChangeDeparture([selectedDepartureMatch], index)
+      this.setState({selectedDeparture: selectedDepartureMatch})
     } else {
       handleChangeDeparture([{departurelocation: value}], index)
+      if (typeof value === 'object') {
+        if (value !== undefined && value.length > 0) {
+          this.setState({selectedDeparture: value})
+        }
+      } else {
+        this.setState({selectedDeparture: {departurelocation: value}})
+      }
+      
     }
   }
 
@@ -100,6 +110,7 @@ class BookingsCustomer extends Component {
     _.unset(matchedCustomer, ['date'])
     _.unset(matchedCustomer, ['isanonymized'])
     _.unset(matchedCustomer, ['categories'])
+    const isDepartureValid = typeof customer.departurelocation === 'string' && customer.departurelocation.length > 1
     const invoiceSelector = <select name="invoicenr" value={customer.invoicenr} onChange={e => handleChange(e.target, index)} disabled={isSubmitting} className="rounded d-inline m-0 p-1">
       {Array.from(Array(maxInvoice).keys()).map(i => { return (<option key={i} value={i}>{Number(i).toString().padStart(2, '0')}</option>) })}
     </select>
@@ -361,6 +372,8 @@ class BookingsCustomer extends Component {
                 options={departurelocationList.length < 1 ? [{departurelocation: ''}] : departurelocationList}
                 selected={[selectedDeparture]}
                 placeholder="Påstigningsplats"
+                isValid={isDepartureValid}
+                isInvalid={!isDepartureValid}
                 // eslint-disable-next-line no-return-assign
                 ref={(ref) => this._departurelocation = ref}
               />
