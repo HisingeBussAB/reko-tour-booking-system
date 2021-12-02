@@ -81,8 +81,8 @@ class Bookings extends Model {
 
   public function post(array $_params) {
     $params = $this->paramsValidationWithExit($_params);
-    print_r($params);
     $sql = "";
+    $cust = new Customers($this->response, $this->pdo);
     try {     
       $this->pdo->exec("set autocommit=0;");
       $this->pdo->beginTransaction();
@@ -113,37 +113,41 @@ class Bookings extends Model {
       $lastID = $sth->fetch(\PDO::FETCH_ASSOC);
       $bookingid = $lastID['id'];
 
-      foreach($params['customers'] as $customer) {
-        print_r($customer);
+      foreach($params['customers'] as $key=>$customer) {
         if ($customer['id'] != 0) {
           print_r("old!");
           print_r($customer);
         } else {
-          print_r("New!");
-          print_r($customer);
-          $cust = new Customers($this->response, $this->pdo);
-          $cust->post($customer['data_RAW']);
+          $newcustid = $cust->post($customer['data_RAW']);
         }
-
+        print_r($customer);
+        $sql = "INSERT INTO `Bookings_Customers`(`bookingId`, `customerId`, `roomId`, `requests`, `priceAdjustment`, `cancelledCust`, `departureLocation`, `departureTime`, `cancellationInsurance`, `custNumber`, `InvoiceNr`) 
+                VALUES                          (:bookingid,  :customerid,  :roomid,  :requests,  :priceadjustment,  :cancelledcust,  :departurelocation,  :departuretime,  :cancellationinsurance,  :custnumber,  :invoicenr);";
+        $sth = $this->pdo->prepare($sql);
+        $sth->bindParam(':bookingid',            $bookingid,                        \PDO::PARAM_INT);
+        $sth->bindParam(':customerid',           $newcustid['updatedid'],           \PDO::PARAM_INT);
+        $sth->bindParam(':roomid',               $customer['roomid'],               \PDO::PARAM_INT);
+        $sth->bindParam(':requests',             $customer['requests'],             \PDO::PARAM_STR);
+        $sth->bindParam(':priceadjustment',      $customer['priceadjustment'],      \PDO::PARAM_INT);
+        $sth->bindParam(':cancelledcust',        $customer['cancelledcust'],        \PDO::PARAM_INT);
+        $sth->bindParam(':departurelocation',    $customer['departurelocation'],    \PDO::PARAM_STR);
+        $sth->bindParam(':departuretime',        $customer['departuretime'],        \PDO::PARAM_STR);
+        $sth->bindParam(':cancellationinsurance',$customer['cancellationinsurance'],\PDO::PARAM_INT);
+        $sth->bindParam(':custnumber',           $key,                              \PDO::PARAM_INT);
+        $sth->bindParam(':invoicenr',            $customer['invoicenr'],            \PDO::PARAM_INT);
+        $sth->execute(); 
       }
       
-
       $this->pdo->exec("UNLOCK TABLES;");
       $this->pdo->commit();
       $this->pdo->exec("set autocommit=1;");
     } catch(\PDOException $e) {
-      print_r('start catch');
       $this->response->DBError($e, __CLASS__, $sql);
       $this->pdo->rollBack();
-      try {
-        $this->pdo->exec("UNLOCK TABLES;");
-        $this->pdo->exec("set autocommit=1;");
-      } catch(\PDOException $e) {
-        $this->response->Exit(500);
-      }
+      $this->pdo->exec("UNLOCK TABLES;");
+      $this->pdo->exec("set autocommit=1;");
       $this->response->Exit(500);
     }
-    print_r($nr);
     return array('updatedid' => $nr);
   }
 
@@ -392,23 +396,23 @@ class Bookings extends Model {
       $result['paydate1'] = NULL;
     }
     
-    if (isset($params['group'])) {
-      $result['group'] = Functions::validateBoolToBit($params['group']);
+    if (isset($params['bookinggroup'])) {
+      $result['group'] = Functions::validateBoolToBit($params['bookinggroup']);
     } else {
       $result['group'] = NULL;
     }
     if (is_null($result['group'])) {
       $this->response->AddResponse('error', 'Om bokning avser en gruppbokning eller inte måste anges.');
-      $this->response->AddResponsePushToArray('invalidFields', array('group'));
+      $this->response->AddResponsePushToArray('invalidFields', array('bookinggroup'));
       $passed = false;
     }
 
-    if (isset($params['tourid'])) {
-      $result['tourid'] = Functions::validateInt($params['tourid']);
+    if (isset($params['tourSelected']) && isset($params['tourSelected'][0]) && isset($params['tourSelected'][0]['id'])) {
+      $result['tourid'] = Functions::validateInt($params['tourSelected'][0]['id']);
       $Tours = new Tours($this->response, $this->pdo);
       if ($Tours->get(array('id' => $result['tourid'])) == false) { 
         $this->response->AddResponse('error', 'Kan inte hitta resan bokningen skall tillhöra, är den borttagen?');
-        $this->response->AddResponsePushToArray('invalidFields', array('tourid'));
+        $this->response->AddResponsePushToArray('invalidFields', array('tourSelected.id'));
         $passed = false;
       }
     } else {
@@ -416,7 +420,7 @@ class Bookings extends Model {
     }
     if (is_null($result['tourid'])) {
       $this->response->AddResponse('error', 'Vilken resa bokingen tillhör måste anges.');
-      $this->response->AddResponsePushToArray('invalidFields', array('tourid'));
+      $this->response->AddResponsePushToArray('invalidFields', array('tourSelected.id'));
       $passed = false;
     }
 

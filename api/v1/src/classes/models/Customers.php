@@ -76,8 +76,6 @@ class Customers extends Model {
 
   public function post(array $_params) {
 
-    print_r($_params);
-
     $params = $this->paramsValidationWithExit($_params, true);
     $comp = Functions::getCompString($params['firstname'],$params['lastname'],$params['zip'],$params['street']);
     $sql = "INSERT INTO Customers (
